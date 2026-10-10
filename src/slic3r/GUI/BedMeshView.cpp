@@ -7,6 +7,8 @@
 #include "slic3r/Utils/Http.hpp"
 
 #include <algorithm>
+#include <exception>
+#include <boost/log/trivial.hpp>
 #include <cmath>
 #include <regex>
 #include <thread>
@@ -79,6 +81,16 @@ static wxColour diverging(double t)
 }
 
 void BedMeshCanvas::on_paint(wxPaintEvent&)
+{
+    // An exception escaping a paint handler aborts the whole app, so contain it here.
+    try {
+        paint();
+    } catch (const std::exception& e) {
+        BOOST_LOG_TRIVIAL(error) << "Bed mesh view: drawing failed: " << e.what();
+    }
+}
+
+void BedMeshCanvas::paint()
 {
     wxAutoBufferedPaintDC dc(this);
     const wxColour bg = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW);
@@ -182,8 +194,8 @@ void BedMeshCanvas::on_paint(wxPaintEvent&)
         gc->DrawEllipse(s.m_x - 4, s.m_y - 4, 8, 8);
         gc->DrawText(label, s.m_x + 6, s.m_y - 8);
     };
-    marker(m_stats.high, format_wxstr("%1% %+.2f", _L("high"), m_stats.high.z));
-    marker(m_stats.low, format_wxstr("%1% %+.2f", _L("low"), m_stats.low.z));
+    marker(m_stats.high, _L("high") + wxString::Format(" %+.2f", m_stats.high.z));
+    marker(m_stats.low, _L("low") + wxString::Format(" %+.2f", m_stats.low.z));
     {
         double sx, sy, d;
         project(m_mesh.min_x + bw / 2, m_mesh.min_y - span * 0.06, centre, sx, sy, d);
@@ -202,8 +214,8 @@ void BedMeshCanvas::on_paint(wxPaintEvent&)
         gc->SetPen(*wxTRANSPARENT_PEN);
         gc->DrawRectangle(lx, ly + lh * i / 64.0, lw, lh / 64.0 + 1);
     }
-    gc->DrawText(format_wxstr("%+.2f", centre + half), lx + lw + 4, ly - 2);
-    gc->DrawText(format_wxstr("%+.2f", centre - half), lx + lw + 4, ly + lh - 12);
+    gc->DrawText(wxString::Format("%+.2f", centre + half), lx + lw + 4, ly - 2);
+    gc->DrawText(wxString::Format("%+.2f", centre - half), lx + lw + 4, ly + lh - 12);
     gc->DrawText(m_warp_mode ? _L("warp") : _L("mm"), lx, ly + lh / 2 - 6);
 }
 

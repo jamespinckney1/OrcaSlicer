@@ -26,6 +26,7 @@ public:
 
 private:
     void on_paint(wxPaintEvent&);
+    void paint();
     void on_mouse(wxMouseEvent&);
 
     BedMesh      m_mesh;
