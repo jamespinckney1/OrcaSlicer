@@ -163,6 +163,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/ShopPrinters.hpp
     GUI/QidiBoxDialog.cpp
     GUI/QidiBoxDialog.hpp
+    GUI/GCodeEditDialog.cpp
+    GUI/GCodeEditDialog.hpp
     GUI/EncodedFilament.hpp
     GUI/EncodedFilament.cpp
     GUI/ExtraRenderers.cpp

@@ -243,6 +243,7 @@
 #include "ShopNaming.hpp"
 #include "ShopPrinters.hpp"
 #include "QidiBoxDialog.hpp"
+#include "GCodeEditDialog.hpp"
 #include <wx/textdlg.h>
 #include "Widgets/MultiNozzleSync.hpp"           // NozzleOption, tryPopUpMultiNozzleDialog, setExtruderNozzleCount
 #include "DeviceCore/DevNozzleSystem.h"          // DevNozzle, GetExtNozzles / GetRackNozzles
@@ -19434,6 +19435,41 @@ void Plater::send_to_printer(bool isall)
 }
 
 //BBS export gcode 3mf to file
+void Plater::edit_sliced_gcode()
+{
+    PartPlate* plate = p->partplate_list.get_curr_plate();
+    if (!plate)
+        return;
+    const std::string path = plate->get_tmp_gcode_path();
+    if (path.empty() || !fs::exists(path) || plate->get_slice_result() == nullptr) {
+        MessageDialog dlg(this, _L("Slice the current plate first, then edit its G-code."), _L("Edit sliced G-code"), wxICON_INFORMATION | wxOK);
+        dlg.ShowModal();
+        return;
+    }
+    GCodeEditDialog dlg(this, path);
+    if (dlg.ShowModal() != wxID_OK || !dlg.saved())
+        return;
+
+    // Re-run the G-code processor on the edited file so the preview, times and statistics match.
+    wxBusyCursor wait;
+    GCodeProcessor processor;
+    processor.init_filament_maps_and_nozzle_type_when_import_only_gcode();
+    try {
+        GCodeProcessor::s_IsBBLPrinter = wxGetApp().preset_bundle->is_bbl_vendor();
+        processor.process_file(path);
+    } catch (const std::exception& ex) {
+        show_error(this, ex.what());
+        return;
+    }
+    *plate->get_slice_result() = std::move(processor.extract_result());
+    select_view_3D("Preview");
+    p->preview->reload_print();
+    p->get_current_canvas3D()->render();
+    p->notification_manager->push_notification(NotificationType::CustomNotification,
+                                               NotificationManager::NotificationLevel::RegularNotificationLevel,
+                                               _u8L("Edited G-code saved and reloaded into the preview. Re-slicing will overwrite it."));
+}
+
 void Plater::export_gcode_3mf(bool export_all)
 {
     if (p->model.objects.empty())
