@@ -34,6 +34,10 @@
 namespace Slic3r {
 namespace GUI {
 
+#include <wx/button.h>
+#include <wx/stattext.h>
+#include <string>
+
 class PrinterWebViewHandler;
 
 
@@ -60,6 +64,15 @@ private:
     void SendAPIKey();
     void create_browser();
     void reset_browser();
+
+    // Print-shop: toolbar above the printer page with shop maintenance actions.
+    void build_shop_bar(wxBoxSizer* sizer);
+    void on_rebuild_full_mesh();
+    std::string moonraker_base_url() const;
+    wxPanel*      m_shop_bar{nullptr};
+    wxStaticText* m_shop_status{nullptr};
+    wxButton*     m_btn_full_mesh{nullptr};
+    bool          m_full_mesh_running{false};
 
     wxWebView* m_browser;
     long m_zoomFactor;

@@ -22,6 +22,14 @@
 #include <slic3r/GUI/Widgets/WebView.hpp>
 #include <wx/utils.h>
 #include <wx/webview.h>
+#include <wx/numdlg.h>
+#include <regex>
+#include "slic3r/Utils/Http.hpp"
+#include "slic3r/GUI/MsgDialog.hpp"
+#include "slic3r/GUI/I18N.hpp"
+#include "slic3r/GUI/format.hpp"
+#include "libslic3r/PresetBundle.hpp"
+#include <nlohmann/json.hpp>
 
 class wxWindow;
 
@@ -125,6 +133,7 @@ PrinterWebView::PrinterWebView(wxWindow *parent)
 
     SetSizer(topsizer);
 
+    build_shop_bar(topsizer);
     topsizer->Add(m_browser, wxSizerFlags().Expand().Proportion(1));
 
     // Log backend information
@@ -346,3 +355,143 @@ void PrinterWebView::OnScriptMessage(wxWebViewEvent& evt)
 
 } // GUI
 } // Slic3r
+
+namespace Slic3r { namespace GUI {
+
+// ---- Print-shop: shop toolbar ------------------------------------------------------------------
+
+void PrinterWebView::build_shop_bar(wxBoxSizer* sizer)
+{
+    m_shop_bar = new wxPanel(this, wxID_ANY);
+    auto* bar  = new wxBoxSizer(wxHORIZONTAL);
+    auto* title = new wxStaticText(m_shop_bar, wxID_ANY, _L("Shop") + ":");
+    title->SetFont(title->GetFont().Bold());
+    m_btn_full_mesh = new wxButton(m_shop_bar, wxID_ANY, _L("Rebuild full-bed mesh..."));
+    m_btn_full_mesh->SetToolTip(_L("Runs SHOP_FULL_MESH on the printer: home, heat the bed, probe the whole bed and save it as the "
+                                   "\"default\" mesh that Quick start loads. Takes several minutes."));
+    m_btn_full_mesh->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { on_rebuild_full_mesh(); });
+    m_shop_status = new wxStaticText(m_shop_bar, wxID_ANY, "");
+    bar->Add(title, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, FromDIP(8));
+    bar->Add(m_btn_full_mesh, 0, wxALIGN_CENTER_VERTICAL | wxTOP | wxBOTTOM, FromDIP(4));
+    bar->Add(m_shop_status, 1, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(10));
+    m_shop_bar->SetSizer(bar);
+    sizer->Add(m_shop_bar, 0, wxEXPAND);
+}
+
+// The printer's API root: scheme://host[:port] of the page shown here (Moonraker is proxied there
+// on QIDI and Fluidd/Mainsail installs); port 7125 is tried as a fallback.
+std::string PrinterWebView::moonraker_base_url() const
+{
+    static const std::regex root_re(R"(^(https?://[^/?#]+))", std::regex::icase);
+    std::smatch m;
+    const std::string url = m_url.ToStdString();
+    return std::regex_search(url, m, root_re) ? m[1].str() : std::string();
+}
+
+void PrinterWebView::on_rebuild_full_mesh()
+{
+    if (m_full_mesh_running)
+        return;
+    const std::string page_root = moonraker_base_url();
+    if (page_root.empty()) {
+        MessageDialog(this, _L("No printer page is loaded."), _L("Rebuild full-bed mesh"), wxICON_INFORMATION | wxOK).ShowModal();
+        return;
+    }
+
+    // Find the API and make sure the printer is idle.
+    auto query_state = [](const std::string& base, std::string& state) {
+        bool ok = false;
+        Http::get(base + "/printer/objects/query?print_stats=state")
+            .timeout_connect(4)
+            .timeout_max(8)
+            .on_complete([&](std::string body, unsigned status) {
+                if (status != 200)
+                    return;
+                auto j = nlohmann::json::parse(body, nullptr, false);
+                if (!j.is_discarded() && j.contains("result"))
+                    try { state = j["result"]["status"]["print_stats"]["state"].get<std::string>(); ok = true; } catch (...) {}
+            })
+            .on_error([](std::string, std::string, unsigned) {})
+            .perform_sync();
+        return ok;
+    };
+    std::string base = page_root, state;
+    {
+        wxBusyCursor wait;
+        if (!query_state(base, state)) {
+            static const std::regex host_re(R"(^(https?://[^/:]+))", std::regex::icase);
+            std::smatch m;
+            if (std::regex_search(page_root, m, host_re))
+                base = m[1].str() + ":7125";
+            if (!query_state(base, state)) {
+                MessageDialog(this, _L("Could not reach the printer's Moonraker API."), _L("Rebuild full-bed mesh"), wxICON_WARNING | wxOK).ShowModal();
+                return;
+            }
+        }
+    }
+    if (state == "printing" || state == "paused") {
+        MessageDialog(this, _L("The printer is busy printing. Rebuild the mesh when it is idle."), _L("Rebuild full-bed mesh"),
+                      wxICON_INFORMATION | wxOK).ShowModal();
+        return;
+    }
+
+    // Bed temperature: default to the current filament's bed temperature, else 80 C.
+    long bed_default = 80;
+    if (auto* bundle = wxGetApp().preset_bundle) {
+        const DynamicPrintConfig cfg = bundle->full_config();
+        for (const char* key : {"textured_plate_temp", "hot_plate_temp"})
+            if (auto* opt = cfg.option<ConfigOptionInts>(key); opt && !opt->values.empty() && opt->values.front() > 0) {
+                bed_default = opt->values.front();
+                break;
+            }
+    }
+    const long bed = wxGetNumberFromUser(_L("The mesh is most accurate at printing temperature."), _L("Bed temperature (C):"),
+                                         _L("Rebuild full-bed mesh"), bed_default, 0, 120, this);
+    if (bed < 0)
+        return;
+    MessageDialog confirm(this,
+                          format_wxstr(_L("Rebuild the full-bed mesh now?\n\nThe printer will home, heat the bed to %1% C and probe the "
+                                          "whole bed (81 points, several minutes), then save it as the mesh Quick start uses. "
+                                          "Keep the bed clear."), bed),
+                          _L("Rebuild full-bed mesh"), wxICON_QUESTION | wxOK | wxCANCEL);
+    confirm.SetButtonLabel(wxID_OK, _L("Rebuild"));
+    if (confirm.ShowModal() != wxID_OK)
+        return;
+
+    // Moonraker answers the script request when the macro finishes, so run it in the background.
+    m_full_mesh_running = true;
+    m_btn_full_mesh->Disable();
+    m_shop_status->SetLabel(format_wxstr(_L("Rebuilding full-bed mesh at %1% C... the printer is probing."), bed));
+    m_shop_bar->Layout();
+    const std::string script = "SHOP_FULL_MESH BED=" + std::to_string(bed);
+    wxWeakRef<PrinterWebView> self(this);
+    auto finish = [self](wxString msg) {
+        wxGetApp().CallAfter([self, msg]() {
+            if (!self)
+                return;
+            self->m_full_mesh_running = false;
+            self->m_btn_full_mesh->Enable();
+            self->m_shop_status->SetLabel(msg);
+            self->m_shop_bar->Layout();
+        });
+    };
+    Http::post(base + "/printer/gcode/script?script=" + Http::url_encode(script))
+        .timeout_connect(5)
+        .timeout_max(1800)
+        .on_complete([finish](std::string body, unsigned status) {
+            if (status == 200)
+                finish(_L("Full-bed mesh rebuilt and saved. Quick start will use it."));
+            else
+                finish(format_wxstr(_L("The printer reported an error (HTTP %1%). Is SHOP_FULL_MESH installed?"), status));
+        })
+        .on_error([finish](std::string body, std::string error, unsigned status) {
+            std::string detail = error;
+            auto j = nlohmann::json::parse(body, nullptr, false);
+            if (!j.is_discarded() && j.contains("error") && j["error"].contains("message"))
+                detail = j["error"]["message"].get<std::string>();
+            finish(_L("Mesh rebuild failed") + ": " + from_u8(detail));
+        })
+        .perform();
+}
+
+}} // namespace Slic3r::GUI
