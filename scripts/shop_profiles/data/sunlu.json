@@ -22,7 +22,21 @@
       "shore_hardness": null,
       "spool_weight_g": 1000,
       "notes": "Product page: 200-210C @50-100mm/s, 210-240C @100-200mm/s; retraction 0.8-1.2mm @30-40mm/s. Shore (HA/HD) 80. Drying/fan/enclosure from SUNLU wiki filament-category page (https://www.sunlu.com/wiki/filament-category). Wiki: fan ON, drying 50C (no hours). Weight options 0.25/0.5/1/2/3/5kg.",
-      "source_url": "https://www.sunlu.com/products/pla-3d-printing-filament"
+      "source_url": "https://www.sunlu.com/products/pla-3d-printing-filament",
+      "speed_temp_bands": [
+        {
+          "speed_min_mm_s": 50,
+          "speed_max_mm_s": 100,
+          "temp_min_c": 200,
+          "temp_max_c": 210
+        },
+        {
+          "speed_min_mm_s": 100,
+          "speed_max_mm_s": 200,
+          "temp_min_c": 210,
+          "temp_max_c": 240
+        }
+      ]
     },
     {
       "name": "SUNLU PLA Classic",
@@ -66,7 +80,21 @@
       "shore_hardness": null,
       "spool_weight_g": 1000,
       "notes": "Product page: 200-210C @50-100, 210-240C @100-200mm/s. CONFLICT: wiki lists PLA Lite as 200-260C / <=450mm/s. Shore (HA/HD) 80. Wiki: fan ON, drying 50C.",
-      "source_url": "https://www.sunlu.com/products/pla-lite-filament"
+      "source_url": "https://www.sunlu.com/products/pla-lite-filament",
+      "speed_temp_bands": [
+        {
+          "speed_min_mm_s": 50,
+          "speed_max_mm_s": 100,
+          "temp_min_c": 200,
+          "temp_max_c": 210
+        },
+        {
+          "speed_min_mm_s": 100,
+          "speed_max_mm_s": 200,
+          "temp_min_c": 210,
+          "temp_max_c": 240
+        }
+      ]
     },
     {
       "name": "SUNLU PLA+",
@@ -88,7 +116,21 @@
       "shore_hardness": null,
       "spool_weight_g": 1000,
       "notes": "Product page + TDS (SL-TE-WI-080): 205-215C @50-100mm/s, 215-245C @100-200mm/s; bed 50-60C; textured PEI; cooling fan 'Open/Close'; drying 50C (no hours); retraction 0.8-1.2mm @30-40mm/s. Shore (HA/HD) 81; HDT 56C.",
-      "source_url": "https://www.sunlu.com/products/pla-plus-filament"
+      "source_url": "https://www.sunlu.com/products/pla-plus-filament",
+      "speed_temp_bands": [
+        {
+          "speed_min_mm_s": 50,
+          "speed_max_mm_s": 100,
+          "temp_min_c": 205,
+          "temp_max_c": 215
+        },
+        {
+          "speed_min_mm_s": 100,
+          "speed_max_mm_s": 200,
+          "temp_min_c": 215,
+          "temp_max_c": 245
+        }
+      ]
     },
     {
       "name": "SUNLU PLA+ 2.0",
@@ -110,7 +152,21 @@
       "shore_hardness": null,
       "spool_weight_g": 1000,
       "notes": "Product page: 205-215C @50-100, 215-245C @100-200mm/s; identical spec table to PLA+ on sunlu.com. Store copy claims 50-600mm/s capability (marketing). Shore (HA/HD) 81. Wiki: fan ON, drying 50C.",
-      "source_url": "https://www.sunlu.com/products/pla-plus-2.0-3d-printing-filament"
+      "source_url": "https://www.sunlu.com/products/pla-plus-2.0-3d-printing-filament",
+      "speed_temp_bands": [
+        {
+          "speed_min_mm_s": 50,
+          "speed_max_mm_s": 100,
+          "temp_min_c": 205,
+          "temp_max_c": 215
+        },
+        {
+          "speed_min_mm_s": 100,
+          "speed_max_mm_s": 200,
+          "temp_min_c": 215,
+          "temp_max_c": 245
+        }
+      ]
     },
     {
       "name": "SUNLU PLA Meta",
@@ -132,7 +188,21 @@
       "shore_hardness": null,
       "spool_weight_g": 1000,
       "notes": "Product page: 185-195C @50-100mm/s, 195-225C @100-200mm/s. SUNLU PLA Meta guide (uk.store blog) recommends starting 185-195C, bed 50-65C, 50-100mm/s, 100% fan for bridges/overhangs, textured PEI or glue. Shore (HA/HD) 83.5. Wiki: fan ON, drying 50C ('drying reduces stringing'). Sold on Amazon as 'High Speed PLA Meta'.",
-      "source_url": "https://www.sunlu.com/products/pla-meta-filament"
+      "source_url": "https://www.sunlu.com/products/pla-meta-filament",
+      "speed_temp_bands": [
+        {
+          "speed_min_mm_s": 50,
+          "speed_max_mm_s": 100,
+          "temp_min_c": 185,
+          "temp_max_c": 195
+        },
+        {
+          "speed_min_mm_s": 100,
+          "speed_max_mm_s": 200,
+          "temp_min_c": 195,
+          "temp_max_c": 225
+        }
+      ]
     },
     {
       "name": "SUNLU APLA (AntiString PLA)",
@@ -154,7 +224,27 @@
       "shore_hardness": null,
       "spool_weight_g": 1000,
       "notes": "Product page: 205-215C @50-100, 215-245C @100-200mm/s. Wiki lists APLA as 200-240C @160-260mm/s. Store name 'APLA (Anti-string PLA)'. Shore (HA/HD) 80. Wiki: fan ON, drying 50C.",
-      "source_url": "https://www.sunlu.com/products/apla-filament"
+      "source_url": "https://www.sunlu.com/products/apla-filament",
+      "speed_temp_bands": [
+        {
+          "speed_min_mm_s": 50,
+          "speed_max_mm_s": 100,
+          "temp_min_c": 205,
+          "temp_max_c": 215
+        },
+        {
+          "speed_min_mm_s": 100,
+          "speed_max_mm_s": 200,
+          "temp_min_c": 215,
+          "temp_max_c": 245
+        },
+        {
+          "speed_min_mm_s": 160,
+          "speed_max_mm_s": 260,
+          "temp_min_c": 200,
+          "temp_max_c": 240
+        }
+      ]
     },
     {
       "name": "SUNLU High Speed PLA",
@@ -220,7 +310,21 @@
       "shore_hardness": null,
       "spool_weight_g": 1000,
       "notes": "Product page: 200-215C @50-150mm/s, 215-230C @150-300mm/s; marketing 'up to 600mm/s'; wiki speed 300-600mm/s. Table max (300) recorded. Shore (HA/HD) 86.5. Wiki: fan ON, drying 50C.",
-      "source_url": "https://www.sunlu.com/products/high-speed-pla-plus-2-0-filament"
+      "source_url": "https://www.sunlu.com/products/high-speed-pla-plus-2-0-filament",
+      "speed_temp_bands": [
+        {
+          "speed_min_mm_s": 50,
+          "speed_max_mm_s": 150,
+          "temp_min_c": 200,
+          "temp_max_c": 215
+        },
+        {
+          "speed_min_mm_s": 150,
+          "speed_max_mm_s": 300,
+          "temp_min_c": 215,
+          "temp_max_c": 230
+        }
+      ]
     },
     {
       "name": "SUNLU High Speed Matte PLA",
@@ -264,7 +368,21 @@
       "shore_hardness": null,
       "spool_weight_g": 1000,
       "notes": "Product page: 210-230C @60-150mm/s, 230-260C @300-400mm/s; marketing 'up to 600mm/s'; wiki says 210-230C / <=250mm/s (conflict). Abrasiveness not stated by SUNLU. Shore (HA/HD) 82. Wiki: fan ON, drying 50C.",
-      "source_url": "https://www.sunlu.com/products/high-speed-pla-marble-filament"
+      "source_url": "https://www.sunlu.com/products/high-speed-pla-marble-filament",
+      "speed_temp_bands": [
+        {
+          "speed_min_mm_s": 60,
+          "speed_max_mm_s": 150,
+          "temp_min_c": 210,
+          "temp_max_c": 230
+        },
+        {
+          "speed_min_mm_s": 300,
+          "speed_max_mm_s": 400,
+          "temp_min_c": 230,
+          "temp_max_c": 260
+        }
+      ]
     },
     {
       "name": "SUNLU PLA Matte",
@@ -286,7 +404,21 @@
       "shore_hardness": null,
       "spool_weight_g": 1000,
       "notes": "Product page: 205-215C @50-100, 215-245C @100-230mm/s. Wiki lists PLA Matte as 200-260C / <=450 (conflict, possibly HS Matte data). Shore (HA/HD) 83. Wiki: fan ON, drying 50C.",
-      "source_url": "https://www.sunlu.com/products/pla-matte-filament"
+      "source_url": "https://www.sunlu.com/products/pla-matte-filament",
+      "speed_temp_bands": [
+        {
+          "speed_min_mm_s": 50,
+          "speed_max_mm_s": 100,
+          "temp_min_c": 205,
+          "temp_max_c": 215
+        },
+        {
+          "speed_min_mm_s": 100,
+          "speed_max_mm_s": 230,
+          "temp_min_c": 215,
+          "temp_max_c": 245
+        }
+      ]
     },
     {
       "name": "SUNLU PLA Matte Dual-Color",
@@ -308,7 +440,21 @@
       "shore_hardness": null,
       "spool_weight_g": 1000,
       "notes": "Product page: 205-215C @50-100, 215-245C @100-230mm/s. Shore (HA/HD) 83. Wiki: fan ON, drying 50C.",
-      "source_url": "https://www.sunlu.com/products/pla-matte-dual-color-filament"
+      "source_url": "https://www.sunlu.com/products/pla-matte-dual-color-filament",
+      "speed_temp_bands": [
+        {
+          "speed_min_mm_s": 50,
+          "speed_max_mm_s": 100,
+          "temp_min_c": 205,
+          "temp_max_c": 215
+        },
+        {
+          "speed_min_mm_s": 100,
+          "speed_max_mm_s": 230,
+          "temp_min_c": 215,
+          "temp_max_c": 245
+        }
+      ]
     },
     {
       "name": "SUNLU Silk PLA+",
@@ -352,7 +498,21 @@
       "shore_hardness": null,
       "spool_weight_g": 1000,
       "notes": "Product page + TDS: 205-215C @50-100, 215-235C @100-200mm/s; bed 50-60C; TDS drying 55C; fan open/close. Shore (HA/HD) 82.5. Store name 'SILK PLA+ 2.0 / SILK 2.0'.",
-      "source_url": "https://www.sunlu.com/products/Silk%20PLA+2.0"
+      "source_url": "https://www.sunlu.com/products/Silk%20PLA+2.0",
+      "speed_temp_bands": [
+        {
+          "speed_min_mm_s": 50,
+          "speed_max_mm_s": 100,
+          "temp_min_c": 205,
+          "temp_max_c": 215
+        },
+        {
+          "speed_min_mm_s": 100,
+          "speed_max_mm_s": 200,
+          "temp_min_c": 215,
+          "temp_max_c": 235
+        }
+      ]
     },
     {
       "name": "SUNLU Silk PLA+ Dual-Color",
@@ -440,7 +600,21 @@
       "shore_hardness": null,
       "spool_weight_g": 1000,
       "notes": "Product page: 205-215C @50-100, 215-235C @100-200mm/s. Shore (HA/HD) 80. Wiki lists 210-230C. Wiki: fan ON, drying 50C.",
-      "source_url": "https://www.sunlu.com/products/silk-pla-plus-rainbow-filament"
+      "source_url": "https://www.sunlu.com/products/silk-pla-plus-rainbow-filament",
+      "speed_temp_bands": [
+        {
+          "speed_min_mm_s": 50,
+          "speed_max_mm_s": 100,
+          "temp_min_c": 205,
+          "temp_max_c": 215
+        },
+        {
+          "speed_min_mm_s": 100,
+          "speed_max_mm_s": 200,
+          "temp_min_c": 215,
+          "temp_max_c": 235
+        }
+      ]
     },
     {
       "name": "SUNLU PLA Rainbow",
@@ -462,7 +636,21 @@
       "shore_hardness": null,
       "spool_weight_g": 1000,
       "notes": "Product page: 185-195C @50-100, 195-225C @100-200mm/s (same base as PLA Meta). Shore (HA/HD) 83.5. Wiki: fan ON, drying 50C.",
-      "source_url": "https://www.sunlu.com/products/rainbow-pla-filament"
+      "source_url": "https://www.sunlu.com/products/rainbow-pla-filament",
+      "speed_temp_bands": [
+        {
+          "speed_min_mm_s": 50,
+          "speed_max_mm_s": 100,
+          "temp_min_c": 185,
+          "temp_max_c": 195
+        },
+        {
+          "speed_min_mm_s": 100,
+          "speed_max_mm_s": 200,
+          "temp_min_c": 195,
+          "temp_max_c": 225
+        }
+      ]
     },
     {
       "name": "SUNLU PLA Transparent Rainbow",
@@ -484,7 +672,21 @@
       "shore_hardness": null,
       "spool_weight_g": 1000,
       "notes": "Product page: 195-205C @50-100, 205-220C @100-200mm/s. Shore (HA/HD) 81. Wiki: fan ON, drying 50C.",
-      "source_url": "https://www.sunlu.com/products/pla-transparent-rainbow-filament"
+      "source_url": "https://www.sunlu.com/products/pla-transparent-rainbow-filament",
+      "speed_temp_bands": [
+        {
+          "speed_min_mm_s": 50,
+          "speed_max_mm_s": 100,
+          "temp_min_c": 195,
+          "temp_max_c": 205
+        },
+        {
+          "speed_min_mm_s": 100,
+          "speed_max_mm_s": 200,
+          "temp_min_c": 205,
+          "temp_max_c": 220
+        }
+      ]
     },
     {
       "name": "SUNLU PLA Transparent",
@@ -506,7 +708,21 @@
       "shore_hardness": null,
       "spool_weight_g": 1000,
       "notes": "Product page: 200-210C @50-100, 210-240C @100-200mm/s. Shore (HA/HD) 80. Wiki: 185-230C, fan ON, drying 50C.",
-      "source_url": "https://www.sunlu.com/products/transparent-pla-filament"
+      "source_url": "https://www.sunlu.com/products/transparent-pla-filament",
+      "speed_temp_bands": [
+        {
+          "speed_min_mm_s": 50,
+          "speed_max_mm_s": 100,
+          "temp_min_c": 200,
+          "temp_max_c": 210
+        },
+        {
+          "speed_min_mm_s": 100,
+          "speed_max_mm_s": 200,
+          "temp_min_c": 210,
+          "temp_max_c": 240
+        }
+      ]
     },
     {
       "name": "SUNLU PLA Wood",
@@ -550,7 +766,21 @@
       "shore_hardness": null,
       "spool_weight_g": 1000,
       "notes": "Product page: 200-210C @50-100, 210-240C @100-200mm/s. Wiki: fan ON, drying 50C, 'avoid AMS'. Abrasiveness not stated by SUNLU. Shore (HA/HD) 80.",
-      "source_url": "https://www.sunlu.com/products/glow-in-the-dark-pla-filament"
+      "source_url": "https://www.sunlu.com/products/glow-in-the-dark-pla-filament",
+      "speed_temp_bands": [
+        {
+          "speed_min_mm_s": 50,
+          "speed_max_mm_s": 100,
+          "temp_min_c": 200,
+          "temp_max_c": 210
+        },
+        {
+          "speed_min_mm_s": 100,
+          "speed_max_mm_s": 200,
+          "temp_min_c": 210,
+          "temp_max_c": 240
+        }
+      ]
     },
     {
       "name": "SUNLU PLA Galaxy",
@@ -594,7 +824,21 @@
       "shore_hardness": null,
       "spool_weight_g": 1000,
       "notes": "Product page: 200-210C @50-100, 210-240C @100-200mm/s. Shore (HA/HD) 78.5. Wiki: 100-260mm/s, fan ON, drying 50C.",
-      "source_url": "https://www.sunlu.com/products/twinkling-pla-filament"
+      "source_url": "https://www.sunlu.com/products/twinkling-pla-filament",
+      "speed_temp_bands": [
+        {
+          "speed_min_mm_s": 50,
+          "speed_max_mm_s": 100,
+          "temp_min_c": 200,
+          "temp_max_c": 210
+        },
+        {
+          "speed_min_mm_s": 100,
+          "speed_max_mm_s": 200,
+          "temp_min_c": 210,
+          "temp_max_c": 240
+        }
+      ]
     },
     {
       "name": "SUNLU PLA Metal (PLA Metallic)",
@@ -638,7 +882,21 @@
       "shore_hardness": null,
       "spool_weight_g": 1000,
       "notes": "Product page: 215-225C @50-100, 225-245C @100-200mm/s. Hardened nozzle not mentioned by SUNLU (wiki only notes dust protection when sanding). Shore (HA/HD) 84. Wiki: fan ON, drying 50C.",
-      "source_url": "https://www.sunlu.com/products/carbon-fiber-pla-filament"
+      "source_url": "https://www.sunlu.com/products/carbon-fiber-pla-filament",
+      "speed_temp_bands": [
+        {
+          "speed_min_mm_s": 50,
+          "speed_max_mm_s": 100,
+          "temp_min_c": 215,
+          "temp_max_c": 225
+        },
+        {
+          "speed_min_mm_s": 100,
+          "speed_max_mm_s": 200,
+          "temp_min_c": 225,
+          "temp_max_c": 245
+        }
+      ]
     },
     {
       "name": "SUNLU LW-PLA",
@@ -704,7 +962,21 @@
       "shore_hardness": null,
       "spool_weight_g": 1000,
       "notes": "Product page + TDS: 230-240C @50-100, 240-270C @100-200mm/s; bed 70-80C; TDS drying 65C; fan open/close. Shore 80D; notched Izod 38 kJ/m2.",
-      "source_url": "https://www.sunlu.com/products/PETG2.0"
+      "source_url": "https://www.sunlu.com/products/PETG2.0",
+      "speed_temp_bands": [
+        {
+          "speed_min_mm_s": 50,
+          "speed_max_mm_s": 100,
+          "temp_min_c": 230,
+          "temp_max_c": 240
+        },
+        {
+          "speed_min_mm_s": 100,
+          "speed_max_mm_s": 200,
+          "temp_min_c": 240,
+          "temp_max_c": 270
+        }
+      ]
     },
     {
       "name": "SUNLU PETG Transparent",
@@ -792,7 +1064,27 @@
       "shore_hardness": null,
       "spool_weight_g": 1000,
       "notes": "Product page table: 240-260C / <=400mm/s; marketing 'up to 600mm/s'. uk.store listing: speed table 205-215C @50-100, 240-250C @100-300, 260-270C @300-600mm/s; drying oven 60-65C, SUNLU S4/E2 dryer 65C >=8h. Shore (HA/HD) 79. Wiki: fan ON.",
-      "source_url": "https://www.sunlu.com/products/high-speed-matte-petg-filament"
+      "source_url": "https://www.sunlu.com/products/high-speed-matte-petg-filament",
+      "speed_temp_bands": [
+        {
+          "speed_min_mm_s": 50,
+          "speed_max_mm_s": 100,
+          "temp_min_c": 205,
+          "temp_max_c": 215
+        },
+        {
+          "speed_min_mm_s": 100,
+          "speed_max_mm_s": 300,
+          "temp_min_c": 240,
+          "temp_max_c": 250
+        },
+        {
+          "speed_min_mm_s": 300,
+          "speed_max_mm_s": 600,
+          "temp_min_c": 260,
+          "temp_max_c": 270
+        }
+      ]
     },
     {
       "name": "SUNLU PETG-CF",
@@ -836,7 +1128,21 @@
       "shore_hardness": null,
       "spool_weight_g": 1000,
       "notes": "Product page: 250-270C @50-100, 270-290C @100-200mm/s; bed 80-100C. Wiki: fan OFF, ventilation, glue bed prep, drying 80C 2-4h. Enclosure not explicitly required by SUNLU. Shore (HA/HD) 85; HDT 95C.",
-      "source_url": "https://www.sunlu.com/products/abs-3d-printing-filament"
+      "source_url": "https://www.sunlu.com/products/abs-3d-printing-filament",
+      "speed_temp_bands": [
+        {
+          "speed_min_mm_s": 50,
+          "speed_max_mm_s": 100,
+          "temp_min_c": 250,
+          "temp_max_c": 270
+        },
+        {
+          "speed_min_mm_s": 100,
+          "speed_max_mm_s": 200,
+          "temp_min_c": 270,
+          "temp_max_c": 290
+        }
+      ]
     },
     {
       "name": "SUNLU High Speed ABS",
@@ -858,7 +1164,21 @@
       "shore_hardness": null,
       "spool_weight_g": 1000,
       "notes": "Product page: 260-280C @50-300, 280-290C @300-350mm/s; bed 90-100C. Wiki: fan OFF, ventilation; wiki drying value is 50C which looks like a template error (other ABS grades 80C) - treat with caution. Shore (HA/HD) 80; HDT 93C.",
-      "source_url": "https://www.sunlu.com/products/high-speed-abs-filament"
+      "source_url": "https://www.sunlu.com/products/high-speed-abs-filament",
+      "speed_temp_bands": [
+        {
+          "speed_min_mm_s": 50,
+          "speed_max_mm_s": 300,
+          "temp_min_c": 260,
+          "temp_max_c": 280
+        },
+        {
+          "speed_min_mm_s": 300,
+          "speed_max_mm_s": 350,
+          "temp_min_c": 280,
+          "temp_max_c": 290
+        }
+      ]
     },
     {
       "name": "SUNLU ABS Transparent",
@@ -880,7 +1200,21 @@
       "shore_hardness": null,
       "spool_weight_g": 1000,
       "notes": "Product page: 250-260C @50-100, 260-280C @100-200mm/s. Wiki: fan OFF, ventilation, glue, drying 80C 2-4h. Shore (HA/HD) 81.",
-      "source_url": "https://www.sunlu.com/products/transparent-abs-filament"
+      "source_url": "https://www.sunlu.com/products/transparent-abs-filament",
+      "speed_temp_bands": [
+        {
+          "speed_min_mm_s": 50,
+          "speed_max_mm_s": 100,
+          "temp_min_c": 250,
+          "temp_max_c": 260
+        },
+        {
+          "speed_min_mm_s": 100,
+          "speed_max_mm_s": 200,
+          "temp_min_c": 260,
+          "temp_max_c": 280
+        }
+      ]
     },
     {
       "name": "SUNLU ABS-FR",
@@ -902,7 +1236,21 @@
       "shore_hardness": null,
       "spool_weight_g": 1000,
       "notes": "Product page: 240-250C @50-100, 250-260C @100-200mm/s. Wiki: 250-280C, 50-180mm/s (conflict), fan OFF, glue, drying 80C 3-4h. V0 grade. Shore (HA/HD) 79. 1kg max spool.",
-      "source_url": "https://www.sunlu.com/products/abs-flame-retardant-filament"
+      "source_url": "https://www.sunlu.com/products/abs-flame-retardant-filament",
+      "speed_temp_bands": [
+        {
+          "speed_min_mm_s": 50,
+          "speed_max_mm_s": 100,
+          "temp_min_c": 240,
+          "temp_max_c": 250
+        },
+        {
+          "speed_min_mm_s": 100,
+          "speed_max_mm_s": 200,
+          "temp_min_c": 250,
+          "temp_max_c": 260
+        }
+      ]
     },
     {
       "name": "SUNLU ABS-GF",
@@ -946,7 +1294,21 @@
       "shore_hardness": null,
       "spool_weight_g": 1000,
       "notes": "Product page: 250-260C @50-100, 260-280C @100-200mm/s; bed 80-100C. Wiki: fan ON (as written), glue bed prep, drying 80C (no hours). Shore (HA/HD) 81.5.",
-      "source_url": "https://www.sunlu.com/products/asa-uv-resistant-filament"
+      "source_url": "https://www.sunlu.com/products/asa-uv-resistant-filament",
+      "speed_temp_bands": [
+        {
+          "speed_min_mm_s": 50,
+          "speed_max_mm_s": 100,
+          "temp_min_c": 250,
+          "temp_max_c": 260
+        },
+        {
+          "speed_min_mm_s": 100,
+          "speed_max_mm_s": 200,
+          "temp_min_c": 260,
+          "temp_max_c": 280
+        }
+      ]
     },
     {
       "name": "SUNLU PC",
@@ -1012,7 +1374,21 @@
       "shore_hardness": "95A",
       "spool_weight_g": 1000,
       "notes": "Product page + TDS: 190-210C @50-80mm/s, 210-230C @80-120mm/s; bed 50-60C (glue); fan open/close; drying 50-60C. Elongation >900%. Amazon aggregator also lists a '95A High Speed TPU' SKU not found on sunlu.com.",
-      "source_url": "https://www.sunlu.com/products/tpu-95a-flexible-filament"
+      "source_url": "https://www.sunlu.com/products/tpu-95a-flexible-filament",
+      "speed_temp_bands": [
+        {
+          "speed_min_mm_s": 50,
+          "speed_max_mm_s": 80,
+          "temp_min_c": 190,
+          "temp_max_c": 210
+        },
+        {
+          "speed_min_mm_s": 80,
+          "speed_max_mm_s": 120,
+          "temp_min_c": 210,
+          "temp_max_c": 230
+        }
+      ]
     },
     {
       "name": "SUNLU TPU 90A",
@@ -1056,7 +1432,21 @@
       "shore_hardness": "98A",
       "spool_weight_g": 1000,
       "notes": "Product page: 210-220C @50-100, 220-240C @100-200mm/s; bed 50-60C. Description says Shore 98A; spec table shows 97.5 (HA/HD). Wiki: fan ON, drying 50C. 1kg max spool.",
-      "source_url": "https://www.sunlu.com/products/silk-tpu-filament"
+      "source_url": "https://www.sunlu.com/products/silk-tpu-filament",
+      "speed_temp_bands": [
+        {
+          "speed_min_mm_s": 50,
+          "speed_max_mm_s": 100,
+          "temp_min_c": 210,
+          "temp_max_c": 220
+        },
+        {
+          "speed_min_mm_s": 100,
+          "speed_max_mm_s": 200,
+          "temp_min_c": 220,
+          "temp_max_c": 240
+        }
+      ]
     },
     {
       "name": "SUNLU Easy PA (Easy Nylon / E-PA)",
@@ -1078,7 +1468,21 @@
       "shore_hardness": null,
       "spool_weight_g": 1000,
       "notes": "Product page: 250-270C @50-100, 270-280C @100-150mm/s; bed 30-50C; shrinkage 1.3-1.6%. Wiki: fan OFF, highly hygroscopic, drying 80-110C 4-6h. Shore (HA/HD) 78.5. 1kg max spool.",
-      "source_url": "https://www.sunlu.com/products/easy-pa-nylon-filament"
+      "source_url": "https://www.sunlu.com/products/easy-pa-nylon-filament",
+      "speed_temp_bands": [
+        {
+          "speed_min_mm_s": 50,
+          "speed_max_mm_s": 100,
+          "temp_min_c": 250,
+          "temp_max_c": 270
+        },
+        {
+          "speed_min_mm_s": 100,
+          "speed_max_mm_s": 150,
+          "temp_min_c": 270,
+          "temp_max_c": 280
+        }
+      ]
     },
     {
       "name": "SUNLU PA6-CF",
@@ -1210,7 +1614,21 @@
       "shore_hardness": null,
       "spool_weight_g": 1000,
       "notes": "Product page: 200-210C @50-100, 210-230C @100-200mm/s. Wiki: 200-220C, 50-150mm/s, fan ON, drying 50C. Store: 900g (removable spool) / 1000g (ordinary spool). Shore (HA/HD) 82.5.",
-      "source_url": "https://www.sunlu.com/products/pvb-filament"
+      "source_url": "https://www.sunlu.com/products/pvb-filament",
+      "speed_temp_bands": [
+        {
+          "speed_min_mm_s": 50,
+          "speed_max_mm_s": 100,
+          "temp_min_c": 200,
+          "temp_max_c": 210
+        },
+        {
+          "speed_min_mm_s": 100,
+          "speed_max_mm_s": 200,
+          "temp_min_c": 210,
+          "temp_max_c": 230
+        }
+      ]
     },
     {
       "name": "SUNLU PVA",
@@ -1232,7 +1650,21 @@
       "shore_hardness": null,
       "spool_weight_g": 1000,
       "notes": "Product page: 200-210C @50-100, 210-230C @100-200mm/s; bed '<70C'. No drying figures published on page or wiki (wiki references PVA only as support). 1kg max spool.",
-      "source_url": "https://www.sunlu.com/products/pva-water-soluble-filament"
+      "source_url": "https://www.sunlu.com/products/pva-water-soluble-filament",
+      "speed_temp_bands": [
+        {
+          "speed_min_mm_s": 50,
+          "speed_max_mm_s": 100,
+          "temp_min_c": 200,
+          "temp_max_c": 210
+        },
+        {
+          "speed_min_mm_s": 100,
+          "speed_max_mm_s": 200,
+          "temp_min_c": 210,
+          "temp_max_c": 230
+        }
+      ]
     },
     {
       "name": "SUNLU PCL",

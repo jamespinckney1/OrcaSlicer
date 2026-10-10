@@ -25,6 +25,18 @@ fan and notes. After editing data, run the generator then, per touched vendor:
     python3 scripts/orca_profile_tool.py generate-id  --vendor <Vendor>
     python3 scripts/orca_profile_tool.py check        --vendor <Vendor>
 
+Speed and temperature: filament presets carry speed as max volumetric speed. On 0.4 mm profiles the
+manufacturer's max print speed (converted at 0.45 mm line width x 0.2 mm layers) sets it, up to the
+highest value upstream already ships on that printer for that material; on other nozzle sizes it can
+only lower the printer profile's value. Where the manufacturer publishes speed-to-temperature bands
+(`speed_temp_bands` in the data files, currently SUNLU), the nozzle temperature comes from the band
+matching the speed that printer's default process actually runs at (Plus 4 / A1 about 250 mm/s,
+Ender-3 Pro about 45, CR-10 Smart about 40, limited by the max volumetric speed), and the first
+layer temperature from the band for the first layer speed. Bands that sit entirely below the
+product's rated range are treated as copy errors and ignored. OrcaSlicer has no in-print
+temperature-by-flow control, so printing much faster or slower than the printer's default process
+means adjusting temperature along the bands listed in each preset's notes.
+
 Machine-specific tweaks: the Ender-3 Pro presets assume the Creality Sprite Extruder (direct
 drive, 0.8 mm retraction) and a CR Touch (`M420 S1` after homing); the Plus 4 presets note the
 Phaetus Conch hotend.
@@ -65,6 +77,23 @@ applies all three (and the physical printer/host if one was saved). Stored in
 
 Setup: add the Plus 4 as a physical printer with host type Moonraker, connect it on the Device
 tab, then use the sidebar filament sync.
+
+## Quick start (Process settings > Others > Print start)
+
+"Quick start (skip Box purge)" is a process option, so it can live in a dedicated "Quick" process
+preset. The Plus 4 start G-code passes it as `PRINT_START ... QUICK=1`. With the printer-side macro
+change in `docs/shop/plus4/` (`quick_start.patch`, full file `gcode_macro.cfg.quickstart`) the
+printer then:
+
+* skips the 5-round Box flush when the slot this print needs is already loaded in the extruder, and
+  runs the full flush automatically when it is not (the nozzle-clean purge and wipe still run);
+* keeps `Z_TILT_ADJUST` (2-point gantry check) and the nozzle height measurement, skips the
+  `Z_VIBRATE` bed shake, and loads the most recently used saved bed mesh instead of probing a new
+  one (falls back to full `G29` if no mesh is saved).
+
+Before sending with Quick start on, the slicer queries the printer and warns if the filament in the
+extruder differs from the one the print starts with. QIDI firmware updates replace
+`gcode_macro.cfg`; re-apply the patch after updating.
 
 ## Sliced G-code editor (File > Export > Edit sliced G-code)
 

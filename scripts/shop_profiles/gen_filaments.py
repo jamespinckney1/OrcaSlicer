@@ -41,6 +41,9 @@ from orca_profile_tool import generate_preset_setting_id, generate_filament_id  
 # nozzles: nozzle strings that get their own file (None = one file for all)
 PRINTERS = {
     "plus4": {
+        "typ_speed": 250,          # typical wall/infill speed of the default 0.20mm Standard process
+        "first_layer_speed": 50,
+        "ref_printer": "Qidi X-Plus 4 0.4 nozzle",
         "vendor": "Qidi",
         "tag": "Qidi X-Plus 4 {noz} nozzle",
         "nozzles": ["0.2", "0.4", "0.6", "0.8"],
@@ -71,6 +74,9 @@ PRINTERS = {
         "qidi_settings_id": True,
     },
     "ender3pro": {
+        "typ_speed": 45,          # typical wall/infill speed of the default 0.20mm Standard process
+        "first_layer_speed": 20,
+        "ref_printer": "Creality Ender-3 Pro 0.4 nozzle",
         "vendor": "Creality",
         "tag": "Creality Ender-3 Pro",
         "nozzles": [None],
@@ -91,6 +97,9 @@ PRINTERS = {
         "plate_keys": ["hot_plate_temp", "textured_plate_temp", "eng_plate_temp"],
     },
     "cr10smart": {
+        "typ_speed": 40,          # typical wall/infill speed of the default 0.20mm Standard process
+        "first_layer_speed": 15,
+        "ref_printer": "Creality CR-10 Smart 0.4 nozzle",
         "vendor": "Creality",
         "tag": "Creality CR-10 Smart",
         "nozzles": [None],
@@ -111,6 +120,9 @@ PRINTERS = {
         "plate_keys": ["hot_plate_temp", "textured_plate_temp", "eng_plate_temp"],
     },
     "a1": {
+        "typ_speed": 250,          # typical wall/infill speed of the default 0.20mm Standard process
+        "first_layer_speed": 50,
+        "ref_printer": "Bambu Lab A1 0.4 nozzle",
         "vendor": "BBL",
         "tag": "BBL A1{noz_suffix}",
         "nozzles": ["0.4", "0.2"],   # 0.4 file covers 0.4/0.6/0.8 (Bambu convention)
@@ -285,7 +297,43 @@ def upstream_triple(product_name, bundles):
     return None
 
 
-def build_preset(product, printer_key, printer, noz, parent, triple=None):
+# Manufacturers quote max print speed for a 0.4 mm nozzle at ~0.45 mm line width and 0.2 mm layers.
+REF_LINE_WIDTH = 0.45
+REF_LAYER_HEIGHT = 0.20
+
+
+def speed_to_volumetric(speed_mm_s, nozzle):
+    """Manufacturer max speed -> max volumetric speed (mm3/s), scaled by nozzle area."""
+    scale = (float(nozzle) / 0.4) ** 2
+    return float(speed_mm_s) * REF_LINE_WIDTH * REF_LAYER_HEIGHT * scale
+
+
+def usable_bands(product):
+    """Manufacturer speed->temperature bands, minus bands entirely below the rated range (copy errors)."""
+    bands = product.get("speed_temp_bands") or []
+    tmin = product.get("nozzle_temp_min_c")
+    return [b for b in bands if tmin is None or b["temp_max_c"] >= tmin]
+
+
+def temp_for_speed(product, speed):
+    """Midpoint of the band containing `speed` (nearest band outside), clamped to the rated range."""
+    bands = usable_bands(product)
+    if not bands:
+        return None
+    band = bands[0]
+    for b in bands:
+        if speed >= b["speed_min_mm_s"]:
+            band = b
+    t = round5((band["temp_min_c"] + band["temp_max_c"]) / 2)
+    lo, hi = product.get("nozzle_temp_min_c"), product.get("nozzle_temp_max_c")
+    if lo is not None:
+        t = max(t, int(lo))
+    if hi is not None:
+        t = min(t, int(hi))
+    return t
+
+
+def build_preset(product, printer_key, printer, noz, parent, triple=None, parent_mvs=None, upstream_cap=None):
     name_tag = printer["tag"].format(noz=noz, noz_suffix=(f" {noz} nozzle" if noz == "0.2" else ""))
     name = f"{product['name']} @{name_tag}"
     mclass, ftype = MATERIALS[product["material"]]
@@ -321,6 +369,48 @@ def build_preset(product, printer_key, printer, noz, parent, triple=None):
         preset["chamber_temperature"] = [str(int(product["chamber_temp_c"]))]
     if product.get("density_g_cm3"):
         preset["filament_density"] = [str(product["density_g_cm3"])]
+    # Speed: filament presets carry speed as max volumetric speed. On the 0.4 mm profiles the
+    # manufacturer's rating sets it, up to the highest value upstream already runs on this printer
+    # for this material; on other nozzle sizes it can only lower the printer profile's value.
+    mvs_note = None
+    final_mvs = parent_mvs
+    if product.get("print_speed_max_mm_s"):
+        derived = speed_to_volumetric(product["print_speed_max_mm_s"], noz or "0.4")
+        shared_04 = noz in (None, "0.4")
+        if parent_mvs is not None:
+            cap = max(parent_mvs, upstream_cap or 0) if shared_04 else parent_mvs
+            target = min(derived, cap)
+            if abs(target - parent_mvs) >= 0.05:
+                final_mvs = round(target, 1)
+                preset["filament_max_volumetric_speed"] = [f"{final_mvs:g}"]
+                verb = "raised" if final_mvs > parent_mvs else "lowered"
+                mvs_note = (f"Max volumetric speed {verb} to {final_mvs:g} mm3/s (printer profile {parent_mvs:g}) "
+                            f"from the manufacturer's {product['print_speed_max_mm_s']} mm/s rating"
+                            + (f", capped at {cap:g} for this printer." if target < derived else "."))
+            else:
+                mvs_note = f"Max volumetric speed {parent_mvs:g} mm3/s matches the manufacturer's rating for this printer."
+
+    # Temperature by speed: pick the manufacturer's band for the speed this printer will actually
+    # print at (its default process speed, limited by the max volumetric speed above).
+    temp_note = None
+    if usable_bands(product):
+        ref_area = REF_LINE_WIDTH * REF_LAYER_HEIGHT * ((float(noz or "0.4") / 0.4) ** 2)
+        eff = printer["typ_speed"]
+        if final_mvs:
+            eff = min(eff, final_mvs / ref_area)
+        t_main = temp_for_speed(product, eff)
+        t_first = temp_for_speed(product, printer["first_layer_speed"])
+        if t_main is not None:
+            t_main = min(t_main, printer["max_nozzle_temp"])
+            preset["nozzle_temperature"] = [str(t_main)]
+        if t_first is not None:
+            t_first = min(t_first, printer["max_nozzle_temp"])
+            preset["nozzle_temperature_initial_layer"] = [str(t_first)]
+        bands_txt = "; ".join(f"{b['temp_min_c']}-{b['temp_max_c']} C at {b['speed_min_mm_s']}-{b['speed_max_mm_s']} mm/s"
+                              for b in usable_bands(product))
+        temp_note = (f"Temperature set for ~{eff:.0f} mm/s on this printer: {t_main} C (first layer {t_first} C). "
+                     f"Manufacturer bands: {bands_txt}. Printing much faster or slower than this printer's "
+                     f"default process? Adjust the nozzle temperature along those bands.")
     if product.get("fan_pct") is not None:
         preset["fan_max_speed"] = [str(int(product["fan_pct"]))]
         preset["fan_min_speed"] = [str(int(product["fan_pct"]))]
@@ -335,6 +425,10 @@ def build_preset(product, printer_key, printer, noz, parent, triple=None):
         notes.append(f"Dry {product['drying_temp_c']} C" + (f" for {hrs} h." if hrs else "."))
     if product.get("print_speed_max_mm_s"):
         notes.append(f"Manufacturer max speed {product['print_speed_max_mm_s']} mm/s.")
+    if mvs_note:
+        notes.append(mvs_note)
+    if temp_note:
+        notes.append(temp_note)
     if (mclass in ABRASIVE_CLASSES or product.get("abrasive")) and not printer["hardened"]:
         notes.append("ABRASIVE: fit a hardened nozzle on this printer first.")
     if product.get("enclosure_recommended") and not printer["enclosed"]:
@@ -365,6 +459,24 @@ def main():
     bundles = {v: Bundle(v) for v in vendor_names}
     ofl = Bundle("OrcaFilamentLibrary")
     written, skipped = [], []
+
+    # Highest max volumetric speed upstream already ships per (printer, filament_type) on the 0.4 nozzle.
+    upstream_caps = {}
+    for pkey, printer in PRINTERS.items():
+        b = bundles[printer["vendor"]]
+        caps = {}
+        for name in list(b.paths):
+            d = b.get(name)
+            if not d or d.get("instantiation") != "true" or printer["ref_printer"] not in (d.get("compatible_printers") or []):
+                continue
+            ftype, mv = b.resolve(name, "filament_type"), b.resolve(name, "filament_max_volumetric_speed")
+            try:
+                mv = float(mv)
+            except (TypeError, ValueError):
+                continue
+            if ftype:
+                caps[ftype] = max(caps.get(ftype, 0.0), mv)
+        upstream_caps[pkey] = caps
 
     for bf in brand_files:
         data = json.loads(bf.read_text())
@@ -413,7 +525,14 @@ def main():
                     if own_base in vendor_names[vendor]:
                         parent = own_base
                     triple = upstream_triple(product["name"], [bundles[vendor], ofl])
-                    name, preset = build_preset(product, pkey, printer, noz, parent, triple)
+                    raw_mvs = bundles[vendor].resolve(parent, "filament_max_volumetric_speed")
+                    try:
+                        parent_mvs = float(raw_mvs) if raw_mvs not in (None, "", "nil") else None
+                    except ValueError:
+                        parent_mvs = None
+                    ftype_for_cap = triple[1] if triple else refine_type(product, MATERIALS[product["material"]][1])
+                    cap = upstream_caps[pkey].get(ftype_for_cap)
+                    name, preset = build_preset(product, pkey, printer, noz, parent, triple, parent_mvs, cap)
                     tag = name.partition(" @")[2]
                     existing = find_existing(vendor_names[vendor], product["name"], tag)
                     if existing:
