@@ -1,5 +1,5 @@
 --- gcode_macro.cfg.current	2026-10-10 12:09:04
-+++ gcode_macro.cfg.v2	2026-10-10 14:57:46
++++ gcode_macro.cfg.v3	2026-10-10 15:24:18
 @@ -261,6 +261,8 @@
      {% set hotendtemp = params.HOTEND|int %}
      {% set chambertemp = params.CHAMBER|default(0)|int %}
@@ -38,7 +38,7 @@
      G0 Z50 F600
      G0 X5 Y5  F6000
      
-@@ -1079,4 +1092,74 @@
+@@ -1079,4 +1092,80 @@
      G4 P1000
      G1 Z4
      G90
@@ -53,10 +53,12 @@
 +#
 +# QUICK_MESH: QIDI's own G29 "leveling off" path (home, measure nozzle height, load the full-bed
 +# "default" mesh) without the Z_VIBRATE bed shake. Never loads the part-scoped "kamp" mesh, which
-+# only covers the previous part's footprint. Falls back to full leveling when no full mesh exists.
++# only covers the previous part's footprint. Only trusts a "default" mesh built by SHOP_FULL_MESH
++# (captured after Z_TILT_ADJUST, like a normal start); otherwise runs full leveling.
 +[gcode_macro QUICK_MESH]
 +gcode:
-+    {% if 'default' in printer.bed_mesh.profiles %}
++    {% set trusted = printer.save_variables.variables.shop_full_mesh_ok|default(0)|int == 1 %}
++    {% if trusted and 'default' in printer.bed_mesh.profiles %}
 +        {% set temp = printer["heater_generic chamber"].target %}
 +        M141 S0
 +        {% if temp > 0 %}
@@ -70,7 +72,7 @@
 +        SAVE_VARIABLE VARIABLE=profile_name VALUE='"default"'
 +        M118 Quick start: loaded full-bed mesh default
 +    {% else %}
-+        M118 Quick start: no full-bed mesh saved, running full leveling
++        M118 Quick start: no full-bed mesh from SHOP_FULL_MESH yet, running full leveling
 +        G29
 +    {% endif %}
 +
@@ -94,8 +96,9 @@
 +    TOGGLE_CHAMBER_FAN
 +
 +# Rebuilds the full-bed "default" mesh that quick start loads (81 points, several minutes).
-+# Same sequence QIDI's G29 uses to create it. Run it after a plate change or every few weeks:
-+#   SHOP_FULL_MESH BED=80
++# Same order as a normal start (home, Z_TILT_ADJUST, home, nozzle height, mesh), so the mesh is
++# consistent with the gantry levelling quick start runs first. Run it after a plate change or
++# every few weeks:   SHOP_FULL_MESH BED=80
 +[gcode_macro SHOP_FULL_MESH]
 +description: Rebuild the full-bed default mesh used by quick start
 +gcode:
@@ -104,6 +107,8 @@
 +    M190 S{bed}
 +    BED_MESH_CLEAR
 +    G28
++    Z_TILT_ADJUST
++    G28
 +    get_zoffset
 +    G1 X{150 - printer.probe["x_offset"]} Y{150 - printer.probe["y_offset"]} F9000
 +    G1 Z10 F600
@@ -111,6 +116,7 @@
 +    SAVE_Z_OFFSET_TO_BED_MESH
 +    G1 Z10 F600
 +    _BED_MESH_CALIBRATE PROFILE=default
++    SAVE_VARIABLE VARIABLE=shop_full_mesh_ok VALUE=1
 +    G4 P5000
 +    SAVE_CONFIG_QD
 +    M140 S0

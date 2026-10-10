@@ -103,8 +103,12 @@ Printer side (`docs/shop/plus4/quick_start.patch`, full file `gcode_macro.cfg.qu
 `QUICK=1`, `FLUSH=0` skips the 5-round Box flush (the nozzle-clean purge and wipe still run) and
 `FLUSH=1` or no FLUSH runs it. Leveling keeps `Z_TILT_ADJUST` and the nozzle height measurement,
 skips the `Z_VIBRATE` bed shake, and loads the full-bed `default` mesh (never the part-scoped
-`kamp` mesh, which only covers the previous part). `SHOP_FULL_MESH BED=80` rebuilds that full-bed
-mesh; run it after a plate change or every few weeks, from the printer console or from the
+`kamp` mesh, which only covers the previous part), but only once `SHOP_FULL_MESH` has built it
+(saved variable `shop_full_mesh_ok`); until then quick start runs normal leveling. A mesh must be
+captured after `Z_TILT_ADJUST`, like a normal start, or the gantry tilt is applied twice; QIDI's
+stock `default` mesh on this printer was not (0.68 mm left-right tilt along the Z-tilt probe line).
+`SHOP_FULL_MESH BED=80` homes, runs `Z_TILT_ADJUST`, measures the nozzle and probes 81 points;
+run it run it after a plate change or every few weeks, from the printer console or from the
 Device tab's shop toolbar (Rebuild full-bed mesh, which checks the printer is idle, asks for the
 bed temperature and runs the macro in the background). QIDI firmware updates replace
 `gcode_macro.cfg`; re-apply the patch after updating. The original file is kept on the printer as
