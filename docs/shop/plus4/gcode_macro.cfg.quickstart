@@ -262,6 +262,7 @@ gcode:
     {% set chambertemp = params.CHAMBER|default(0)|int %}
     {% set extruder = params.EXTRUDER|default(0)|int %}
     {% set quick = params.QUICK|default(0)|int %}
+    {% set flush = params.FLUSH|default(1)|int %}
     set_zoffset
     M104 S0
 
@@ -285,19 +286,13 @@ gcode:
         {% endfor %}
         SAVE_VARIABLE VARIABLE=extrude_state VALUE=-1
         {% if printer.save_variables.variables.enable_box == 1 %}
-            {% set target_slot = printer.save_variables.variables['value_t' ~ extruder]|default('slot' ~ extruder) %}
-            {% set mcc = printer['multi_color_controller'] %}
-            {% set already_loaded = false %}
-            {% if 'slots' in mcc and 'states' in mcc.slots and target_slot in mcc.slots.states %}
-                {% set already_loaded = (mcc.slots.states[target_slot]|int == 2) %}
-            {% endif %}
             BOX_PRINT_START EXTRUDER={extruder} HOTENDTEMP={hotendtemp}
             M400
-            {% if quick == 1 and already_loaded %}
-                M118 Quick start: {target_slot} already loaded, skipping Box flush
+            {% if quick == 1 and flush == 0 %}
+                M118 Quick start: same filament as the last print, skipping Box flush
             {% else %}
                 {% if quick == 1 %}
-                    M118 Quick start: filament changed ({target_slot} not loaded), running full flush
+                    M118 Quick start: filament changed or unknown, running full flush
                 {% endif %}
                 EXTRUSION_AND_FLUSH HOTEND={hotendtemp}
             {% endif %}
@@ -1100,14 +1095,16 @@ gcode:
  
 
 
-# ---- Print-shop quick start (QUICK=1 from the slicer) ----------------------------------------
-# Same as QIDI's G29 "leveling off" branch (home, measure nozzle height, load a saved mesh),
-# but skips Z_VIBRATE and loads the most recently used mesh profile. Falls back to G29 when no
-# saved mesh exists.
+# ---- Print-shop quick start (QUICK=1 FLUSH=0|1 from the slicer) ------------------------------
+# The slicer remembers which filament the last print it sent started with and passes FLUSH=0 when
+# this print starts with the same filament, FLUSH=1 when it changed or is unknown.
+#
+# QUICK_MESH: QIDI's own G29 "leveling off" path (home, measure nozzle height, load the full-bed
+# "default" mesh) without the Z_VIBRATE bed shake. Never loads the part-scoped "kamp" mesh, which
+# only covers the previous part's footprint. Falls back to full leveling when no full mesh exists.
 [gcode_macro QUICK_MESH]
 gcode:
-    {% set name = printer.save_variables.variables.profile_name|default('kamp') %}
-    {% if name in printer.bed_mesh.profiles %}
+    {% if 'default' in printer.bed_mesh.profiles %}
         {% set temp = printer["heater_generic chamber"].target %}
         M141 S0
         {% if temp > 0 %}
@@ -1117,10 +1114,11 @@ gcode:
         G28
         QUICK_ZOFFSET
         M141 S{temp}
-        BED_MESH_PROFILE LOAD={name}
-        M118 Quick start: loaded saved bed mesh {name}
+        BED_MESH_PROFILE LOAD=default
+        SAVE_VARIABLE VARIABLE=profile_name VALUE='"default"'
+        M118 Quick start: loaded full-bed mesh default
     {% else %}
-        M118 Quick start: no saved bed mesh, running full leveling
+        M118 Quick start: no full-bed mesh saved, running full leveling
         G29
     {% endif %}
 
@@ -1142,3 +1140,26 @@ gcode:
     QIDI_PROBE_PIN_2
     m204 S10000
     TOGGLE_CHAMBER_FAN
+
+# Rebuilds the full-bed "default" mesh that quick start loads (81 points, several minutes).
+# Same sequence QIDI's G29 uses to create it. Run it after a plate change or every few weeks:
+#   SHOP_FULL_MESH BED=80
+[gcode_macro SHOP_FULL_MESH]
+description: Rebuild the full-bed default mesh used by quick start
+gcode:
+    {% set bed = params.BED|default(80)|int %}
+    M118 Rebuilding full-bed mesh at bed {bed} C
+    M190 S{bed}
+    BED_MESH_CLEAR
+    G28
+    get_zoffset
+    G1 X{150 - printer.probe["x_offset"]} Y{150 - printer.probe["y_offset"]} F9000
+    G1 Z10 F600
+    probe
+    SAVE_Z_OFFSET_TO_BED_MESH
+    G1 Z10 F600
+    _BED_MESH_CALIBRATE PROFILE=default
+    G4 P5000
+    SAVE_CONFIG_QD
+    M140 S0
+    M118 Full-bed mesh saved as default

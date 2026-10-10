@@ -246,6 +246,7 @@
 #include "QidiBoxDialog.hpp"
 #include "GCodeEditDialog.hpp"
 #include "EnvisionInbox.hpp"
+#include "ShopPrintHistory.hpp"
 #include <wx/textdlg.h>
 #include "Widgets/MultiNozzleSync.hpp"           // NozzleOption, tryPopUpMultiNozzleDialog, setExtruderNozzleCount
 #include "DeviceCore/DevNozzleSystem.h"          // DevNozzle, GetExtNozzles / GetRackNozzles
@@ -19453,74 +19454,36 @@ void Plater::send_to_printer(bool isall)
 }
 
 //BBS export gcode 3mf to file
-bool Plater::check_quick_start_filament()
+// ---- Print-shop: Quick start purge decision -------------------------------------------------
+
+// Which printer a print goes to: the selected physical printer's host, else the connected
+// device's IP, else the printer preset name.
+static std::string shop_printer_key()
 {
     PresetBundle& bundle = *wxGetApp().preset_bundle;
-    const DynamicPrintConfig full = bundle.full_config();
-    if (!full.has("shop_quick_start") || !full.opt_bool("shop_quick_start"))
-        return true;
-
-    // Printer address: the selected physical printer's host, else the connected device's IP.
-    std::string host;
-    if (bundle.physical_printers.has_selection())
-        host = bundle.physical_printers.get_selected_printer().config.opt_string("print_host");
-    if (host.empty())
-        if (auto* dm = wxGetApp().getDeviceManager())
-            if (MachineObject* obj = dm->get_selected_machine())
-                host = obj->get_dev_ip();
-    if (host.empty())
-        return true;
-    if (host.find("://") == std::string::npos)
-        host = "http://" + host;
-    while (!host.empty() && host.back() == '/')
-        host.pop_back();
-
-    auto query = [](const std::string& base, std::string& body) {
-        bool ok = false;
-        Http::get(base + "/printer/objects/query?multi_color_controller")
-            .timeout_connect(3)
-            .timeout_max(5)
-            .on_complete([&](std::string b, unsigned status) { if (status == 200) { body = std::move(b); ok = true; } })
-            .on_error([&](std::string, std::string, unsigned) {})
-            .perform_sync();
-        return ok;
-    };
-    std::string body;
-    const bool has_port = host.find(':', host.find("://") + 3) != std::string::npos;
-    if (!query(host, body) && !(has_port || !query(host + ":7125", body)))
-        return true; // printer unreachable: do not block printing
-
-    auto j = nlohmann::json::parse(body, nullptr, false, true);
-    if (j.is_discarded() || !j.contains("result") || !j["result"].contains("status") ||
-        !j["result"]["status"].contains("multi_color_controller"))
-        return true; // not a QIDI Box printer
-    const auto& mcc = j["result"]["status"]["multi_color_controller"];
-    if (!mcc.contains("slots") || !mcc["slots"].is_object())
-        return true;
-    const auto& slots = mcc["slots"];
-
-    // What is in the extruder now: the slot whose state is 2 (loaded).
-    std::string loaded_slot, loaded_type, loaded_color;
-    if (slots.contains("states") && slots["states"].is_object())
-        for (auto it = slots["states"].begin(); it != slots["states"].end(); ++it) {
-            const auto& v = it.value();
-            const int st = v.is_number() ? v.get<int>() : (v.is_string() ? std::atoi(v.get<std::string>().c_str()) : 0);
-            if (st == 2) { loaded_slot = it.key(); break; }
-        }
-    if (!loaded_slot.empty() && slots.contains("materials") && slots["materials"].contains(loaded_slot) &&
-        slots["materials"][loaded_slot].is_object()) {
-        const auto& m = slots["materials"][loaded_slot];
-        if (m.contains("filament") && m["filament"].is_object() && m["filament"].contains("type") && m["filament"]["type"].is_string())
-            loaded_type = m["filament"]["type"].get<std::string>();
-        if (m.contains("color") && m["color"].is_string())
-            loaded_color = m["color"].get<std::string>();
+    if (bundle.physical_printers.has_selection()) {
+        const std::string host = bundle.physical_printers.get_selected_printer().config.opt_string("print_host");
+        if (!host.empty())
+            return host;
     }
+    if (auto* dm = wxGetApp().getDeviceManager())
+        if (MachineObject* obj = dm->get_selected_machine())
+            if (!obj->get_dev_ip().empty())
+                return obj->get_dev_ip();
+    return bundle.printers.get_selected_preset_name();
+}
 
-    // What this plate starts with: the first T<n> in the sliced G-code (the start G-code's T[initial_tool]).
+// The filament the current plate starts with: the first T<n> in its sliced G-code.
+static std::optional<ShopFilamentRecord> shop_first_filament(PartPlate* plate)
+{
+    if (!plate)
+        return std::nullopt;
+    PresetBundle& bundle = *wxGetApp().preset_bundle;
     int first_tool = 0;
-    if (PartPlate* plate = p->partplate_list.get_curr_plate()) {
-        const std::string path = plate->get_tmp_gcode_path();
-        boost::nowide::ifstream in(path);
+    {
+        boost::nowide::ifstream in(plate->get_tmp_gcode_path());
+        if (!in)
+            return std::nullopt;
         std::string line;
         for (int n = 0; n < 20000 && std::getline(in, line); ++n) {
             if (line.size() >= 2 && line[0] == 'T' && std::isdigit((unsigned char) line[1])) {
@@ -19531,36 +19494,91 @@ bool Plater::check_quick_start_filament()
                 break;
         }
     }
-    std::string want_type, want_color;
-    if (first_tool >= 0 && size_t(first_tool) < bundle.filament_presets.size()) {
-        if (const Preset* fil = bundle.filaments.find_preset(bundle.filament_presets[first_tool], false))
-            if (auto* ft = fil->config.option<ConfigOptionStrings>("filament_type"); ft && !ft->values.empty())
-                want_type = ft->values.front();
-        if (auto* col = bundle.project_config.option<ConfigOptionStrings>("filament_colour"); col && size_t(first_tool) < col->values.size())
-            want_color = col->values[first_tool];
-    }
+    if (first_tool < 0 || size_t(first_tool) >= bundle.filament_presets.size())
+        return std::nullopt;
+    ShopFilamentRecord r;
+    r.preset = bundle.filament_presets[first_tool];
+    if (const Preset* fil = bundle.filaments.find_preset(r.preset, false))
+        if (auto* ft = fil->config.option<ConfigOptionStrings>("filament_type"); ft && !ft->values.empty())
+            r.type = ft->values.front();
+    if (auto* col = bundle.project_config.option<ConfigOptionStrings>("filament_colour"); col && size_t(first_tool) < col->values.size())
+        r.color = col->values[first_tool];
+    return r;
+}
 
-    auto norm_color = [](std::string c) {
-        c.erase(std::remove(c.begin(), c.end(), '#'), c.end());
-        if (c.size() > 6) c = c.substr(0, 6);
-        boost::algorithm::to_upper(c);
-        return c;
-    };
-    const bool same = !loaded_slot.empty() && boost::iequals(loaded_type, want_type) &&
-                      norm_color(loaded_color) == norm_color(want_color);
-    if (same)
+// Adds or replaces FLUSH=<n> on the first PRINT_START line of a G-code file.
+static bool set_print_start_flush(const std::string& path, int flush)
+{
+    std::string text;
+    {
+        boost::nowide::ifstream in(path, std::ios::binary);
+        if (!in)
+            return false;
+        std::ostringstream ss;
+        ss << in.rdbuf();
+        text = ss.str();
+    }
+    size_t pos = (text.rfind("PRINT_START", 0) == 0) ? 0 : text.find("\nPRINT_START");
+    if (pos == std::string::npos || pos > 4 * 1024 * 1024)
+        return false;
+    if (text[pos] == '\n')
+        ++pos;
+    size_t eol = text.find('\n', pos);
+    if (eol == std::string::npos)
+        eol = text.size();
+    std::string line = text.substr(pos, eol - pos);
+    if (!line.empty() && line.back() == '\r')
+        line.pop_back(), --eol;
+    const std::regex flush_re(R"(\s+FLUSH=\d+)");
+    line = std::regex_replace(line, flush_re, "");
+    line += " FLUSH=" + std::to_string(flush);
+    text.replace(pos, eol - pos, line);
+    boost::nowide::ofstream out(path, std::ios::binary | std::ios::trunc);
+    out.write(text.data(), std::streamsize(text.size()));
+    return bool(out);
+}
+
+bool Plater::check_quick_start_filament()
+{
+    const DynamicPrintConfig full = wxGetApp().preset_bundle->full_config();
+    if (!full.has("shop_quick_start") || !full.opt_bool("shop_quick_start"))
+        return true;
+    PartPlate* plate = p->partplate_list.get_curr_plate();
+    const auto now  = shop_first_filament(plate);
+    if (!plate || !now)
         return true;
 
-    const wxString have = loaded_slot.empty() ? _L("nothing loaded in the extruder")
-                                              : format_wxstr("%1% %2% (%3%)", from_u8(loaded_type), from_u8(loaded_color), from_u8(loaded_slot));
-    const wxString want = format_wxstr("%1% %2% (T%3%)", from_u8(want_type), from_u8(want_color), first_tool);
-    MessageDialog dlg(this,
-                      format_wxstr(_L("Quick start is on, but the printer has %1% and this print starts with %2%.\n\n"
-                                      "The printer will run its full purge because the filament changed, so the start will not be quick. "
-                                      "Continue?"), have, want),
-                      _L("Quick start"), wxICON_WARNING | wxOK | wxCANCEL);
-    dlg.SetButtonLabel(wxID_OK, _L("Print anyway"));
-    return dlg.ShowModal() == wxID_OK;
+    const std::string key  = shop_printer_key();
+    const auto        last = ShopPrintHistory::last_filament(key);
+    int flush = 1; // unknown history: purge fully
+    if (last && last->same_filament(*now)) {
+        flush = 0;
+    } else if (last) {
+        MessageDialog dlg(this,
+                          format_wxstr(_L("Quick start: the last print sent to this printer started with\n    %1%  %2%  (%3%)\n"
+                                          "and this print starts with\n    %4%  %5%  (%6%).\n\n"
+                                          "A full purge is recommended when the filament changes."),
+                                       from_u8(last->preset), from_u8(last->color), from_u8(last->when),
+                                       from_u8(now->preset), from_u8(now->color), _L("now")),
+                          _L("Quick start"), wxICON_WARNING | wxYES_NO | wxCANCEL);
+        dlg.SetButtonLabel(wxID_YES, _L("Full purge"));
+        dlg.SetButtonLabel(wxID_NO, _L("Quick purge anyway"));
+        const int res = dlg.ShowModal();
+        if (res == wxID_CANCEL)
+            return false;
+        flush = (res == wxID_NO) ? 0 : 1;
+    }
+    if (!set_print_start_flush(plate->get_tmp_gcode_path(), flush))
+        BOOST_LOG_TRIVIAL(warning) << "Quick start: could not write FLUSH into the sliced G-code";
+    BOOST_LOG_TRIVIAL(info) << "Quick start: printer " << key << " FLUSH=" << flush
+                            << (last ? " last=" + last->preset + " " + last->color : std::string(" (no previous print recorded)"));
+    return true;
+}
+
+void Plater::record_shop_print_filament()
+{
+    if (const auto now = shop_first_filament(p->partplate_list.get_curr_plate()))
+        ShopPrintHistory::store_last_filament(shop_printer_key(), *now);
 }
 
 void Plater::open_envision_send(const std::string& model_path)
@@ -21167,6 +21185,7 @@ void Plater::send_gcode_legacy(int plate_idx, Export3mfProgressFn proFn)
         upload_job.upload_data.source_path = p->m_print_job_data._3mf_path;
     }
 
+    record_shop_print_filament(); // Print-shop: remember what this printer last printed
     p->export_gcode(fs::path(), false, std::move(upload_job));
 }
 int Plater::send_gcode(int plate_idx, Export3mfProgressFn proFn)

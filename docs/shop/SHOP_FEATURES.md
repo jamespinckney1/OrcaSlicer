@@ -88,19 +88,25 @@ tab, then use the sidebar filament sync.
 ## Quick start (Process settings > Others > Print start)
 
 "Quick start (skip Box purge)" is a process option, so it can live in a dedicated "Quick" process
-preset. The Plus 4 start G-code passes it as `PRINT_START ... QUICK=1`. With the printer-side macro
-change in `docs/shop/plus4/` (`quick_start.patch`, full file `gcode_macro.cfg.quickstart`) the
-printer then:
+preset. The Plus 4 start G-code passes it as `PRINT_START ... QUICK=1`.
 
-* skips the 5-round Box flush when the slot this print needs is already loaded in the extruder, and
-  runs the full flush automatically when it is not (the nozzle-clean purge and wipe still run);
-* keeps `Z_TILT_ADJUST` (2-point gantry check) and the nozzle height measurement, skips the
-  `Z_VIBRATE` bed shake, and loads the most recently used saved bed mesh instead of probing a new
-  one (falls back to full `G29` if no mesh is saved).
+Purge decision (slicer side): every print sent from this slicer, by either send path, records the
+filament preset and colour it starts with, per printer (`shop/last_print_filament.json`, keyed by
+the physical printer host or device IP). With Quick start on, Print plate compares the new print's
+first filament with that record. Same filament: `FLUSH=0`, no prompt. Different filament: a warning
+naming both, with Full purge (default) / Quick purge anyway / Cancel. No record yet: `FLUSH=1`.
+The decision is written into the sliced G-code's `PRINT_START` line before it is sent. Whether the
+Box unloaded at the end of the last print does not matter. Prints started outside this slicer do
+not update the record.
 
-Before sending with Quick start on, the slicer queries the printer and warns if the filament in the
-extruder differs from the one the print starts with. QIDI firmware updates replace
-`gcode_macro.cfg`; re-apply the patch after updating.
+Printer side (`docs/shop/plus4/quick_start.patch`, full file `gcode_macro.cfg.quickstart`): with
+`QUICK=1`, `FLUSH=0` skips the 5-round Box flush (the nozzle-clean purge and wipe still run) and
+`FLUSH=1` or no FLUSH runs it. Leveling keeps `Z_TILT_ADJUST` and the nozzle height measurement,
+skips the `Z_VIBRATE` bed shake, and loads the full-bed `default` mesh (never the part-scoped
+`kamp` mesh, which only covers the previous part). `SHOP_FULL_MESH BED=80` rebuilds that full-bed
+mesh; run it after a plate change or every few weeks. QIDI firmware updates replace
+`gcode_macro.cfg`; re-apply the patch after updating. The original file is kept on the printer as
+`gcode_macro.cfg.bak-quickstart-2026-10-10`.
 
 ## 3D Envision hand-off (Send to Slicer)
 

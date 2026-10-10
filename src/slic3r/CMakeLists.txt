@@ -167,6 +167,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/GCodeEditDialog.hpp
     GUI/EnvisionInbox.cpp
     GUI/EnvisionInbox.hpp
+    GUI/ShopPrintHistory.cpp
+    GUI/ShopPrintHistory.hpp
     GUI/ShopCalibration.cpp
     GUI/ShopCalibration.hpp
     GUI/CalibrationLogDialog.cpp

@@ -620,9 +620,12 @@ public:
      * -2: send all gcode to target machine */
     int send_gcode(int plate_idx = -1, Export3mfProgressFn proFn = nullptr);
     void send_gcode_legacy(int plate_idx = -1, Export3mfProgressFn proFn = nullptr);
-    // Print-shop: with Quick start on, compare the filament loaded in a QIDI Box printer's extruder
-    // with the filament this plate starts with; warn on mismatch. Returns false if the user cancels.
+    // Print-shop: with Quick start on, compare the filament this plate starts with against the one
+    // the last print sent to this printer started with, ask on a change, and write the decision into
+    // the sliced G-code as PRINT_START ... FLUSH=0|1. Returns false if the user cancels.
     bool check_quick_start_filament();
+    // Print-shop: remember the filament this plate starts with as the printer's last print.
+    void record_shop_print_filament();
     int export_config_3mf(int plate_idx = -1, Export3mfProgressFn proFn = nullptr);
     //BBS jump to nonitor after print job finished
     void send_calibration_job_finished(wxCommandEvent &evt);
