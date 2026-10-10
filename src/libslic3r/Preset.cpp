@@ -1334,6 +1334,7 @@ static std::vector<std::string> s_Preset_print_options{
     "tree_support_branch_diameter_angle",
     "detect_narrow_internal_solid_infill",
     "gcode_add_line_number",
+    "shop_quick_start",
     "enable_arc_fitting",
     "precise_z_height",
     "infill_combination",

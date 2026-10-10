@@ -242,6 +242,7 @@ bool Print::invalidate_state_by_config_options(const ConfigOptionResolver & /* n
         "hot_plate_temp_initial_layer",
         "textured_plate_temp_initial_layer",
         "gcode_add_line_number",
+        "shop_quick_start",
         "layer_change_gcode",
         "time_lapse_gcode",
         "wrapping_detection_gcode",

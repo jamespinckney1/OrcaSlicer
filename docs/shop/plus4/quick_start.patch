@@ -1,0 +1,98 @@
+--- gcode_macro.cfg.current	2026-10-10 12:09:04
++++ gcode_macro.cfg.patched	2026-10-10 12:22:51
+@@ -261,6 +261,7 @@
+     {% set hotendtemp = params.HOTEND|int %}
+     {% set chambertemp = params.CHAMBER|default(0)|int %}
+     {% set extruder = params.EXTRUDER|default(0)|int %}
++    {% set quick = params.QUICK|default(0)|int %}
+     set_zoffset
+     M104 S0
+ 
+@@ -284,9 +285,22 @@
+         {% endfor %}
+         SAVE_VARIABLE VARIABLE=extrude_state VALUE=-1
+         {% if printer.save_variables.variables.enable_box == 1 %}
++            {% set target_slot = printer.save_variables.variables['value_t' ~ extruder]|default('slot' ~ extruder) %}
++            {% set mcc = printer['multi_color_controller'] %}
++            {% set already_loaded = false %}
++            {% if 'slots' in mcc and 'states' in mcc.slots and target_slot in mcc.slots.states %}
++                {% set already_loaded = (mcc.slots.states[target_slot]|int == 2) %}
++            {% endif %}
+             BOX_PRINT_START EXTRUDER={extruder} HOTENDTEMP={hotendtemp}
+             M400
+-            EXTRUSION_AND_FLUSH HOTEND={hotendtemp}
++            {% if quick == 1 and already_loaded %}
++                M118 Quick start: {target_slot} already loaded, skipping Box flush
++            {% else %}
++                {% if quick == 1 %}
++                    M118 Quick start: filament changed ({target_slot} not loaded), running full flush
++                {% endif %}
++                EXTRUSION_AND_FLUSH HOTEND={hotendtemp}
++            {% endif %}
+         {% endif %}
+     {% endif %}
+     M106 S0
+@@ -295,7 +309,11 @@
+ #    M141 S{chambertemp}    
+     M104 S140
+     Z_TILT_ADJUST
+-    G29
++    {% if quick == 1 %}
++        QUICK_MESH
++    {% else %}
++        G29
++    {% endif %}
+     G0 Z50 F600
+     G0 X5 Y5  F6000
+     
+@@ -1079,4 +1097,48 @@
+     G4 P1000
+     G1 Z4
+     G90
+- 
+\ No newline at end of file
++ 
++
++
++# ---- Print-shop quick start (QUICK=1 from the slicer) ----------------------------------------
++# Same as QIDI's G29 "leveling off" branch (home, measure nozzle height, load a saved mesh),
++# but skips Z_VIBRATE and loads the most recently used mesh profile. Falls back to G29 when no
++# saved mesh exists.
++[gcode_macro QUICK_MESH]
++gcode:
++    {% set name = printer.save_variables.variables.profile_name|default('kamp') %}
++    {% if name in printer.bed_mesh.profiles %}
++        {% set temp = printer["heater_generic chamber"].target %}
++        M141 S0
++        {% if temp > 0 %}
++            G4 P15000
++        {% endif %}
++        BED_MESH_CLEAR
++        G28
++        QUICK_ZOFFSET
++        M141 S{temp}
++        BED_MESH_PROFILE LOAD={name}
++        M118 Quick start: loaded saved bed mesh {name}
++    {% else %}
++        M118 Quick start: no saved bed mesh, running full leveling
++        G29
++    {% endif %}
++
++# get_zoffset without the Z_VIBRATE bed shake. Still measures the nozzle height (5 slow touches),
++# which sets the first layer height.
++[gcode_macro QUICK_ZOFFSET]
++gcode:
++    TOGGLE_CHAMBER_FAN
++    G1 Z10 F600
++    QIDI_PROBE_PIN_1
++    m204 S50
++    G4 P500
++    probe probe_speed=5 lift_speed=5 samples=5 sample_retract_dist=5
++    move_subzoffset
++    M114
++    {% set p=(-0.11 + printer.gcode_move.homing_origin.z)|float %}
++    SET_KINEMATIC_POSITION Z={p}
++    G1 Z30 F600
++    QIDI_PROBE_PIN_2
++    m204 S10000
++    TOGGLE_CHAMBER_FAN

@@ -105,6 +105,7 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/nowide/convert.hpp>
+#include <boost/nowide/fstream.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -13756,6 +13757,8 @@ void Plater::priv::on_action_print_plate(SimpleEvent&)
     }
 
     PresetBundle& preset_bundle = *wxGetApp().preset_bundle;
+    if (!q->check_quick_start_filament())
+        return;
     if (preset_bundle.use_bbl_network() || wxGetApp().app_config->get_bool("use_printer_agents")) {
         open_machine_select_dialog(partplate_list.get_curr_plate_index());
     } else {
@@ -19438,6 +19441,116 @@ void Plater::send_to_printer(bool isall)
 }
 
 //BBS export gcode 3mf to file
+bool Plater::check_quick_start_filament()
+{
+    PresetBundle& bundle = *wxGetApp().preset_bundle;
+    const DynamicPrintConfig full = bundle.full_config();
+    if (!full.has("shop_quick_start") || !full.opt_bool("shop_quick_start"))
+        return true;
+
+    // Printer address: the selected physical printer's host, else the connected device's IP.
+    std::string host;
+    if (bundle.physical_printers.has_selection())
+        host = bundle.physical_printers.get_selected_printer().config.opt_string("print_host");
+    if (host.empty())
+        if (auto* dm = wxGetApp().getDeviceManager())
+            if (MachineObject* obj = dm->get_selected_machine())
+                host = obj->get_dev_ip();
+    if (host.empty())
+        return true;
+    if (host.find("://") == std::string::npos)
+        host = "http://" + host;
+    while (!host.empty() && host.back() == '/')
+        host.pop_back();
+
+    auto query = [](const std::string& base, std::string& body) {
+        bool ok = false;
+        Http::get(base + "/printer/objects/query?multi_color_controller")
+            .timeout_connect(3)
+            .timeout_max(5)
+            .on_complete([&](std::string b, unsigned status) { if (status == 200) { body = std::move(b); ok = true; } })
+            .on_error([&](std::string, std::string, unsigned) {})
+            .perform_sync();
+        return ok;
+    };
+    std::string body;
+    const bool has_port = host.find(':', host.find("://") + 3) != std::string::npos;
+    if (!query(host, body) && !(has_port || !query(host + ":7125", body)))
+        return true; // printer unreachable: do not block printing
+
+    auto j = nlohmann::json::parse(body, nullptr, false, true);
+    if (j.is_discarded() || !j.contains("result") || !j["result"].contains("status") ||
+        !j["result"]["status"].contains("multi_color_controller"))
+        return true; // not a QIDI Box printer
+    const auto& mcc = j["result"]["status"]["multi_color_controller"];
+    if (!mcc.contains("slots") || !mcc["slots"].is_object())
+        return true;
+    const auto& slots = mcc["slots"];
+
+    // What is in the extruder now: the slot whose state is 2 (loaded).
+    std::string loaded_slot, loaded_type, loaded_color;
+    if (slots.contains("states") && slots["states"].is_object())
+        for (auto it = slots["states"].begin(); it != slots["states"].end(); ++it) {
+            const auto& v = it.value();
+            const int st = v.is_number() ? v.get<int>() : (v.is_string() ? std::atoi(v.get<std::string>().c_str()) : 0);
+            if (st == 2) { loaded_slot = it.key(); break; }
+        }
+    if (!loaded_slot.empty() && slots.contains("materials") && slots["materials"].contains(loaded_slot) &&
+        slots["materials"][loaded_slot].is_object()) {
+        const auto& m = slots["materials"][loaded_slot];
+        if (m.contains("filament") && m["filament"].is_object() && m["filament"].contains("type") && m["filament"]["type"].is_string())
+            loaded_type = m["filament"]["type"].get<std::string>();
+        if (m.contains("color") && m["color"].is_string())
+            loaded_color = m["color"].get<std::string>();
+    }
+
+    // What this plate starts with: the first T<n> in the sliced G-code (the start G-code's T[initial_tool]).
+    int first_tool = 0;
+    if (PartPlate* plate = p->partplate_list.get_curr_plate()) {
+        const std::string path = plate->get_tmp_gcode_path();
+        boost::nowide::ifstream in(path);
+        std::string line;
+        for (int n = 0; n < 20000 && std::getline(in, line); ++n) {
+            if (line.size() >= 2 && line[0] == 'T' && std::isdigit((unsigned char) line[1])) {
+                first_tool = std::atoi(line.c_str() + 1);
+                break;
+            }
+            if (line.rfind(";LAYER_CHANGE", 0) == 0)
+                break;
+        }
+    }
+    std::string want_type, want_color;
+    if (first_tool >= 0 && size_t(first_tool) < bundle.filament_presets.size()) {
+        if (const Preset* fil = bundle.filaments.find_preset(bundle.filament_presets[first_tool], false))
+            if (auto* ft = fil->config.option<ConfigOptionStrings>("filament_type"); ft && !ft->values.empty())
+                want_type = ft->values.front();
+        if (auto* col = bundle.project_config.option<ConfigOptionStrings>("filament_colour"); col && size_t(first_tool) < col->values.size())
+            want_color = col->values[first_tool];
+    }
+
+    auto norm_color = [](std::string c) {
+        c.erase(std::remove(c.begin(), c.end(), '#'), c.end());
+        if (c.size() > 6) c = c.substr(0, 6);
+        boost::algorithm::to_upper(c);
+        return c;
+    };
+    const bool same = !loaded_slot.empty() && boost::iequals(loaded_type, want_type) &&
+                      norm_color(loaded_color) == norm_color(want_color);
+    if (same)
+        return true;
+
+    const wxString have = loaded_slot.empty() ? _L("nothing loaded in the extruder")
+                                              : format_wxstr("%1% %2% (%3%)", from_u8(loaded_type), from_u8(loaded_color), from_u8(loaded_slot));
+    const wxString want = format_wxstr("%1% %2% (T%3%)", from_u8(want_type), from_u8(want_color), first_tool);
+    MessageDialog dlg(this,
+                      format_wxstr(_L("Quick start is on, but the printer has %1% and this print starts with %2%.\n\n"
+                                      "The printer will run its full purge because the filament changed, so the start will not be quick. "
+                                      "Continue?"), have, want),
+                      _L("Quick start"), wxICON_WARNING | wxOK | wxCANCEL);
+    dlg.SetButtonLabel(wxID_OK, _L("Print anyway"));
+    return dlg.ShowModal() == wxID_OK;
+}
+
 void Plater::edit_sliced_gcode()
 {
     PartPlate* plate = p->partplate_list.get_curr_plate();

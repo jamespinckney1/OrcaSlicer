@@ -4348,6 +4348,15 @@ void PrintConfigDef::init_fff_params()
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionBool(0));
     // BBS
+    // Print-shop: lets PRINT_START skip the long purge sequence (QUICK=1).
+    def = this->add("shop_quick_start", coBool);
+    def->label = L("Quick start (skip Box purge)");
+    def->tooltip = L("Pass QUICK=1 to the printer's PRINT_START macro so it skips the long filament flush "
+                     "before printing. The nozzle wipe and the purge line on the bed still run. "
+                     "Available in G-code as [shop_quick_start]. Requires a PRINT_START macro that reads QUICK.");
+    def->mode = comSimple;
+    def->set_default_value(new ConfigOptionBool(false));
+
     def = this->add("gcode_add_line_number", coBool);
     def->label = L("Add line number");
     def->tooltip = L("Enable this to add line number(Nx) at the beginning of each G-code line.");
