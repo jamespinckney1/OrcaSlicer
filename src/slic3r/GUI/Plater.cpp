@@ -865,6 +865,7 @@ struct ExtruderGroup : StaticBox
 struct Sidebar::priv
 {
     Plater *plater;
+    Sidebar *q = nullptr; // owning sidebar; set first thing in Sidebar::Sidebar (Plater::sidebar() is not valid yet then)
 
     // Print-shop machine switcher (row above the printer preset).
     wxBoxSizer*              hsizer_shop_printer = nullptr;
@@ -1071,18 +1072,18 @@ void Sidebar::priv::layout_printer(bool isBBL, bool isDual)
                 const int sel = combo_shop_printer->GetSelection();
                 // Deferred: applying presets rebuilds sidebar widgets, including this combo's neighbours.
                 combo_shop_printer->CallAfter([this, sel]() {
-                    if (sel > 0 && size_t(sel) <= shop_items.size())
-                        plater->sidebar().apply_shop_printer(size_t(sel) - 1);
+                    if (q && sel > 0 && size_t(sel) <= shop_items.size())
+                        q->apply_shop_printer(size_t(sel) - 1);
                 });
             });
             btn_shop_save = new Button(m_panel_printer_content, _L("Save"));
             btn_shop_save->SetStyle(ButtonStyle::Regular, ButtonType::Compact);
             btn_shop_save->SetToolTip(_L("Save the current printer, process and filament selection as a named shop machine."));
-            btn_shop_save->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { plater->sidebar().save_shop_printer(); });
+            btn_shop_save->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { if (q) q->save_shop_printer(); });
             btn_shop_delete = new Button(m_panel_printer_content, _L("Delete"));
             btn_shop_delete->SetStyle(ButtonStyle::Regular, ButtonType::Compact);
             btn_shop_delete->SetToolTip(_L("Delete the selected shop machine."));
-            btn_shop_delete->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { plater->sidebar().delete_shop_printer(); });
+            btn_shop_delete->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { if (q) q->delete_shop_printer(); });
             btn_qidi_box = new Button(m_panel_printer_content, _L("Box"));
             btn_qidi_box->SetStyle(ButtonStyle::Regular, ButtonType::Compact);
             btn_qidi_box->SetToolTip(_L("QIDI Box slots: load, unload, eject and read RFID on the connected printer."));
@@ -1097,7 +1098,8 @@ void Sidebar::priv::layout_printer(bool isBBL, bool isDual)
                 QidiBoxDialog dlg(plater, obj);
                 dlg.ShowModal();
             });
-            plater->sidebar().refresh_shop_printers();
+            if (q)
+                q->refresh_shop_printers();
         }
         hsizer_shop_printer = new wxBoxSizer(wxHORIZONTAL);
         hsizer_shop_printer->Add(label_shop_printer, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(6));
@@ -2819,6 +2821,7 @@ void Sidebar::update_sync_ams_btn_enable(wxUpdateUIEvent &e)
 Sidebar::Sidebar(Plater *parent)
     : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(39 * wxGetApp().em_unit(), -1)), p(new priv(parent))
 {
+    p->q = this;
     Choice::register_dynamic_list("support_filament", &dynamic_physical_filament_list);
     Choice::register_dynamic_list("support_interface_filament", &dynamic_physical_filament_list);
     Choice::register_dynamic_list("outer_wall_filament_id", &dynamic_filament_list);
