@@ -562,6 +562,15 @@ bool MoonrakerPrinterAgent::fetch_filament_info(std::string dev_id, FilamentSync
     std::vector<AmsTrayData> trays;
     int max_lane_index = 0;
 
+    // QIDI Box: the printer's own multi_color_controller object (local, no cloud needed).
+    if (fetch_qidi_box_filament_info(trays, max_lane_index)) {
+        BOOST_LOG_TRIVIAL(info) << "MoonrakerPrinterAgent::fetch_filament_info: Detected QIDI Box with "
+                                << (max_lane_index + 1) << " slots";
+        int ams_count = (max_lane_index + 4) / 4;
+        build_ams_payload(ams_count, max_lane_index, trays);
+        return true;
+    }
+
     // Try Moonraker filament data (more generic, supports any filament changer
     // software that reports lane data to Moonraker like AFC and recent Happy
     // Hare as of Feb 15, 2026)
@@ -832,6 +841,121 @@ bool MoonrakerPrinterAgent::fetch_moonraker_filament_data(std::vector<AmsTrayDat
 }
 
 // Fetch filament info from Happy Hare MMU
+bool MoonrakerPrinterAgent::fetch_qidi_box_filament_info(std::vector<AmsTrayData>& trays, int& max_lane_index)
+{
+    // QIDI's Klipper firmware exposes the Box through the "multi_color_controller" object.
+    // Shape (as read by QIDI Studio): { box_count, last_load_slot, identity, boxes: [ {
+    //   aht20_temp, aht20_humidity, dry_state, box_inserted_<n>, filament_info: [ {
+    //   filament_str, filament_type, vendor_str, color_rgb_str: ["RRGGBB"], min_temp, max_temp, filament_id } ] } ],
+    //   extra: { filament_info: {...} } }   -- "extra" is the external spool, not a Box slot.
+    // Some firmware nests the same fields under multi_color_controller.box.
+    std::string url = join_url(device_info.base_url, "/printer/objects/query?multi_color_controller");
+
+    std::string response_body;
+    bool success = false;
+    std::string http_error;
+
+    auto http = Http::get(url);
+    if (!device_info.api_key.empty()) {
+        http.header("X-Api-Key", device_info.api_key);
+    }
+    http.timeout_connect(5)
+        .timeout_max(10)
+        .on_complete([&](std::string body, unsigned status) {
+            if (status == 200) {
+                response_body = body;
+                success = true;
+            } else {
+                http_error = "HTTP error: " + std::to_string(status);
+            }
+        })
+        .on_error([&](std::string body, std::string err, unsigned status) {
+            http_error = err;
+            if (status > 0) {
+                http_error += " (HTTP " + std::to_string(status) + ")";
+            }
+        })
+        .perform_sync();
+
+    if (!success) {
+        BOOST_LOG_TRIVIAL(debug) << "MoonrakerPrinterAgent::fetch_qidi_box_filament_info: request failed: " << http_error;
+        return false;
+    }
+
+    auto json = nlohmann::json::parse(response_body, nullptr, false, true);
+    if (json.is_discarded() || !json.contains("result") || !json["result"].contains("status") ||
+        !json["result"]["status"].contains("multi_color_controller") ||
+        !json["result"]["status"]["multi_color_controller"].is_object()) {
+        BOOST_LOG_TRIVIAL(debug) << "MoonrakerPrinterAgent::fetch_qidi_box_filament_info: no multi_color_controller object";
+        return false;
+    }
+
+    const nlohmann::json& mcc = json["result"]["status"]["multi_color_controller"];
+    const nlohmann::json& container = (mcc.contains("box") && mcc["box"].is_object()) ? mcc["box"] : mcc;
+
+    int box_count = 0;
+    if (mcc.contains("box_count") && mcc["box_count"].is_number())
+        box_count = mcc["box_count"].get<int>();
+    else if (container.contains("box_count") && container["box_count"].is_number())
+        box_count = container["box_count"].get<int>();
+    if (box_count <= 0 || !container.contains("boxes") || !container["boxes"].is_array()) {
+        BOOST_LOG_TRIVIAL(debug) << "MoonrakerPrinterAgent::fetch_qidi_box_filament_info: no Box attached (box_count=" << box_count << ")";
+        return false;
+    }
+
+    trays.clear();
+    max_lane_index = -1;
+    int box_index = 0;
+    for (const auto& box : container["boxes"]) {
+        if (!box.is_object() || box_index >= box_count)
+            break;
+        const int slots = (box.contains("filament_info") && box["filament_info"].is_array()) ? int(box["filament_info"].size()) : 4;
+        for (int slot = 0; slot < std::min(slots, 4); ++slot) {
+            AmsTrayData tray;
+            tray.slot_index = box_index * 4 + slot;
+            max_lane_index  = std::max(max_lane_index, tray.slot_index);
+
+            const std::string inserted_key = "box_inserted_" + std::to_string(slot);
+            bool inserted = false;
+            if (box.contains(inserted_key)) {
+                const auto& v = box[inserted_key];
+                inserted = v.is_number() ? v.get<int>() != 0 : (v.is_boolean() ? v.get<bool>() : false);
+            }
+            tray.has_filament = inserted;
+
+            if (inserted && box.contains("filament_info") && box["filament_info"].is_array() && slot < int(box["filament_info"].size())) {
+                const auto& fi = box["filament_info"][slot];
+                if (fi.is_object()) {
+                    if (fi.contains("filament_type") && fi["filament_type"].is_string())
+                        tray.tray_type = fi["filament_type"].get<std::string>();
+                    if (tray.tray_type.empty() && fi.contains("filament_str") && fi["filament_str"].is_string())
+                        tray.tray_type = fi["filament_str"].get<std::string>();
+                    if (fi.contains("color_rgb_str") && fi["color_rgb_str"].is_array() && !fi["color_rgb_str"].empty() &&
+                        fi["color_rgb_str"][0].is_string())
+                        tray.tray_color = fi["color_rgb_str"][0].get<std::string>();
+                    else if (fi.contains("color_rgb_str") && fi["color_rgb_str"].is_string())
+                        tray.tray_color = fi["color_rgb_str"].get<std::string>();
+                    int tmin = 0, tmax = 0;
+                    if (fi.contains("min_temp") && fi["min_temp"].is_number()) tmin = fi["min_temp"].get<int>();
+                    if (fi.contains("max_temp") && fi["max_temp"].is_number()) tmax = fi["max_temp"].get<int>();
+                    if (tmin > 0 && tmax > 0)
+                        tray.nozzle_temp = (tmin + tmax) / 2;
+                    else if (tmax > 0)
+                        tray.nozzle_temp = tmax;
+                }
+            }
+            trays.push_back(tray);
+        }
+        ++box_index;
+    }
+
+    if (max_lane_index < 0) {
+        BOOST_LOG_TRIVIAL(debug) << "MoonrakerPrinterAgent::fetch_qidi_box_filament_info: Box reported but no slots";
+        return false;
+    }
+    return true;
+}
+
 bool MoonrakerPrinterAgent::fetch_hh_filament_info(std::vector<AmsTrayData>& trays, int& max_lane_index)
 {
     // Query Happy Hare MMU status
