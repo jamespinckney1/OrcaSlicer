@@ -45,6 +45,7 @@ public:
     std::string group() const;
     std::string storage() const;
     bool switch_to_device_tab() const {return m_switch_to_device_tab;}
+    bool failure_check() const { return m_failure_check; }
 
     virtual void EndModal(int ret) override;
     virtual void init();
@@ -59,6 +60,7 @@ protected:
     wxString    m_preselected_storage;
     wxArrayString m_paths;
     bool m_switch_to_device_tab;
+    bool m_failure_check{false}; // Print-shop
 
     boost::filesystem::path m_path;
     PrintHostPostUploadActions m_post_actions;

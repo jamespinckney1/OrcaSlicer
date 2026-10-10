@@ -12,6 +12,7 @@
 #include <cmath>
 #include <regex>
 #include <thread>
+#include <utility>
 #include <wx/button.h>
 #include <wx/choice.h>
 #include <wx/dcbuffer.h>
@@ -158,6 +159,15 @@ void BedMeshCanvas::paint()
             D[r][c] = d;
             minx = std::min(minx, sx); maxx = std::max(maxx, sx); miny = std::min(miny, sy); maxy = std::max(maxy, sy);
         }
+    // Keep the side labels inside the canvas.
+    for (const auto& [x, y] : {std::pair{m_mesh.min_x - span * 0.12, m_mesh.min_y - span * 0.12},
+                               std::pair{m_mesh.max_x + span * 0.12, m_mesh.min_y - span * 0.12},
+                               std::pair{m_mesh.min_x - span * 0.12, m_mesh.max_y + span * 0.12},
+                               std::pair{m_mesh.max_x + span * 0.12, m_mesh.max_y + span * 0.12}}) {
+        double sx, sy, d;
+        project(x, y, centre, sx, sy, d);
+        minx = std::min(minx, sx); maxx = std::max(maxx, sx); miny = std::min(miny, sy); maxy = std::max(maxy, sy);
+    }
     for (size_t r = 0; r + 1 < NR; ++r)
         for (size_t c = 0; c + 1 < NC; ++c)
             quads.push_back({(D[r][c] + D[r + 1][c + 1]) / 2, {P[r][c], P[r][c + 1], P[r + 1][c + 1], P[r + 1][c]},
@@ -196,15 +206,21 @@ void BedMeshCanvas::paint()
     };
     marker(m_stats.high, _L("high") + wxString::Format(" %+.2f", m_stats.high.z));
     marker(m_stats.low, _L("low") + wxString::Format(" %+.2f", m_stats.low.z));
-    {
+    // Side labels, as seen standing at the printer's door: front is the door side, left is the
+    // viewer's left (X min), back is the far wall (Y max).
+    auto side_label = [&](double x, double y, const wxString& text) {
         double sx, sy, d;
-        project(m_mesh.min_x + bw / 2, m_mesh.min_y - span * 0.06, centre, sx, sy, d);
+        project(x, y, centre, sx, sy, d);
         const wxPoint2DDouble s = to_screen({sx, sy});
-        const wxString front = _L("Front");
         double w, h;
-        gc->GetTextExtent(front, &w, &h);
-        gc->DrawText(front, s.m_x - w / 2, s.m_y);
-    }
+        gc->GetTextExtent(text, &w, &h);
+        gc->DrawText(text, s.m_x - w / 2, s.m_y - h / 2);
+    };
+    const double pad = span * 0.08;
+    side_label(m_mesh.min_x + bw / 2, m_mesh.min_y - pad, _L("Front"));
+    side_label(m_mesh.min_x + bw / 2, m_mesh.max_y + pad, _L("Back"));
+    side_label(m_mesh.min_x - pad, m_mesh.min_y + bh / 2, _L("Left"));
+    side_label(m_mesh.max_x + pad, m_mesh.min_y + bh / 2, _L("Right"));
 
     // Legend
     const double lx = sz.x - margin - legend_w + FromDIP(8), ly = margin, lh = sz.y - 2 * margin, lw = FromDIP(10);

@@ -1,4 +1,7 @@
 #include "BackgroundSlicingProcess.hpp"
+#include "FailureCheckMonitor.hpp"
+#include "NotificationManager.hpp"
+#include "Plater.hpp"
 #include "GUI_App.hpp"
 #include "GUI.hpp"
 #include "MainFrame.hpp"
@@ -995,6 +998,20 @@ void BackgroundSlicingProcess::prepare_upload()
                                              m_fff_print->full_print_config());
                 if (post_process)
                     m_upload_job.upload_data.upload_path = output_name_str;
+            }
+            // Print-shop: failure-check checkpoints go into this upload's own copy, so an exported
+            // G-code never carries them.
+            if (m_upload_job.upload_data.shop_failure_check) {
+                m_print->set_status(97, _utf8(L("Adding failure-check checkpoints")));
+                std::string message;
+                GUI::FailureCheckMonitor::get().prepare_job(m_upload_job.printhost->get_host(), source_path.string(),
+                                                            m_upload_job.upload_data.upload_path.string(), message);
+                BOOST_LOG_TRIVIAL(info) << message;
+                if (!message.empty())
+                    GUI::wxGetApp().CallAfter([message]() {
+                        if (GUI::wxGetApp().plater())
+                            GUI::wxGetApp().plater()->get_notification_manager()->push_notification(message);
+                    });
             }
         }
     } else {

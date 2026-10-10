@@ -554,6 +554,28 @@ void PrintHostSendDialog::init()
     content_sizer->Add(checkbox_sizer);
     content_sizer->AddSpacer(VERT_SPACING);
 
+    // Print-shop: G-code-aware failure check (camera checkpoints).
+    {
+        m_failure_check = wxGetApp().app_config->get_bool("shop_failure_check");
+        auto* fc_sizer  = new wxBoxSizer(wxHORIZONTAL);
+        auto* fc_box    = new ::CheckBox(this);
+        fc_box->SetValue(m_failure_check);
+        fc_box->Bind(wxEVT_TOGGLEBUTTON, [this](wxCommandEvent& e) {
+            m_failure_check = e.IsChecked();
+            e.Skip();
+        });
+        fc_sizer->Add(fc_box, 0, wxALL | wxALIGN_CENTER, FromDIP(2));
+        auto* fc_text = new wxStaticText(this, wxID_ANY, _L("Failure check: pause at checkpoints so the camera view can be compared with the G-code."));
+        fc_text->SetFont(::Label::Body_13);
+        fc_text->SetForegroundColour(StateColor::darkModeColorFor(wxColour("#323A3D")));
+        fc_text->SetToolTip(_L("Moonraker printers with the shop SHOP_CHECKPOINT macro. The printer parks briefly before the first layer, "
+                               "a few moves into it, after it, and at every 20%; the slicer photographs the bed and pauses the print "
+                               "if it sees material the G-code does not explain. With the slicer closed the printer resumes on its own."));
+        fc_sizer->Add(fc_text, 0, wxALL | wxALIGN_CENTER, FromDIP(2));
+        content_sizer->Add(fc_sizer);
+        content_sizer->AddSpacer(VERT_SPACING);
+    }
+
     if (size_t extension_start = recent_path.find_last_of('.'); extension_start != std::string::npos)
         m_valid_suffix = recent_path.substr(extension_start);
     // .gcode suffix control
@@ -672,6 +694,7 @@ void PrintHostSendDialog::EndModal(int ret)
                 
 		AppConfig *app_config = wxGetApp().app_config;
 		app_config->set("recent", CONFIG_KEY_PATH, into_u8(path));
+        app_config->set_bool("shop_failure_check", m_failure_check);
 
         if (combo_groups != nullptr) {
             wxString group = combo_groups->GetValue();

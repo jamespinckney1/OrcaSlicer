@@ -25,6 +25,9 @@
 #include <wx/numdlg.h>
 #include <wx/collpane.h>
 #include "slic3r/GUI/BedMeshView.hpp"
+#include "slic3r/GUI/FailureCheckDialogs.hpp"
+#include "slic3r/GUI/FailureCheckMonitor.hpp"
+#include <wx/timer.h>
 #include <regex>
 #include "slic3r/Utils/Http.hpp"
 #include "slic3r/GUI/MsgDialog.hpp"
@@ -156,6 +159,11 @@ PrinterWebView::PrinterWebView(wxWindow *parent)
 PrinterWebView::~PrinterWebView()
 {
     BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " Start";
+    if (m_fc_timer) {
+        m_fc_timer->Stop();
+        delete m_fc_timer;
+        m_fc_timer = nullptr;
+    }
     SetEvtHandlerEnabled(false);
     m_handler.reset();
 
@@ -373,9 +381,34 @@ void PrinterWebView::build_shop_bar(wxBoxSizer* sizer)
                                    "\"default\" mesh that Quick start loads. Takes several minutes."));
     m_btn_full_mesh->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { on_rebuild_full_mesh(); });
     m_shop_status = new wxStaticText(m_shop_bar, wxID_ANY, "");
+    m_btn_camera_cal = new wxButton(m_shop_bar, wxID_ANY, _L("Camera calibration..."));
+    m_btn_camera_cal->SetToolTip(_L("Teaches the slicer how the printer's camera sees the bed, so the print failure check can compare "
+                                    "photos with the G-code automatically. Needs the shop failure-check macros on the printer."));
+    m_btn_camera_cal->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
+        const std::string root = moonraker_base_url();
+        if (root.empty()) {
+            MessageDialog(this, _L("No printer page is loaded."), _L("Camera calibration"), wxICON_INFORMATION | wxOK).ShowModal();
+            return;
+        }
+        show_camera_calibration(this, root);
+    });
+    m_fc_status = new wxStaticText(m_shop_bar, wxID_ANY, "");
     bar->Add(title, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, FromDIP(8));
     bar->Add(m_btn_full_mesh, 0, wxALIGN_CENTER_VERTICAL | wxTOP | wxBOTTOM, FromDIP(4));
+    bar->Add(m_btn_camera_cal, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxTOP | wxBOTTOM, FromDIP(4));
     bar->Add(m_shop_status, 1, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(10));
+    bar->Add(m_fc_status, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, FromDIP(10));
+    // Failure-check status for this printer, refreshed every few seconds.
+    m_fc_timer = new wxTimer(this);
+    Bind(wxEVT_TIMER, [this](wxTimerEvent&) {
+        const std::string root = moonraker_base_url();
+        const wxString    text = root.empty() ? wxString() : from_u8(FailureCheckMonitor::get().status(shop_printer_host(root)));
+        if (m_fc_status && m_fc_status->GetLabel() != text) {
+            m_fc_status->SetLabel(text);
+            m_shop_bar->Layout();
+        }
+    }, m_fc_timer->GetId());
+    m_fc_timer->Start(3000);
     m_shop_bar->SetSizer(bar);
     sizer->Add(m_shop_bar, 0, wxEXPAND);
 

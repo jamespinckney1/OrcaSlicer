@@ -1,0 +1,147 @@
+#pragma once
+
+// Print-shop addition: G-code-aware print failure check, core logic (no GUI dependencies, so it can
+// be tested on its own).
+//
+// The slicer inserts `SHOP_CHECKPOINT N=<n>` lines into an uploaded job: one before the first layer
+// (the reference photo of the bed), one a few moves into the first layer, one at the end of the first
+// layer and one every 20% after that. At each checkpoint the printer parks the toolhead and waits; the
+// slicer photographs the bed and compares the photo with what the G-code says has been printed so far,
+// so supports, brims and purge lines count as expected material instead of looking like spaghetti.
+//
+// Coordinates: bed X/Y as in the G-code. Heights are "frame heights", relative to the nozzle-tip plane:
+// a point at height z on the part is at h = z - toolhead_z, because the bed moves in Z and the camera
+// is fixed to the frame (Qidi Plus 4 and other CoreXY printers with a Z bed).
+
+#include <cstddef>
+#include <cstdint>
+#include <string>
+#include <vector>
+
+namespace Slic3r { namespace GUI { namespace FailureCheck {
+
+struct Segment
+{
+    float x0, y0, x1, y1;
+    float z; // top of the extrusion
+    float w; // extrusion width
+};
+
+enum class CheckpointKind { Baseline, Early, FirstLayer, Progress };
+
+struct Checkpoint
+{
+    int            index         = 0;
+    CheckpointKind kind          = CheckpointKind::Baseline;
+    int            percent       = 0; // Progress only
+    size_t         line          = 0; // inserted before this line (0-based, not counting SHOP_CHECKPOINT lines)
+    size_t         segments_done = 0; // extrusions printed before the checkpoint
+    size_t         layer         = 0; // index of the layer in progress (Baseline/Early) or the next layer
+};
+
+struct GCodeModel
+{
+    std::vector<Segment>    segments;            // print order
+    std::vector<size_t>     segment_line;        // source line of each segment
+    std::vector<size_t>     layer_first_segment; // per layer
+    std::vector<size_t>     layer_line;          // line of each layer change marker
+    std::vector<double>     layer_z;
+    double                  bed_min_x = 0, bed_min_y = 0, bed_max_x = 0, bed_max_y = 0; // printable_area
+    std::vector<std::string> filament_colours; // "#RRGGBB" per extruder, from the config block
+    int                      first_tool = 0;   // tool printing the first layer
+    std::vector<Checkpoint> checkpoints;
+
+    // Colour of the filament on the first layer, unless it is unset or Orca's default (then empty).
+    std::string             first_layer_colour() const;
+
+    bool              has_bed() const { return bed_max_x > bed_min_x && bed_max_y > bed_min_y; }
+    const Checkpoint* checkpoint(int index) const;
+};
+
+// Parses extrusions and layer changes and plans the checkpoints. Existing SHOP_CHECKPOINT lines are ignored.
+bool parse_gcode(const std::string& path, GCodeModel& out, std::string& error);
+// Copies in_path to out_path (which may be the same file) with the model's checkpoints inserted and any
+// older SHOP_CHECKPOINT lines removed. An empty checkpoint list just strips them.
+bool write_with_checkpoints(const std::string& in_path, const std::string& out_path, const std::vector<Checkpoint>& checkpoints,
+                            int timeout_s, std::string& error);
+// English label for logs and the G-code comment, e.g. "first layer done" or "40%".
+std::string checkpoint_label(const Checkpoint& cp);
+
+struct Image
+{
+    int                  w = 0, h = 0;
+    std::vector<uint8_t> rgb; // w * h * 3
+    bool                 empty() const { return w <= 0 || h <= 0 || rgb.size() < size_t(w) * size_t(h) * 3; }
+};
+
+// Pinhole camera with one radial distortion term, mapping frame coordinates to image pixels.
+struct CameraModel
+{
+    bool        valid  = false;
+    int         width  = 640;
+    int         height = 480;
+    double      P[12]  = {};  // 3x4 row-major: (x, y, h, 1) -> undistorted pixels
+    double      k1     = 0;   // radial distortion about the image centre, radius normalised by width / 2
+    double      rms_px = 0;   // reprojection error of the calibration
+    int         points = 0;   // number of calibration points
+    double      park_x = 95;  // toolhead position while parked at a checkpoint
+    double      park_y = 324;
+    std::string when;
+
+    // To observed (distorted) pixels; false when the point is behind the camera.
+    bool        project(double x, double y, double h, double& u, double& v) const;
+    std::string to_json() const;
+    static bool from_json(const std::string& text, CameraModel& out);
+};
+
+struct Correspondence
+{
+    double x, y, h; // frame coordinates
+    double u, v;    // clicked pixel
+    int    group = -1; // >= 0: x/y are only a first guess, shared by every point of the group (one plate corner
+                       // seen at several bed heights) and refined during calibration
+};
+
+// Direct linear transform with a search over the distortion term. Needs at least 6 points that are not
+// all in one plane, e.g. the nozzle tip at a grid of positions (h = 0) plus plate corners at two bed
+// heights. Grouped points get their x/y re-estimated, so the plate's exact size need not be known.
+bool calibrate_camera(std::vector<Correspondence> pts, int width, int height, CameraModel& out, std::string& error);
+
+enum class Verdict { Pass, Fail, Unsure };
+
+enum CellState : uint8_t {
+    CellInvalid = 0,    // outside the picture, hidden by the toolhead, or off the bed
+    CellUnchanged,      // looks like the reference photo
+    CellExpected,       // changed, and the G-code put material here
+    CellUnexpected,     // changed where the G-code has no material
+    CellMissing,        // the G-code put material here but nothing changed
+};
+
+struct CheckResult
+{
+    Verdict                  verdict          = Verdict::Unsure;
+    double                   unexpected_mm2   = 0;
+    double                   missing_fraction = 0;
+    int                      footprint_cells  = 0;
+    int                      valid_cells      = 0;
+    int                      bed_cells        = 0;
+    double                   threshold        = 0;
+    std::vector<std::string> reasons; // English, one per finding
+
+    // Bed-plane grid used for the comparison, for overlays (row 0 = front).
+    double               cell_mm = 2.0;
+    double               grid_x0 = 0, grid_y0 = 0;
+    int                  grid_w = 0, grid_h = 0;
+    std::vector<uint8_t> cells; // CellState
+};
+
+// Compares the photo at a checkpoint with the reference photo taken before the first layer.
+// baseline_z / current_z are the toolhead Z positions when each photo was taken.
+CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraModel& camera, const Image& baseline, double baseline_z,
+                    const Image& current, double current_z);
+
+// Top-down picture of what the G-code has printed by `segments_done` (1 pixel per `mm_per_px`, back at
+// the top); the most recent layer is highlighted. Used when the camera is not calibrated.
+Image render_expected_topdown(const GCodeModel& model, size_t segments_done, double mm_per_px = 1.0);
+
+}}} // namespace Slic3r::GUI::FailureCheck

@@ -173,6 +173,12 @@ set(SLIC3R_GUI_SOURCES
     GUI/BedMeshAnalysis.hpp
     GUI/BedMeshView.cpp
     GUI/BedMeshView.hpp
+    GUI/FailureCheck.cpp
+    GUI/FailureCheck.hpp
+    GUI/FailureCheckDialogs.cpp
+    GUI/FailureCheckDialogs.hpp
+    GUI/FailureCheckMonitor.cpp
+    GUI/FailureCheckMonitor.hpp
     GUI/ShopCalibration.cpp
     GUI/ShopCalibration.hpp
     GUI/CalibrationLogDialog.cpp

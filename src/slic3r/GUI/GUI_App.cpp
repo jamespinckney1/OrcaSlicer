@@ -188,6 +188,7 @@
 #include "MainFrame.hpp"
 #include "Plater.hpp"
 #include "EnvisionInbox.hpp"
+#include "FailureCheckMonitor.hpp"
 #include "GLCanvas3D.hpp"
 #include "EncodedFilament.hpp"
 #include "GeneratedConfig.hpp"
@@ -1266,6 +1267,7 @@ void GUI_App::shutdown()
     }
 
     if (m_is_recreating_gui) return;
+    FailureCheckMonitor::get().stop(); // Print-shop
     stop_http_server();
     set_closing(true);
     Slic3r::PluginManager::instance().set_shutting_down();
@@ -3607,6 +3609,7 @@ bool GUI_App::on_init_inner()
 #endif
     if (scrn) { scrn->SetText(_L("Showing main window") + dots, 95); wxYield(); }
     mainframe->Show(true);
+    FailureCheckMonitor::get().start(); // Print-shop: resume watching failure-check jobs
     // Close the splash now that the main UI is visible.
     if (scrn) { scrn->SetText(_L("Showing main window") + dots, 100); scrn->Destroy(); scrn = nullptr; }
     BOOST_LOG_TRIVIAL(info) << "main frame firstly shown";

@@ -40,6 +40,9 @@ struct PrintHostUpload
 
     PrintHostPostUploadAction post_action { PrintHostPostUploadAction::None };
 
+    // Print-shop: insert failure-check checkpoints and watch the print (not sent to the host).
+    bool shop_failure_check { false };
+
     // Some extended parameters for different upload methods.
     std::map<std::string, std::string> extended_info;
 

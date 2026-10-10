@@ -141,7 +141,61 @@ printer and filament; "Apply to filament preset" writes the values into the curr
 preset (unsaved; save the preset to keep it). Stored in `shop/calibration_results.json`. Code:
 `src/slic3r/GUI/ShopCalibration.*`, `CalibrationLogDialog.*`.
 
+## Device tab shop toolbar
+
+- **Rebuild full-bed mesh...** runs `SHOP_FULL_MESH` on an idle printer (home, heat, Z-tilt, probe
+  the whole bed, save it as the `default` mesh Quick start loads).
+- **Bed mesh health** (collapsed by default): the printer's mesh as an angled 3D surface, with
+  Front / Back / Left / Right labels as seen standing at the door (left is the viewer's left, X
+  minimum). It separates tilt (a plane fit) from warp and lists maintenance suggestions. Drag to
+  rotate. Code: `BedMeshAnalysis.*` (no GUI), `BedMeshView.*`.
+- **Camera calibration...** and the failure-check status line: see below.
+
+## Print failure check (Print dialog > "Failure check")
+
+Camera spaghetti detectors guess what a healthy print looks like, so big tree supports set them off.
+This check compares the camera with what the G-code says has been printed, so supports, brims and
+purge lines count as expected material.
+
+- **Checkpoints.** On upload the slicer adds `SHOP_CHECKPOINT N=<n>` lines to the upload's own copy
+  of the G-code (an exported file never carries them): a reference photo just before the first
+  layer, one a fifth of the way into the first layer, one after it, then at 20 / 40 / 60 / 80 % of
+  the layers.
+- **Printer side** (`docs/shop/plus4/failure_check.cfg`): at a checkpoint the printer retracts,
+  lifts 5 mm, parks at the purge chute with Qidi's own pause moves, and waits. `SHOP_CHECK_OK`
+  resumes, `SHOP_CHECK_HOLD` stays paused and beeps (hotend off after 15 minutes; Resume reheats).
+  With no answer in 45 s the printer resumes on its own, so a closed slicer or a Wi-Fi drop never
+  strands a print. The checkpoint saves the same states as Qidi's PAUSE, so Resume on the
+  touchscreen works during a checkpoint or a hold.
+- **Comparison** (`FailureCheck.*`, no GUI): both photos are resampled onto a 2 mm bed grid using
+  the camera calibration and the toolhead Z at each photo (the bed moves in Z, the camera does not).
+  Cells that changed where the G-code has no material (with an 8 mm margin) and that form patches
+  of at least 32 mm2 count as unexpected; 3 cm2 or more fails the check. On the first layer, an
+  expected area with no visible change fails the check only when the job's filament colour is set
+  and clearly differs from the plate; otherwise it is reported as uncertain.
+- **Verdicts.** Pass: the print resumes silently. Fail: the printer holds and a window shows the
+  photo (red = unexplained material, orange = expected but not seen, green = latest layer) next to
+  a top view of the G-code, with Resume / Cancel print. Uncertain: the print resumes and the same
+  window asks you to look. Without a camera calibration every checkpoint photo is shown for review
+  and the print resumes after 25 s unless you press Keep paused.
+- **Camera calibration** (Device tab, printer idle, empty plate): the printer moves to 11 poses
+  (`SHOP_CAMERA_POSE`); you click the plate corners at bed heights 10 and 170 mm and the nozzle tip
+  at a 3 x 3 grid. The plate's exact size is solved for, so the printable area is only a first
+  guess. Saved per printer in `shop/camera/<host>.json`.
+- **Files.** Watched jobs: `shop/failure_check/jobs.json` (a restarted slicer resumes watching).
+  Per job: `shop/failure_check/jobs/<time>_<name>/` with the G-code copy, every checkpoint photo
+  (`cpN.jpg`) and its result (`cpN.json`); the last 15 jobs are kept.
+- **Tests.** `scripts/shop_tests/failure_check_test.cpp` (build line at the top) checks the G-code
+  planner on a real job, the calibration on a simulated wide-angle camera, and the comparison on
+  rendered scenes (good first layer, missing first layer, support tower, spaghetti, a part knocked
+  loose, an exposure change) plus two real snapshots for camera noise.
+- **Limits.** Moonraker printers whose bed moves in Z (the Plus 4); uploads through the classic
+  Print dialog, not `.gcode.3mf`. The bed strip under the park position (back, around X 95) is not
+  checked. Material the same colour as the plate cannot be seen.
+
 ## Not yet verified on hardware
 
 Box sync in the UI, the mapping push, and the slot-state semantics were built from the live
-Moonraker queries of one Plus 4 but have not been exercised end to end with a print.
+Moonraker queries of one Plus 4 but have not been exercised end to end with a print. The failure
+check's printer macros, camera calibration and live checkpoints have not run on the printer yet;
+the comparison has only been tested on simulated photos and two real snapshots.
