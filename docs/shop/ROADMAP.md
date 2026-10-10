@@ -48,9 +48,10 @@ point of the G-code, so it can make a real comparison.
   socket from the stopping thread, real read timeouts, interruptible reconnect back-off, bounded
   wait on quit.
 - **Plus 4 Wi-Fi drops:** about 18% packet loss and 0.5 s average latency from the Mac to the
-  printer while the router hops are clean; signal is fair (-62 dBm). Suspect the USB Wi-Fi
-  adapter's power saving; the printer has no `iw`, `iwconfig` or `nmcli`. Ethernet is the reliable
-  fix.
+  printer while the router hops are clean; signal is fair (-62 dBm). The adapter is an AICSemi
+  AIC8800 (USB a69c:88dc, driver `aic8800_fdrv`), whose driver enables power saving by default
+  (`ps_on`); the printer has no `iw`, `iwconfig` or `nmcli`. Next: confirm `ps_on`, disable it via
+  `/etc/modprobe.d`, reboot, re-test. Ethernet is the reliable fix.
 - **Hardware checks pending:** QIDI Box Load / Unload / Eject / Read RFID buttons, the Box slot
   mapping push, 3D Envision send into an already-open slicer, the Device tab mesh button.
 - **3D Envision:** merge its `send-to-slicer` branch into `main`.
