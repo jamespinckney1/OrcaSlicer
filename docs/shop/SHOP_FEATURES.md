@@ -102,6 +102,18 @@ Before sending with Quick start on, the slicer queries the printer and warns if 
 extruder differs from the one the print starts with. QIDI firmware updates replace
 `gcode_macro.cfg`; re-apply the patch after updating.
 
+## 3D Envision hand-off (Send to Slicer)
+
+3D Envision's File > Send to Slicer (Shift-Cmd-P) and Send to Slicer On > <machine> write the visible
+bodies as a 3MF into `shop/inbox/` in the slicer's settings folder, plus a sidecar
+`<same name>.json` with `name` and an optional shop `machine`, then ask macOS to open the 3MF in the
+slicer. A model that arrives from that folder (at launch or while running) opens as a new project
+named after the part, geometry only, after the usual save prompt for the current project; with a
+machine it also applies that shop machine's presets. Files from anywhere else open as before, so
+web links or other apps cannot trigger this path. Code: `src/slic3r/GUI/EnvisionInbox.*`,
+`Plater::open_envision_send`, hooks in `GUI_App::MacOpenFiles` and the startup file loading.
+3D Envision prunes sends older than a day.
+
 ## Sliced G-code editor (File > Export > Edit sliced G-code)
 
 Opens the current plate's temp G-code, the same file Export G-code and Send use, with find and

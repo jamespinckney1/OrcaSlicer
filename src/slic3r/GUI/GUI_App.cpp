@@ -187,6 +187,7 @@
 #include "3DScene.hpp"
 #include "MainFrame.hpp"
 #include "Plater.hpp"
+#include "EnvisionInbox.hpp"
 #include "GLCanvas3D.hpp"
 #include "EncodedFilament.hpp"
 #include "GeneratedConfig.hpp"
@@ -943,8 +944,13 @@ void GUI_App::post_init()
                 for (auto& file : this->init_params->input_files) {
                     input_files.push_back(wxString::FromUTF8(file));
                 }
+                if (input_files.size() == 1 && EnvisionInbox::is_inbox_file(into_u8(input_files[0]))) {
+                    // Print-shop: launched by 3D Envision's Send to Slicer.
+                    this->plater()->open_envision_send(into_u8(input_files[0]));
+                } else {
                 this->plater()->set_project_filename(_L("Untitled"));
                 this->plater()->load_files(input_files);
+                }
                 try {
                     if (!input_files.empty()) {
                         std::string           file_path = input_files.front().ToStdString();
@@ -9218,6 +9224,15 @@ void GUI_App::MacOpenURL(const wxString& url)
 // wxWidgets override to get an event on open files.
 void GUI_App::MacOpenFiles(const wxArrayString &fileNames)
 {
+    // Print-shop: a part sent by 3D Envision opens as a new project in this window.
+    if (fileNames.size() == 1 && EnvisionInbox::is_inbox_file(into_u8(fileNames[0]))) {
+        const std::string path = into_u8(fileNames[0]);
+        if (m_post_initialized && plater())
+            CallAfter([this, path]() { plater()->open_envision_send(path); });
+        else
+            this->init_params->input_files = { path };
+        return;
+    }
     bool single_instance = app_config->get("app", "single_instance") == "true";
     if (m_post_initialized && !single_instance) {
         bool has3mf = false;

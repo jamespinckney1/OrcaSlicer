@@ -196,6 +196,7 @@ public:
     void apply_shop_printer(size_t idx);
     void save_shop_printer();
     void delete_shop_printer();
+    bool apply_shop_printer_by_name(const std::string& name);
     //BBS
     const std::vector<BedType>& get_cur_combox_bed_types() { return m_cur_combox_bed_types; }
     void update_presets_from_to(Slic3r::Preset::Type preset_type, std::string from, std::string to);
@@ -570,6 +571,8 @@ public:
     void export_gcode_3mf(bool export_all = false);
     // Print-shop: open the current plate's sliced G-code in an editor; on save, re-process it into the preview.
     void edit_sliced_gcode();
+    // Print-shop: open a model sent by 3D Envision (from the shop inbox) as a new project.
+    void open_envision_send(const std::string& model_path);
     void send_gcode_finish(wxString name);
     void export_core_3mf();
     // Export a "published" 3MF embedding the author-selected settings in the file metadata; a

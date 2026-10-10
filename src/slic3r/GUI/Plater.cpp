@@ -245,6 +245,7 @@
 #include "ShopPrinters.hpp"
 #include "QidiBoxDialog.hpp"
 #include "GCodeEditDialog.hpp"
+#include "EnvisionInbox.hpp"
 #include <wx/textdlg.h>
 #include "Widgets/MultiNozzleSync.hpp"           // NozzleOption, tryPopUpMultiNozzleDialog, setExtruderNozzleCount
 #include "DeviceCore/DevNozzleSystem.h"          // DevNozzle, GetExtNozzles / GetRackNozzles
@@ -4074,6 +4075,17 @@ void Sidebar::save_shop_printer()
             p->combo_shop_printer->SetSelection(int(i) + 1);
             break;
         }
+}
+
+bool Sidebar::apply_shop_printer_by_name(const std::string& name)
+{
+    refresh_shop_printers();
+    for (size_t i = 0; i < p->shop_items.size(); ++i)
+        if (p->shop_items[i].name == name) {
+            apply_shop_printer(i);
+            return true;
+        }
+    return false;
 }
 
 void Sidebar::delete_shop_printer()
@@ -19549,6 +19561,32 @@ bool Plater::check_quick_start_filament()
                       _L("Quick start"), wxICON_WARNING | wxOK | wxCANCEL);
     dlg.SetButtonLabel(wxID_OK, _L("Print anyway"));
     return dlg.ShowModal() == wxID_OK;
+}
+
+void Plater::open_envision_send(const std::string& model_path)
+{
+    const EnvisionInbox::Request req = EnvisionInbox::read_request(model_path);
+    BOOST_LOG_TRIVIAL(info) << "EnvisionInbox: received " << model_path << " name=\"" << req.name << "\" machine=\"" << req.machine << "\"";
+
+    if (MainFrame* frame = wxGetApp().mainframe) {
+        if (frame->IsIconized())
+            frame->Iconize(false);
+        frame->Raise();
+    }
+    // Asks to save the current project first if it has changes; the user may cancel.
+    if (new_project(false, false, from_u8(req.name)) == wxID_CANCEL) {
+        BOOST_LOG_TRIVIAL(info) << "EnvisionInbox: new project cancelled by the user";
+        return;
+    }
+    if (!req.machine.empty() && !sidebar().apply_shop_printer_by_name(req.machine))
+        BOOST_LOG_TRIVIAL(warning) << "EnvisionInbox: shop machine \"" << req.machine << "\" not found; keeping current printer";
+
+    // Geometry only: a part from the CAD app carries no slicer settings.
+    load_files(std::vector<boost::filesystem::path>{ boost::filesystem::path(model_path) },
+               LoadStrategy::LoadModel | LoadStrategy::Silence);
+    p->set_project_name(from_u8(req.name));
+    wxGetApp().mainframe->select_tab(TAB_ID_PREPARE);
+    BOOST_LOG_TRIVIAL(info) << "EnvisionInbox: opened \"" << req.name << "\" as a new project";
 }
 
 void Plater::edit_sliced_gcode()
