@@ -844,11 +844,16 @@ bool MoonrakerPrinterAgent::fetch_moonraker_filament_data(std::vector<AmsTrayDat
 bool MoonrakerPrinterAgent::fetch_qidi_box_filament_info(std::vector<AmsTrayData>& trays, int& max_lane_index)
 {
     // QIDI's Klipper firmware exposes the Box through the "multi_color_controller" object.
-    // Shape (as read by QIDI Studio): { box_count, last_load_slot, identity, boxes: [ {
-    //   aht20_temp, aht20_humidity, dry_state, box_inserted_<n>, filament_info: [ {
-    //   filament_str, filament_type, vendor_str, color_rgb_str: ["RRGGBB"], min_temp, max_temp, filament_id } ] } ],
-    //   extra: { filament_info: {...} } }   -- "extra" is the external spool, not a Box slot.
-    // Some firmware nests the same fields under multi_color_controller.box.
+    // Live shape (Plus 4, firmware with system.mode == "local"; fixture in
+    // scripts/tests/fixtures/qidi_box_multi_color_controller.json):
+    //   hardware: { box_count, connected }
+    //   slots: { states: { slot0: 2, slot1: 0, ... },          // 0 empty, 1 ready, 2 loaded in extruder
+    //            materials: { slot0: { filament: { filament, type, min_temp, max_temp, ... },
+    //                                  color: "#RRGGBB", vendor }, ..., slot16: {...} },  // slot16 = external spool
+    //            last_loaded: "slot0" }
+    //   sensors: { runout_sensors: { slot0: 0, ... } }          // 1 = no filament at the slot sensor
+    // Older firmware instead reports boxes: [ { box_inserted_<n>, filament_info: [ {...} ] } ],
+    // optionally nested under multi_color_controller.box; both shapes are handled.
     std::string url = join_url(device_info.base_url, "/printer/objects/query?multi_color_controller");
 
     std::string response_body;
@@ -891,20 +896,93 @@ bool MoonrakerPrinterAgent::fetch_qidi_box_filament_info(std::vector<AmsTrayData
     }
 
     const nlohmann::json& mcc = json["result"]["status"]["multi_color_controller"];
-    const nlohmann::json& container = (mcc.contains("box") && mcc["box"].is_object()) ? mcc["box"] : mcc;
+    return parse_qidi_box_status(mcc, trays, max_lane_index);
+}
 
+// Numbers in the Box object arrive as numbers or as numeric strings ("240").
+static int qidi_box_int(const nlohmann::json& v, int fallback = 0)
+{
+    if (v.is_number())
+        return v.get<int>();
+    if (v.is_boolean())
+        return v.get<bool>() ? 1 : 0;
+    if (v.is_string()) {
+        try { return std::stoi(v.get<std::string>()); } catch (...) {}
+    }
+    return fallback;
+}
+
+bool MoonrakerPrinterAgent::parse_qidi_box_status(const nlohmann::json& mcc, std::vector<AmsTrayData>& trays, int& max_lane_index)
+{
+    trays.clear();
+    max_lane_index = -1;
+
+    // ---- current firmware: hardware / slots.states / slots.materials -------------------------
+    if (mcc.contains("slots") && mcc["slots"].is_object()) {
+        const nlohmann::json& slots = mcc["slots"];
+        int box_count = 0;
+        if (mcc.contains("hardware") && mcc["hardware"].is_object() && mcc["hardware"].contains("box_count"))
+            box_count = qidi_box_int(mcc["hardware"]["box_count"]);
+        if (box_count <= 0 && mcc.contains("config") && mcc["config"].is_object() && mcc["config"].contains("box_count"))
+            box_count = qidi_box_int(mcc["config"]["box_count"]);
+        if (box_count <= 0) {
+            BOOST_LOG_TRIVIAL(debug) << "MoonrakerPrinterAgent::parse_qidi_box_status: no Box attached (box_count=" << box_count << ")";
+            return false;
+        }
+        const nlohmann::json states    = slots.value("states", nlohmann::json::object());
+        const nlohmann::json materials = slots.value("materials", nlohmann::json::object());
+        const nlohmann::json runouts   = (mcc.contains("sensors") && mcc["sensors"].is_object())
+                                             ? mcc["sensors"].value("runout_sensors", nlohmann::json::object())
+                                             : nlohmann::json::object();
+
+        const int slot_total = std::min(box_count * 4, 16); // slot16 is the external spool, never a Box slot
+        for (int i = 0; i < slot_total; ++i) {
+            const std::string key = "slot" + std::to_string(i);
+            AmsTrayData tray;
+            tray.slot_index = i;
+            max_lane_index  = i;
+
+            const int state = states.contains(key) ? qidi_box_int(states[key]) : 0;
+            bool present = state != 0;
+            if (!present && runouts.contains(key))
+                present = qidi_box_int(runouts[key], 1) == 0; // sensor sees filament even if the slot is idle
+            tray.has_filament = present;
+
+            if (present && materials.contains(key) && materials[key].is_object()) {
+                const nlohmann::json& m = materials[key];
+                if (m.contains("filament") && m["filament"].is_object()) {
+                    const nlohmann::json& f = m["filament"];
+                    if (f.contains("type") && f["type"].is_string())
+                        tray.tray_type = f["type"].get<std::string>();
+                    if (tray.tray_type.empty() && f.contains("filament") && f["filament"].is_string())
+                        tray.tray_type = f["filament"].get<std::string>();
+                    const int tmin = f.contains("min_temp") ? qidi_box_int(f["min_temp"]) : 0;
+                    const int tmax = f.contains("max_temp") ? qidi_box_int(f["max_temp"]) : 0;
+                    if (tmin > 0 && tmax > 0)
+                        tray.nozzle_temp = (tmin + tmax) / 2;
+                    else if (tmax > 0)
+                        tray.nozzle_temp = tmax;
+                }
+                if (m.contains("color") && m["color"].is_string())
+                    tray.tray_color = m["color"].get<std::string>();
+            }
+            trays.push_back(tray);
+        }
+        return max_lane_index >= 0;
+    }
+
+    // ---- legacy firmware: boxes[] with box_inserted_<n> and filament_info[] --------------------
+    const nlohmann::json& container = (mcc.contains("box") && mcc["box"].is_object()) ? mcc["box"] : mcc;
     int box_count = 0;
-    if (mcc.contains("box_count") && mcc["box_count"].is_number())
-        box_count = mcc["box_count"].get<int>();
-    else if (container.contains("box_count") && container["box_count"].is_number())
-        box_count = container["box_count"].get<int>();
+    if (mcc.contains("box_count"))
+        box_count = qidi_box_int(mcc["box_count"]);
+    else if (container.contains("box_count"))
+        box_count = qidi_box_int(container["box_count"]);
     if (box_count <= 0 || !container.contains("boxes") || !container["boxes"].is_array()) {
-        BOOST_LOG_TRIVIAL(debug) << "MoonrakerPrinterAgent::fetch_qidi_box_filament_info: no Box attached (box_count=" << box_count << ")";
+        BOOST_LOG_TRIVIAL(debug) << "MoonrakerPrinterAgent::parse_qidi_box_status: no Box attached (legacy shape, box_count=" << box_count << ")";
         return false;
     }
 
-    trays.clear();
-    max_lane_index = -1;
     int box_index = 0;
     for (const auto& box : container["boxes"]) {
         if (!box.is_object() || box_index >= box_count)
@@ -916,14 +994,9 @@ bool MoonrakerPrinterAgent::fetch_qidi_box_filament_info(std::vector<AmsTrayData
             max_lane_index  = std::max(max_lane_index, tray.slot_index);
 
             const std::string inserted_key = "box_inserted_" + std::to_string(slot);
-            bool inserted = false;
-            if (box.contains(inserted_key)) {
-                const auto& v = box[inserted_key];
-                inserted = v.is_number() ? v.get<int>() != 0 : (v.is_boolean() ? v.get<bool>() : false);
-            }
-            tray.has_filament = inserted;
+            tray.has_filament = box.contains(inserted_key) && qidi_box_int(box[inserted_key]) != 0;
 
-            if (inserted && box.contains("filament_info") && box["filament_info"].is_array() && slot < int(box["filament_info"].size())) {
+            if (tray.has_filament && box.contains("filament_info") && box["filament_info"].is_array() && slot < int(box["filament_info"].size())) {
                 const auto& fi = box["filament_info"][slot];
                 if (fi.is_object()) {
                     if (fi.contains("filament_type") && fi["filament_type"].is_string())
@@ -935,9 +1008,8 @@ bool MoonrakerPrinterAgent::fetch_qidi_box_filament_info(std::vector<AmsTrayData
                         tray.tray_color = fi["color_rgb_str"][0].get<std::string>();
                     else if (fi.contains("color_rgb_str") && fi["color_rgb_str"].is_string())
                         tray.tray_color = fi["color_rgb_str"].get<std::string>();
-                    int tmin = 0, tmax = 0;
-                    if (fi.contains("min_temp") && fi["min_temp"].is_number()) tmin = fi["min_temp"].get<int>();
-                    if (fi.contains("max_temp") && fi["max_temp"].is_number()) tmax = fi["max_temp"].get<int>();
+                    const int tmin = fi.contains("min_temp") ? qidi_box_int(fi["min_temp"]) : 0;
+                    const int tmax = fi.contains("max_temp") ? qidi_box_int(fi["max_temp"]) : 0;
                     if (tmin > 0 && tmax > 0)
                         tray.nozzle_temp = (tmin + tmax) / 2;
                     else if (tmax > 0)
@@ -948,12 +1020,7 @@ bool MoonrakerPrinterAgent::fetch_qidi_box_filament_info(std::vector<AmsTrayData
         }
         ++box_index;
     }
-
-    if (max_lane_index < 0) {
-        BOOST_LOG_TRIVIAL(debug) << "MoonrakerPrinterAgent::fetch_qidi_box_filament_info: Box reported but no slots";
-        return false;
-    }
-    return true;
+    return max_lane_index >= 0;
 }
 
 bool MoonrakerPrinterAgent::fetch_hh_filament_info(std::vector<AmsTrayData>& trays, int& max_lane_index)

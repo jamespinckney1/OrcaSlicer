@@ -164,6 +164,7 @@ private:
     bool fetch_hh_filament_info(std::vector<AmsTrayData>& trays, int& max_lane_index);
     // QIDI Box (Plus 4 / Max 4 / Q2): Klipper object "multi_color_controller"
     bool fetch_qidi_box_filament_info(std::vector<AmsTrayData>& trays, int& max_lane_index);
+    bool parse_qidi_box_status(const nlohmann::json& mcc, std::vector<AmsTrayData>& trays, int& max_lane_index);
     bool fetch_moonraker_filament_data(std::vector<AmsTrayData>& trays, int& max_lane_index);
 
     // JSON helper methods

@@ -1,0 +1,208 @@
+{
+ "result": {
+  "eventtime": 8031.784279495,
+  "status": {
+   "multi_color_controller": {
+    "system": {
+     "ready": true,
+     "mode": "local"
+    },
+    "hardware": {
+     "box_count": 1,
+     "connected": true
+    },
+    "slots": {
+     "states": {
+      "slot0": 2,
+      "slot1": 0,
+      "slot2": 0,
+      "slot3": 0
+     },
+     "materials": {
+      "slot0": {
+       "filament": {
+        "filament": "PETG-Tough",
+        "min_temp": "240",
+        "max_temp": "275",
+        "box_min_temp": "0",
+        "box_max_temp": "45",
+        "type": "PETG"
+       },
+       "color": "#060606",
+       "vendor": "QIDI"
+      },
+      "slot1": {
+       "filament": {
+        "filament": "PETG-Tough",
+        "min_temp": "240",
+        "max_temp": "275",
+        "box_min_temp": "0",
+        "box_max_temp": "45",
+        "type": "PETG"
+       },
+       "color": "#FAFAFA",
+       "vendor": "QIDI"
+      },
+      "slot2": {
+       "filament": {
+        "filament": "PETG-Tough",
+        "min_temp": "240",
+        "max_temp": "275",
+        "box_min_temp": "0",
+        "box_max_temp": "45",
+        "type": "PETG"
+       },
+       "color": "#060606",
+       "vendor": "QIDI"
+      },
+      "slot3": {
+       "filament": {
+        "filament": "PETG-Tough",
+        "min_temp": "240",
+        "max_temp": "275",
+        "box_min_temp": "0",
+        "box_max_temp": "45",
+        "type": "PETG"
+       },
+       "color": "#FAFAFA",
+       "vendor": "QIDI"
+      },
+      "slot4": null,
+      "slot5": null,
+      "slot6": null,
+      "slot7": null,
+      "slot8": null,
+      "slot9": null,
+      "slot10": null,
+      "slot11": null,
+      "slot12": null,
+      "slot13": null,
+      "slot14": null,
+      "slot15": null,
+      "slot16": {
+       "filament": {
+        "filament": "PAHT-CF",
+        "min_temp": "300",
+        "max_temp": "320",
+        "box_min_temp": "0",
+        "box_max_temp": "65",
+        "type": "PAHT-CF"
+       },
+       "color": "#060606",
+       "vendor": "QIDI"
+      }
+     },
+     "last_loaded": "slot0"
+    },
+    "extruder": {
+     "loaded": true,
+     "target": 0.0,
+     "filament_detected": true
+    },
+    "operation": {
+     "current": -1,
+     "progress": 0,
+     "error": "Hardware Sync Error: 'ToolChange' object has no attribute 'is_tool_change'",
+     "box_button_state": 0,
+     "operate_state": 0,
+     "steps": [],
+     "is_waiting_user": false
+    },
+    "print": {
+     "printing": false,
+     "current_tool": -1,
+     "next_tool": -1
+    },
+    "rfid": {
+     "reading": false,
+     "results": {}
+    },
+    "drying": {},
+    "sensors": {
+     "b_endstop": 0,
+     "e_endstop": 1,
+     "runout_sensors": {
+      "slot0": 0,
+      "slot1": 1,
+      "slot2": 1,
+      "slot3": 1
+     },
+     "pressure_sensor": 0
+    },
+    "config": {
+     "auto_init_detect": 1,
+     "auto_read_rfid": 1,
+     "auto_reload_detect": 1,
+     "bed_temp": 70.0,
+     "box_count": 1,
+     "color_slot0": 2,
+     "color_slot1": 1,
+     "color_slot16": 2,
+     "color_slot2": 2,
+     "color_slot3": 1,
+     "enable_box": 1,
+     "enable_polar_cooler": 0,
+     "extrude_state": 0,
+     "filament_slot0": 40,
+     "filament_slot1": 40,
+     "filament_slot16": 30,
+     "filament_slot2": 40,
+     "filament_slot3": 40,
+     "file_path": "",
+     "filepath": "",
+     "gcode_lines": 50,
+     "hot_temp": 0.0,
+     "is_tool_change": 0,
+     "last_file": "",
+     "last_load_slot": "slot0",
+     "load_retry_num": 0,
+     "power_resume_z": 58.0,
+     "print_temp": 235.0,
+     "profile_name": "kamp",
+     "retry_step": null,
+     "runout_0": 0,
+     "runout_1": 0,
+     "runout_10": 0,
+     "runout_11": 0,
+     "runout_12": 0,
+     "runout_13": 0,
+     "runout_14": 0,
+     "runout_15": 0,
+     "runout_2": 0,
+     "runout_3": 0,
+     "runout_4": 0,
+     "runout_5": 0,
+     "runout_6": 0,
+     "runout_7": 0,
+     "runout_8": 0,
+     "runout_9": 0,
+     "slot0": 2,
+     "slot1": 0,
+     "slot2": 0,
+     "slot3": 0,
+     "slot_sync": "slot0",
+     "value_t0": "slot0",
+     "value_t1": "slot1",
+     "value_t2": "slot1",
+     "value_t3": "slot2",
+     "vendor_slot0": 1,
+     "vendor_slot1": 1,
+     "vendor_slot16": 1,
+     "vendor_slot2": 1,
+     "vendor_slot3": 1,
+     "was_interrupted": false,
+     "z_offset": 0.0
+    },
+    "config_summary": {
+     "enable_box": 1,
+     "auto_reload_detect": 1,
+     "auto_read_rfid": 1,
+     "auto_init_detect": 1,
+     "slot_sync": "slot0",
+     "retry_step": null,
+     "load_retry_num": 0
+    }
+   }
+  }
+ }
+}
