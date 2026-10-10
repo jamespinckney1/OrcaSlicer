@@ -25,6 +25,13 @@ fan and notes. After editing data, run the generator then, per touched vendor:
     python3 scripts/orca_profile_tool.py generate-id  --vendor <Vendor>
     python3 scripts/orca_profile_tool.py check        --vendor <Vendor>
 
+**Always bump the vendor version after any profile change.** OrcaSlicer runs from an installed copy
+of each vendor bundle in the user's settings folder (`system/<Vendor>`) and only replaces it when the
+bundle's `version` in `resources/profiles/<Vendor>.json` is higher. Shop builds use a `.90.` third
+component (Qidi `02.04.90.x`, BBL `02.08.90.x`, Creality `02.03.90.x`) so the online profile updater,
+which serves upstream `.00.`-level versions, never replaces the shop bundles. Increase the last
+component on every profile change, and keep the `.90.` level after merging upstream.
+
 Speed and temperature: filament presets carry speed as max volumetric speed. On 0.4 mm profiles the
 manufacturer's max print speed (converted at 0.45 mm line width x 0.2 mm layers) sets it, up to the
 highest value upstream already ships on that printer for that material; on other nozzle sizes it can

@@ -17,6 +17,9 @@ Afterwards run, per touched vendor:
     python3 scripts/orca_profile_tool.py update-index --vendor <V>
     python3 scripts/orca_profile_tool.py generate-id  --vendor <V>
     python3 scripts/orca_profile_tool.py check        --vendor <V>
+
+Then bump the last component of "version" in resources/profiles/<V>.json (shop builds use the
+.90. level, e.g. 02.04.90.17). Without a bump, existing installs keep their old profiles.
 """
 
 import argparse
