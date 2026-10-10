@@ -4941,6 +4941,10 @@
 			"sub_path": "filament/SUNLU/SUNLU ABS-FR @Creality Ender-3 Pro.json"
 		},
 		{
+			"name": "SUNLU High Speed ABS @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU High Speed ABS @Creality Ender-3 Pro.json"
+		},
+		{
 			"name": "Generic ASA @Creality Ender-3V3-all",
 			"sub_path": "filament/Generic ASA @Creality Ender-3V3-all.json"
 		},

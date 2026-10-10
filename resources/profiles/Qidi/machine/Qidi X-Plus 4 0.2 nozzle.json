@@ -22,5 +22,6 @@
 	],
 	"retraction_length": [
 		"0.4"
-	]
+	],
+	"printer_notes": "Shop machine: QIDI Plus 4 with a Phaetus Conch hotend (all-metal, rated 370 C, about 30 mm3/s, coated abrasive-resistant nozzle). Temperature and nozzle limits match the stock hotend; keep filament max volumetric speed at or below 30 mm3/s."
 }

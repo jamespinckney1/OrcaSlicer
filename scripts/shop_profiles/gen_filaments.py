@@ -75,7 +75,7 @@ PRINTERS = {
         "tag": "Creality Ender-3 Pro",
         "nozzles": [None],
         "compatible": lambda noz: [f"Creality Ender-3 Pro {n} nozzle" for n in ("0.2", "0.4", "0.6", "0.8")],
-        "max_nozzle_temp": 250,   # stock PTFE-lined hotend
+        "max_nozzle_temp": 260,   # Sprite Extruder (direct drive), PTFE-lined hotend rated 260 C
         "enclosed": False,
         "hardened": False,
         "generic": {
