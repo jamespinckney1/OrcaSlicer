@@ -360,6 +360,15 @@ int MoonrakerPrinterAgent::start_local_print(PrintParams params, OnUpdateStatusF
         return BAMBU_NETWORK_ERR_CANCELED;
     }
 
+    // QIDI Box: push the filament->slot mapping chosen in the send dialog so the file's
+    // T<n> commands load the right slots.
+    if ((m_qidi_box_detected || available_objects.count("multi_color_controller")) && !params.ams_mapping.empty()) {
+        if (update_fn)
+            update_fn(PrintingStageSending, 0, "Applying QIDI Box slot mapping...");
+        if (!apply_qidi_box_tool_mapping(params.ams_mapping))
+            BOOST_LOG_TRIVIAL(warning) << "MoonrakerPrinterAgent: could not apply QIDI Box slot mapping; printing with the printer's current mapping";
+    }
+
     // Start print via gcode script (simpler than JSON-RPC)
     if (update_fn)
         update_fn(PrintingStageSending, 0, "Starting print...");
@@ -896,7 +905,37 @@ bool MoonrakerPrinterAgent::fetch_qidi_box_filament_info(std::vector<AmsTrayData
     }
 
     const nlohmann::json& mcc = json["result"]["status"]["multi_color_controller"];
-    return parse_qidi_box_status(mcc, trays, max_lane_index);
+    m_qidi_box_detected = parse_qidi_box_status(mcc, trays, max_lane_index);
+    return m_qidi_box_detected;
+}
+
+bool MoonrakerPrinterAgent::apply_qidi_box_tool_mapping(const std::string& ams_mapping_json)
+{
+    // ams_mapping is the slicer's mapping_v0 array: one object per filament index with
+    // "ams" = global tray index (box*4+slot) or -1 when unmapped.
+    if (ams_mapping_json.empty())
+        return true;
+    auto mapping = nlohmann::json::parse(ams_mapping_json, nullptr, false, true);
+    if (mapping.is_discarded() || !mapping.is_array()) {
+        BOOST_LOG_TRIVIAL(warning) << "MoonrakerPrinterAgent::apply_qidi_box_tool_mapping: unreadable ams_mapping";
+        return false;
+    }
+    bool ok = true;
+    for (size_t i = 0; i < mapping.size(); ++i) {
+        const auto& item = mapping[i];
+        int tray = -1;
+        if (item.is_object() && item.contains("ams") && item["ams"].is_number())
+            tray = item["ams"].get<int>();
+        else if (item.is_number())
+            tray = item.get<int>();
+        if (tray < 0 || tray > 15)
+            continue;
+        const std::string gcode = "SAVE_VARIABLE VARIABLE=value_t" + std::to_string(i) + " VALUE='slot" + std::to_string(tray) + "'";
+        BOOST_LOG_TRIVIAL(info) << "MoonrakerPrinterAgent: QIDI Box mapping: " << gcode;
+        if (!send_gcode_sync(device_info.dev_id, gcode))
+            ok = false;
+    }
+    return ok;
 }
 
 // Numbers in the Box object arrive as numbers or as numeric strings ("240").

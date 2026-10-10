@@ -165,6 +165,10 @@ private:
     // QIDI Box (Plus 4 / Max 4 / Q2): Klipper object "multi_color_controller"
     bool fetch_qidi_box_filament_info(std::vector<AmsTrayData>& trays, int& max_lane_index);
     bool parse_qidi_box_status(const nlohmann::json& mcc, std::vector<AmsTrayData>& trays, int& max_lane_index);
+    // Write the slicer's filament->slot mapping into the printer's value_tN saved variables,
+    // which QIDI's T<n> macros read (EXTRUDER_LOAD SLOT=slotK). Returns false on send failure.
+    bool apply_qidi_box_tool_mapping(const std::string& ams_mapping_json);
+    bool m_qidi_box_detected = false;
     bool fetch_moonraker_filament_data(std::vector<AmsTrayData>& trays, int& max_lane_index);
 
     // JSON helper methods
