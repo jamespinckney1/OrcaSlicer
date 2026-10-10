@@ -3816,7 +3816,10 @@ void SelectMachineDialog::on_send_print()
         agent->track_update_property(dev_ota_str, obj_->get_ota_version());
     }
 
-    wxGetApp().plater()->record_shop_print_filament(); // Print-shop: remember what this printer last printed
+    // Print-shop: Quick start purge decision (writes FLUSH= into the G-code), then remember the filament.
+    if (!wxGetApp().plater()->check_quick_start_filament())
+        return;
+    wxGetApp().plater()->record_shop_print_filament();
     replace_job(*m_worker, m_print_job);
     BOOST_LOG_TRIVIAL(info) << "print_job: start print job";
 }

@@ -13770,8 +13770,6 @@ void Plater::priv::on_action_print_plate(SimpleEvent&)
     }
 
     PresetBundle& preset_bundle = *wxGetApp().preset_bundle;
-    if (!q->check_quick_start_filament())
-        return;
     if (preset_bundle.use_bbl_network() || wxGetApp().app_config->get_bool("use_printer_agents")) {
         open_machine_select_dialog(partplate_list.get_curr_plate_index());
     } else {
@@ -21185,7 +21183,10 @@ void Plater::send_gcode_legacy(int plate_idx, Export3mfProgressFn proFn)
         upload_job.upload_data.source_path = p->m_print_job_data._3mf_path;
     }
 
-    record_shop_print_filament(); // Print-shop: remember what this printer last printed
+    // Print-shop: Quick start purge decision (writes FLUSH= into the G-code), then remember the filament.
+    if (!check_quick_start_filament())
+        return;
+    record_shop_print_filament();
     p->export_gcode(fs::path(), false, std::move(upload_job));
 }
 int Plater::send_gcode(int plate_idx, Export3mfProgressFn proFn)
