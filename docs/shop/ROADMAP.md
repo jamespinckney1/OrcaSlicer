@@ -47,11 +47,12 @@ point of the G-code, so it can make a real comparison.
   ignore Boost.Beast timeouts, so quitting while the printer link is down can hang. Fix: close the
   socket from the stopping thread, real read timeouts, interruptible reconnect back-off, bounded
   wait on quit.
-- **Plus 4 Wi-Fi drops:** about 18% packet loss and 0.5 s average latency from the Mac to the
-  printer while the router hops are clean; signal is fair (-62 dBm). The adapter is an AICSemi
-  AIC8800 (USB a69c:88dc, driver `aic8800_fdrv`), whose driver enables power saving by default
-  (`ps_on`); the printer has no `iw`, `iwconfig` or `nmcli`. Next: confirm `ps_on`, disable it via
-  `/etc/modprobe.d`, reboot, re-test. Ethernet is the reliable fix.
+- **Plus 4 Wi-Fi:** largely fixed 2026-10-10. The AICSemi AIC8800 USB adapter (a69c:88dc, driver
+  `aic8800_fdrv`) had driver power saving on; `options aic8800_fdrv ps_on=0` in
+  `/etc/modprobe.d/aic8800-no-powersave.conf` turned it off. One-minute ping from the Mac: before,
+  11 of 60 lost, 474 ms average, 1481 ms worst; after, 1 lost, 48 ms average, 660 ms worst (the
+  router hops are about 4 ms, so some Wi-Fi latency remains). Note: `sudo reboot` left the
+  touchscreen dead; a power cycle recovered it. Ethernet remains the most reliable option.
 - **Hardware checks pending:** QIDI Box Load / Unload / Eject / Read RFID buttons, the Box slot
   mapping push, 3D Envision send into an already-open slicer, the Device tab mesh button.
 - **3D Envision:** merge its `send-to-slicer` branch into `main`.
