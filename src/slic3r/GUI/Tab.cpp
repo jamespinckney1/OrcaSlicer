@@ -98,6 +98,10 @@
 #include "Notebook.hpp"
 
 #include "Widgets/ComboBox.hpp"
+#include "Widgets/Button.hpp"
+#include "StartGCodeLibrary.hpp"
+#include <wx/textdlg.h>
+#include <boost/algorithm/string/trim.hpp>
 #include "Widgets/Label.hpp"
 #include "Widgets/MultiNozzleSync.hpp"
 #include "Widgets/SwitchButton.hpp"
@@ -5410,6 +5414,38 @@ void TabPrinter::build_fff()
             validate_custom_gcode_cb(this, optgroup_title, opt_key, value);
         };
         optgroup->edit_custom_gcode = edit_custom_gcode_fn;
+        {
+            // Print-shop: saved start G-code snippets for this printer model.
+            auto library_widget = [this](wxWindow* parent) -> wxSizer* {
+                auto sizer = new wxBoxSizer(wxHORIZONTAL);
+                auto label = new wxStaticText(parent, wxID_ANY, _L("Saved start G-code") + ":");
+                label->SetFont(wxGetApp().normal_font());
+                m_start_gcode_lib_combo = new ComboBox(parent, wxID_ANY, wxString(""), wxDefaultPosition,
+                                                       wxSize(parent->FromDIP(260), -1), 0, nullptr, wxCB_READONLY);
+                m_start_gcode_lib_combo->SetToolTip(_L("Pick a saved snippet to replace the start G-code below. "
+                                                       "Snippets are saved per printer model."));
+                auto save_btn = new Button(parent, _L("Save current as..."));
+                save_btn->SetStyle(ButtonStyle::Regular, ButtonType::Parameter);
+                save_btn->SetToolTip(_L("Save the start G-code below as a named snippet for this printer model."));
+                auto del_btn = new Button(parent, _L("Delete"));
+                del_btn->SetStyle(ButtonStyle::Regular, ButtonType::Parameter);
+                del_btn->SetToolTip(_L("Delete the selected snippet from the library."));
+                const int gap = parent->FromDIP(6);
+                sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, gap);
+                sizer->Add(m_start_gcode_lib_combo, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, gap);
+                sizer->Add(save_btn, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, gap);
+                sizer->Add(del_btn, 0, wxALIGN_CENTER_VERTICAL);
+                m_start_gcode_lib_combo->Bind(wxEVT_COMBOBOX, [this](wxCommandEvent&) { apply_start_gcode_snippet(); });
+                save_btn->Bind(wxEVT_BUTTON, [this, parent](wxCommandEvent&) { save_start_gcode_snippet(parent); });
+                del_btn->Bind(wxEVT_BUTTON, [this, parent](wxCommandEvent&) { delete_start_gcode_snippet(parent); });
+                refresh_start_gcode_library();
+                return sizer;
+            };
+            Line library_line = Line{"", ""};
+            library_line.full_width = 1;
+            library_line.append_widget(library_widget);
+            optgroup->append_line(library_line);
+        }
         option = optgroup->get_option("machine_start_gcode");
         option.opt.full_width = true;
         option.opt.is_code = true;
@@ -6049,8 +6085,101 @@ if (is_marlin_flavor)
 }
 
 // this gets executed after preset is loaded and before GUI fields are updated
+// ---- Print-shop: start G-code snippet library -------------------------------------------------
+
+static std::string current_printer_model(const PresetCollection* presets)
+{
+    return presets ? presets->get_edited_preset().config.opt_string("printer_model") : std::string();
+}
+
+void TabPrinter::refresh_start_gcode_library()
+{
+    if (!m_start_gcode_lib_combo)
+        return;
+    const std::string model = current_printer_model(m_presets);
+    m_start_gcode_lib_items.clear();
+    m_start_gcode_lib_combo->Clear();
+    m_start_gcode_lib_combo->Append(_L("Select a saved snippet..."));
+    for (const StartGCodeSnippet* s : StartGCodeLibrary::get().for_printer(model)) {
+        wxString label = from_u8(s->name);
+        if (s->printer_model.empty())
+            label += " (" + _L("any printer") + ")";
+        m_start_gcode_lib_combo->Append(label);
+        m_start_gcode_lib_items.push_back(*s);
+    }
+    m_start_gcode_lib_combo->SetSelection(0);
+}
+
+void TabPrinter::apply_start_gcode_snippet()
+{
+    if (!m_start_gcode_lib_combo)
+        return;
+    const int sel = m_start_gcode_lib_combo->GetSelection();
+    if (sel <= 0 || size_t(sel) > m_start_gcode_lib_items.size())
+        return;
+    const StartGCodeSnippet& snippet = m_start_gcode_lib_items[sel - 1];
+    validate_custom_gcodes_was_shown = !validate_custom_gcode(_L("Machine start G-code"), snippet.gcode);
+    set_custom_gcode("machine_start_gcode", snippet.gcode);
+    update_dirty();
+    update();
+}
+
+void TabPrinter::save_start_gcode_snippet(wxWindow* parent)
+{
+    const std::string model = current_printer_model(m_presets);
+    wxTextEntryDialog dlg(parent,
+                          _L("Name for this start G-code snippet.") + "\n" +
+                              _L("It will be offered for printer model") + ": " +
+                              (model.empty() ? _L("any printer") : from_u8(model)),
+                          _L("Save start G-code"));
+    if (dlg.ShowModal() != wxID_OK)
+        return;
+    std::string name = into_u8(dlg.GetValue());
+    boost::algorithm::trim(name);
+    if (name.empty())
+        return;
+    StartGCodeLibrary& lib = StartGCodeLibrary::get();
+    if (lib.find(name, model)) {
+        MessageDialog confirm(parent, _L("A snippet with this name already exists for this printer model. Replace it?"),
+                              _L("Save start G-code"), wxICON_QUESTION | wxYES_NO);
+        if (confirm.ShowModal() != wxID_YES)
+            return;
+    }
+    lib.add_or_replace(StartGCodeSnippet{name, model, get_custom_gcode("machine_start_gcode")});
+    if (!lib.save()) {
+        MessageDialog err(parent, _L("Could not write the start G-code library file") + ":\n" + from_u8(StartGCodeLibrary::path()),
+                          _L("Save start G-code"), wxICON_ERROR | wxOK);
+        err.ShowModal();
+    }
+    refresh_start_gcode_library();
+    for (size_t i = 0; i < m_start_gcode_lib_items.size(); ++i)
+        if (m_start_gcode_lib_items[i].name == name && m_start_gcode_lib_items[i].printer_model == model) {
+            m_start_gcode_lib_combo->SetSelection(int(i) + 1);
+            break;
+        }
+}
+
+void TabPrinter::delete_start_gcode_snippet(wxWindow* parent)
+{
+    if (!m_start_gcode_lib_combo)
+        return;
+    const int sel = m_start_gcode_lib_combo->GetSelection();
+    if (sel <= 0 || size_t(sel) > m_start_gcode_lib_items.size())
+        return;
+    const StartGCodeSnippet snippet = m_start_gcode_lib_items[sel - 1];
+    MessageDialog confirm(parent, format_wxstr(_L("Delete the saved start G-code snippet \"%1%\"?"), snippet.name),
+                          _L("Delete start G-code"), wxICON_WARNING | wxYES_NO);
+    if (confirm.ShowModal() != wxID_YES)
+        return;
+    StartGCodeLibrary& lib = StartGCodeLibrary::get();
+    lib.remove(snippet.name, snippet.printer_model);
+    lib.save();
+    refresh_start_gcode_library();
+}
+
 void TabPrinter::on_preset_loaded()
 {
+    refresh_start_gcode_library();
     // R8: reset the belt-tilt transition tracking to reflect the freshly loaded preset WITHOUT
     // running update_fff()'s reset logic. on_preset_loaded() is called from Tab::load_current_preset()
     // on every printer preset load, right before update()->update_fff(). Seeding m_was_belt_printer

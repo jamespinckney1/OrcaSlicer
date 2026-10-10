@@ -1,4 +1,5 @@
 #include "Preferences.hpp"
+#include "ShopNaming.hpp"
 #include "CloudProvider.hpp"
 #include "OptionsGroup.hpp"
 #include "GUI_App.hpp"
@@ -1727,6 +1728,17 @@ void PreferencesDialog::create_items()
             wxGetApp().mainframe->set_max_recent_count(max);
     });
     g_sizer->Add(item_max_recent_count);
+
+    // Print-shop: configuration-based project names and a default project folder.
+    auto item_shop_autoname = create_item_checkbox(_L("Suggest configuration-based project names"),
+        _L("When saving a project, propose file_printer_filament_nozzle_support, e.g. bracket_XP4_SUN-PLA+_0.4_sup.3mf"),
+        ShopNaming::kAutoNameKey);
+    g_sizer->Add(item_shop_autoname);
+
+    auto item_shop_dir = create_item_input(_L("Project folder"), "",
+        _L("Folder offered when saving a project that has no file yet. Leave empty to use the last used folder."),
+        ShopNaming::kProjectDirKey);
+    g_sizer->Add(item_shop_dir);
 
     auto item_recent_models    = create_item_checkbox(_L("Add STL/STEP files to recent files list"), "", "recent_models");
     g_sizer->Add(item_recent_models);

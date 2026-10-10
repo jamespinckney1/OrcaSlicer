@@ -44,6 +44,9 @@
 #include "wxExtensions.hpp"
 #include "ConfigManipulation.hpp"
 #include "OptionsGroup.hpp"
+#include "StartGCodeLibrary.hpp"
+
+class ComboBox;
 #include "libslic3r/Preset.hpp"
 //BBS: GUI refactor
 #include "Notebook.hpp"
@@ -668,6 +671,15 @@ class TabPrinter : public Tab
 {
 private:
 	bool		m_use_silent_mode = false;
+
+    // Print-shop: dropdown of saved start G-code snippets on the Machine G-code page.
+    ComboBox*                       m_start_gcode_lib_combo = nullptr;
+    std::vector<StartGCodeSnippet>  m_start_gcode_lib_items;
+    void        refresh_start_gcode_library();
+    void        apply_start_gcode_snippet();
+    void        save_start_gcode_snippet(wxWindow* parent);
+    void        delete_start_gcode_snippet(wxWindow* parent);
+
 	void		append_option_line(ConfigOptionsGroupShp optgroup, const std::string opt_key, const std::string& label_path = "");
 	bool		m_rebuild_kinematics_page = false;
 	void        update_input_shaper_menu(GCodeFlavor flavor);

@@ -239,6 +239,7 @@
 #include "NotificationManager.hpp"
 #include "PresetComboBoxes.hpp"
 #include "MsgDialog.hpp"
+#include "ShopNaming.hpp"
 #include "Widgets/MultiNozzleSync.hpp"           // NozzleOption, tryPopUpMultiNozzleDialog, setExtruderNozzleCount
 #include "DeviceCore/DevNozzleSystem.h"          // DevNozzle, GetExtNozzles / GetRackNozzles
 #include "ProjectDirtyStateManager.hpp"
@@ -10595,6 +10596,17 @@ wxString Plater::priv::get_export_file(GUI::FileType file_type, const wxString& 
         // typed filename wins, keeping a plain ".3mf" output fully valid.
         output_file.replace_extension(published ? "published.3mf" : "3mf");
         dlg_title = title.empty() ? _L("Save file as") : title;
+        // Print-shop: suggest "<file>_<printer>_<filament>_<nozzle>_<support>.3mf" and, for a
+        // project that has no file yet, open the dialog in the shop's project folder.
+        if (!published && !output_file.stem().empty() && wxGetApp().app_config->get_bool(ShopNaming::kAutoNameKey)) {
+            const std::string stem = ShopNaming::suggest_project_stem(output_file.stem().string(), *wxGetApp().preset_bundle);
+            output_file = output_file.parent_path() / (stem + ".3mf");
+        }
+        if (get_project_filename(".3mf").IsEmpty()) {
+            const std::string shop_dir = wxGetApp().app_config->get(ShopNaming::kProjectDirKey);
+            if (!shop_dir.empty() && fs::is_directory(shop_dir))
+                output_file = fs::path(shop_dir) / output_file.filename();
+        }
             break;
         }
         case FT_OBJ:

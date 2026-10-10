@@ -616,6 +616,11 @@ void AppConfig::set_defaults()
         set("max_recent_count", "18");
     }
 
+    // Print-shop defaults
+    if (get("shop_project_autoname").empty()) {
+        set_bool("shop_project_autoname", true);
+    }
+
     if (get("recent_models").empty()) {
         set("recent_models", "0");
     }
