@@ -4817,6 +4817,86 @@
 			"sub_path": "filament/HP-TPU @Sermoon M300-all.json"
 		},
 		{
+			"name": "Fiberon PETG-ESD @Creality CR-10 Smart",
+			"sub_path": "filament/Fiberon/Fiberon PETG-ESD @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "OVERTURE High Speed PETG @Creality CR-10 Smart",
+			"sub_path": "filament/OVERTURE/OVERTURE High Speed PETG @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "OVERTURE PETG @Creality CR-10 Smart",
+			"sub_path": "filament/OVERTURE/OVERTURE PETG @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "QIDI PETG Basic @Creality CR-10 Smart",
+			"sub_path": "filament/QIDI/QIDI PETG Basic @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "QIDI PETG Rapido @Creality CR-10 Smart",
+			"sub_path": "filament/QIDI/QIDI PETG Rapido @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "QIDI PETG Translucent @Creality CR-10 Smart",
+			"sub_path": "filament/QIDI/QIDI PETG Translucent @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "QIDI PETG-Tough @Creality CR-10 Smart",
+			"sub_path": "filament/QIDI/QIDI PETG-Tough @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU High Speed Matte PETG @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU High Speed Matte PETG @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU PETG 2.0 @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU PETG 2.0 @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU PETG @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU PETG @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU PETG Glow in the Dark @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU PETG Glow in the Dark @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU PETG Rainbow @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU PETG Rainbow @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU PETG Transparent @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU PETG Transparent @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "OVERTURE ABS @Creality CR-10 Smart",
+			"sub_path": "filament/OVERTURE/OVERTURE ABS @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "QIDI ABS Rapido @Creality CR-10 Smart",
+			"sub_path": "filament/QIDI/QIDI ABS Rapido @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "QIDI ABS Rapido Metal @Creality CR-10 Smart",
+			"sub_path": "filament/QIDI/QIDI ABS Rapido Metal @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "QIDI Odorless-ABS Rapido @Creality CR-10 Smart",
+			"sub_path": "filament/QIDI/QIDI Odorless-ABS Rapido @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU ABS @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU ABS @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU ABS Transparent @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU ABS Transparent @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU ABS-FR @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU ABS-FR @Creality CR-10 Smart.json"
+		},
+		{
 			"name": "Generic ABS @Creality Ender-3V3-all",
 			"sub_path": "filament/Generic ABS @Creality Ender-3V3-all.json"
 		},
@@ -4831,6 +4911,34 @@
 		{
 			"name": "Generic ABS @Creality K2-all",
 			"sub_path": "filament/Generic ABS @Creality K2-all.json"
+		},
+		{
+			"name": "OVERTURE ABS @Creality Ender-3 Pro",
+			"sub_path": "filament/OVERTURE/OVERTURE ABS @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "QIDI ABS Rapido @Creality Ender-3 Pro",
+			"sub_path": "filament/QIDI/QIDI ABS Rapido @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "QIDI ABS Rapido Metal @Creality Ender-3 Pro",
+			"sub_path": "filament/QIDI/QIDI ABS Rapido Metal @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "QIDI Odorless-ABS Rapido @Creality Ender-3 Pro",
+			"sub_path": "filament/QIDI/QIDI Odorless-ABS Rapido @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU ABS @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU ABS @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU ABS Transparent @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU ABS Transparent @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU ABS-FR @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU ABS-FR @Creality Ender-3 Pro.json"
 		},
 		{
 			"name": "Generic ASA @Creality Ender-3V3-all",
@@ -4849,6 +4957,38 @@
 			"sub_path": "filament/Generic ASA @Creality K2-all.json"
 		},
 		{
+			"name": "OVERTURE ASA @Creality CR-10 Smart",
+			"sub_path": "filament/OVERTURE/OVERTURE ASA @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "OVERTURE ASA @Creality Ender-3 Pro",
+			"sub_path": "filament/OVERTURE/OVERTURE ASA @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "QIDI ASA @Creality CR-10 Smart",
+			"sub_path": "filament/QIDI/QIDI ASA @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "QIDI ASA @Creality Ender-3 Pro",
+			"sub_path": "filament/QIDI/QIDI ASA @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "QIDI ASA-Aero @Creality CR-10 Smart",
+			"sub_path": "filament/QIDI/QIDI ASA-Aero @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "QIDI ASA-Aero @Creality Ender-3 Pro",
+			"sub_path": "filament/QIDI/QIDI ASA-Aero @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU ASA @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU ASA @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU ASA @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU ASA @Creality Ender-3 Pro.json"
+		},
+		{
 			"name": "Generic PA-CF @Creality Ender-3V3-all",
 			"sub_path": "filament/Generic PA-CF @Creality Ender-3V3-all.json"
 		},
@@ -4863,6 +5003,10 @@
 		{
 			"name": "Generic PC @Creality K1-all",
 			"sub_path": "filament/Generic PC @Creality K1-all.json"
+		},
+		{
+			"name": "Fiberon PETG-ESD @Creality Ender-3 Pro",
+			"sub_path": "filament/Fiberon/Fiberon PETG-ESD @Creality Ender-3 Pro.json"
 		},
 		{
 			"name": "Generic PETG @Creality Ender-3V3-all",
@@ -4881,6 +5025,246 @@
 			"sub_path": "filament/Generic PETG @Creality K2-all.json"
 		},
 		{
+			"name": "OVERTURE High Speed PETG @Creality Ender-3 Pro",
+			"sub_path": "filament/OVERTURE/OVERTURE High Speed PETG @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "OVERTURE PETG @Creality Ender-3 Pro",
+			"sub_path": "filament/OVERTURE/OVERTURE PETG @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "QIDI PETG Basic @Creality Ender-3 Pro",
+			"sub_path": "filament/QIDI/QIDI PETG Basic @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "QIDI PETG Rapido @Creality Ender-3 Pro",
+			"sub_path": "filament/QIDI/QIDI PETG Rapido @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "QIDI PETG Translucent @Creality Ender-3 Pro",
+			"sub_path": "filament/QIDI/QIDI PETG Translucent @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "QIDI PETG-Tough @Creality Ender-3 Pro",
+			"sub_path": "filament/QIDI/QIDI PETG-Tough @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU High Speed Matte PETG @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU High Speed Matte PETG @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU PETG 2.0 @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU PETG 2.0 @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU PETG @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU PETG @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU PETG Glow in the Dark @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU PETG Glow in the Dark @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU PETG Rainbow @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU PETG Rainbow @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU PETG Transparent @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU PETG Transparent @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "OVERTURE Air PLA @Creality CR-10 Smart",
+			"sub_path": "filament/OVERTURE/OVERTURE Air PLA @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "OVERTURE Easy PLA @Creality CR-10 Smart",
+			"sub_path": "filament/OVERTURE/OVERTURE Easy PLA @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "OVERTURE Glow PLA @Creality CR-10 Smart",
+			"sub_path": "filament/OVERTURE/OVERTURE Glow PLA @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "OVERTURE High Speed PLA @Creality CR-10 Smart",
+			"sub_path": "filament/OVERTURE/OVERTURE High Speed PLA @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "OVERTURE Matte PLA @Creality CR-10 Smart",
+			"sub_path": "filament/OVERTURE/OVERTURE Matte PLA @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "OVERTURE PLA @Creality CR-10 Smart",
+			"sub_path": "filament/OVERTURE/OVERTURE PLA @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "OVERTURE PLA Professional @Creality CR-10 Smart",
+			"sub_path": "filament/OVERTURE/OVERTURE PLA Professional @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "OVERTURE PLA+ @Creality CR-10 Smart",
+			"sub_path": "filament/OVERTURE/OVERTURE PLA+ @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "OVERTURE Shimmer PLA @Creality CR-10 Smart",
+			"sub_path": "filament/OVERTURE/OVERTURE Shimmer PLA @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "OVERTURE Silk PLA @Creality CR-10 Smart",
+			"sub_path": "filament/OVERTURE/OVERTURE Silk PLA @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "OVERTURE Super PLA+ @Creality CR-10 Smart",
+			"sub_path": "filament/OVERTURE/OVERTURE Super PLA+ @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "OVERTURE Turbo PLA @Creality CR-10 Smart",
+			"sub_path": "filament/OVERTURE/OVERTURE Turbo PLA @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "QIDI PLA Basic @Creality CR-10 Smart",
+			"sub_path": "filament/QIDI/QIDI PLA Basic @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "QIDI PLA Matte Basic @Creality CR-10 Smart",
+			"sub_path": "filament/QIDI/QIDI PLA Matte Basic @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "QIDI PLA Matte Rapido @Creality CR-10 Smart",
+			"sub_path": "filament/QIDI/QIDI PLA Matte Rapido @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "QIDI PLA Rapido @Creality CR-10 Smart",
+			"sub_path": "filament/QIDI/QIDI PLA Rapido @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "QIDI PLA Rapido Metal @Creality CR-10 Smart",
+			"sub_path": "filament/QIDI/QIDI PLA Rapido Metal @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "QIDI PLA Rapido Silk @Creality CR-10 Smart",
+			"sub_path": "filament/QIDI/QIDI PLA Rapido Silk @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "QIDI PLA Wood @Creality CR-10 Smart",
+			"sub_path": "filament/QIDI/QIDI PLA Wood @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU APLA (AntiString PLA) @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU APLA (AntiString PLA) @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU High Speed Marble PLA @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU High Speed Marble PLA @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU High Speed Matte PLA @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU High Speed Matte PLA @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU High Speed PLA @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU High Speed PLA @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU High Speed PLA+ 2.0 @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU High Speed PLA+ 2.0 @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU High Speed PLA+ @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU High Speed PLA+ @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU LW-PLA @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU LW-PLA @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU PLA @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU PLA @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU PLA Classic @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU PLA Classic @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU PLA Galaxy @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU PLA Galaxy @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU PLA Glow in the Dark @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU PLA Glow in the Dark @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU PLA Lite @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU PLA Lite @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU PLA Matte @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU PLA Matte @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU PLA Matte Dual-Color @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU PLA Matte Dual-Color @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU PLA Meta @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU PLA Meta @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU PLA Metal (PLA Metallic) @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU PLA Metal (PLA Metallic) @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU PLA Rainbow @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU PLA Rainbow @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU PLA Transparent @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU PLA Transparent @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU PLA Transparent Rainbow @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU PLA Transparent Rainbow @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU PLA Twinkling @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU PLA Twinkling @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU PLA Wood @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU PLA Wood @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU PLA+ 2.0 @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU PLA+ 2.0 @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU PLA+ @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU PLA+ @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ 2.0 @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ 2.0 @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Dual-Color @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Dual-Color @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Four-Color @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Four-Color @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Rainbow @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Rainbow @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Tri-Color @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Tri-Color @Creality CR-10 Smart.json"
+		},
+		{
 			"name": "Generic PLA @Creality Ender-3V3-all",
 			"sub_path": "filament/Generic PLA @Creality Ender-3V3-all.json"
 		},
@@ -4895,6 +5279,198 @@
 		{
 			"name": "Generic PLA @Creality K2-all",
 			"sub_path": "filament/Generic PLA @Creality K2-all.json"
+		},
+		{
+			"name": "OVERTURE Air PLA @Creality Ender-3 Pro",
+			"sub_path": "filament/OVERTURE/OVERTURE Air PLA @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "OVERTURE Easy PLA @Creality Ender-3 Pro",
+			"sub_path": "filament/OVERTURE/OVERTURE Easy PLA @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "OVERTURE Glow PLA @Creality Ender-3 Pro",
+			"sub_path": "filament/OVERTURE/OVERTURE Glow PLA @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "OVERTURE Matte PLA @Creality Ender-3 Pro",
+			"sub_path": "filament/OVERTURE/OVERTURE Matte PLA @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "OVERTURE PLA @Creality Ender-3 Pro",
+			"sub_path": "filament/OVERTURE/OVERTURE PLA @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "OVERTURE PLA Professional @Creality Ender-3 Pro",
+			"sub_path": "filament/OVERTURE/OVERTURE PLA Professional @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "OVERTURE PLA+ @Creality Ender-3 Pro",
+			"sub_path": "filament/OVERTURE/OVERTURE PLA+ @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "OVERTURE Shimmer PLA @Creality Ender-3 Pro",
+			"sub_path": "filament/OVERTURE/OVERTURE Shimmer PLA @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "OVERTURE Silk PLA @Creality Ender-3 Pro",
+			"sub_path": "filament/OVERTURE/OVERTURE Silk PLA @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "OVERTURE Super PLA+ @Creality Ender-3 Pro",
+			"sub_path": "filament/OVERTURE/OVERTURE Super PLA+ @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "OVERTURE Turbo PLA @Creality Ender-3 Pro",
+			"sub_path": "filament/OVERTURE/OVERTURE Turbo PLA @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "QIDI PLA Basic @Creality Ender-3 Pro",
+			"sub_path": "filament/QIDI/QIDI PLA Basic @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "QIDI PLA Matte Basic @Creality Ender-3 Pro",
+			"sub_path": "filament/QIDI/QIDI PLA Matte Basic @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "QIDI PLA Rapido Metal @Creality Ender-3 Pro",
+			"sub_path": "filament/QIDI/QIDI PLA Rapido Metal @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "QIDI PLA Rapido Silk @Creality Ender-3 Pro",
+			"sub_path": "filament/QIDI/QIDI PLA Rapido Silk @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "QIDI PLA Wood @Creality Ender-3 Pro",
+			"sub_path": "filament/QIDI/QIDI PLA Wood @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU APLA (AntiString PLA) @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU APLA (AntiString PLA) @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU LW-PLA @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU LW-PLA @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU PLA @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU PLA @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU PLA Classic @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU PLA Classic @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU PLA Galaxy @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU PLA Galaxy @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU PLA Glow in the Dark @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU PLA Glow in the Dark @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU PLA Lite @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU PLA Lite @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU PLA Matte @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU PLA Matte @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU PLA Matte Dual-Color @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU PLA Matte Dual-Color @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU PLA Metal (PLA Metallic) @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU PLA Metal (PLA Metallic) @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU PLA Rainbow @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU PLA Rainbow @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU PLA Transparent @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU PLA Transparent @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU PLA Transparent Rainbow @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU PLA Transparent Rainbow @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU PLA Twinkling @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU PLA Twinkling @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU PLA Wood @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU PLA Wood @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU PLA+ 2.0 @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU PLA+ 2.0 @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU PLA+ @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU PLA+ @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ 2.0 @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ 2.0 @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Dual-Color @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Dual-Color @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Four-Color @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Four-Color @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Rainbow @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Rainbow @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Tri-Color @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Tri-Color @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "OVERTURE High Speed PLA @Creality Ender-3 Pro",
+			"sub_path": "filament/OVERTURE/OVERTURE High Speed PLA @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "QIDI PLA Matte Rapido @Creality Ender-3 Pro",
+			"sub_path": "filament/QIDI/QIDI PLA Matte Rapido @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "QIDI PLA Rapido @Creality Ender-3 Pro",
+			"sub_path": "filament/QIDI/QIDI PLA Rapido @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU High Speed Marble PLA @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU High Speed Marble PLA @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU High Speed Matte PLA @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU High Speed Matte PLA @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU High Speed PLA @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU High Speed PLA @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU High Speed PLA+ 2.0 @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU High Speed PLA+ 2.0 @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU High Speed PLA+ @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU High Speed PLA+ @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU PLA Meta @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU PLA Meta @Creality Ender-3 Pro.json"
 		},
 		{
 			"name": "Generic PLA-CF @Creality Hi-all",
@@ -4923,6 +5499,70 @@
 		{
 			"name": "Generic TPU @Creality K2-all",
 			"sub_path": "filament/Generic TPU @Creality K2-all.json"
+		},
+		{
+			"name": "OVERTURE High Speed TPU 95A @Creality CR-10 Smart",
+			"sub_path": "filament/OVERTURE/OVERTURE High Speed TPU 95A @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "OVERTURE High Speed TPU 95A @Creality Ender-3 Pro",
+			"sub_path": "filament/OVERTURE/OVERTURE High Speed TPU 95A @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "OVERTURE Matte TPU @Creality CR-10 Smart",
+			"sub_path": "filament/OVERTURE/OVERTURE Matte TPU @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "OVERTURE Matte TPU @Creality Ender-3 Pro",
+			"sub_path": "filament/OVERTURE/OVERTURE Matte TPU @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "OVERTURE TPU 95A @Creality CR-10 Smart",
+			"sub_path": "filament/OVERTURE/OVERTURE TPU 95A @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "OVERTURE TPU 95A @Creality Ender-3 Pro",
+			"sub_path": "filament/OVERTURE/OVERTURE TPU 95A @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "QIDI TPU-Aero @Creality CR-10 Smart",
+			"sub_path": "filament/QIDI/QIDI TPU-Aero @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "QIDI TPU-Aero @Creality Ender-3 Pro",
+			"sub_path": "filament/QIDI/QIDI TPU-Aero @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "QIDI TPU95A-HF @Creality CR-10 Smart",
+			"sub_path": "filament/QIDI/QIDI TPU95A-HF @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "QIDI TPU95A-HF @Creality Ender-3 Pro",
+			"sub_path": "filament/QIDI/QIDI TPU95A-HF @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU Silk TPU (TPU-SILK) @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU Silk TPU (TPU-SILK) @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU Silk TPU (TPU-SILK) @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU Silk TPU (TPU-SILK) @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU TPU 90A @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU TPU 90A @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU TPU 90A @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU TPU 90A @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "SUNLU TPU 95A @Creality CR-10 Smart",
+			"sub_path": "filament/SUNLU/SUNLU TPU 95A @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "SUNLU TPU 95A @Creality Ender-3 Pro",
+			"sub_path": "filament/SUNLU/SUNLU TPU 95A @Creality Ender-3 Pro.json"
 		},
 		{
 			"name": "Generic ASA-CF @Creality Hi-all",

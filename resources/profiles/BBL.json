@@ -3220,6 +3220,14 @@
 			"sub_path": "filament/Polymaker/Fiberon PET-CF @BBL X1C.json"
 		},
 		{
+			"name": "Fiberon PETG-ESD @BBL A1",
+			"sub_path": "filament/Fiberon/Fiberon PETG-ESD @BBL A1.json"
+		},
+		{
+			"name": "Fiberon PETG-ESD @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PETG-ESD @BBL A1 0.2 nozzle.json"
+		},
+		{
 			"name": "Fiberon PETG-ESD @BBL H2D",
 			"sub_path": "filament/Polymaker/Fiberon PETG-ESD @BBL H2D.json"
 		},
@@ -8024,6 +8032,22 @@
 			"sub_path": "filament/Generic TPU for AMS @BBL X2D 0.4 nozzle.json"
 		},
 		{
+			"name": "QIDI ABS-GF25 @BBL A1",
+			"sub_path": "filament/QIDI/QIDI ABS-GF25 @BBL A1.json"
+		},
+		{
+			"name": "QIDI ABS-GF25 @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI ABS-GF25 @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU ABS-GF @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU ABS-GF @BBL A1.json"
+		},
+		{
+			"name": "SUNLU ABS-GF @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU ABS-GF @BBL A1 0.2 nozzle.json"
+		},
+		{
 			"name": "Generic ABS @BBL H2DP",
 			"sub_path": "filament/Generic ABS @BBL H2DP.json"
 		},
@@ -8038,6 +8062,70 @@
 		{
 			"name": "Generic ABS @BBL X1E 0.2 nozzle",
 			"sub_path": "filament/Generic ABS @BBL X1E 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE ABS @BBL A1",
+			"sub_path": "filament/OVERTURE/OVERTURE ABS @BBL A1.json"
+		},
+		{
+			"name": "QIDI ABS Rapido @BBL A1",
+			"sub_path": "filament/QIDI/QIDI ABS Rapido @BBL A1.json"
+		},
+		{
+			"name": "QIDI ABS Rapido Metal @BBL A1",
+			"sub_path": "filament/QIDI/QIDI ABS Rapido Metal @BBL A1.json"
+		},
+		{
+			"name": "QIDI Odorless-ABS Rapido @BBL A1",
+			"sub_path": "filament/QIDI/QIDI Odorless-ABS Rapido @BBL A1.json"
+		},
+		{
+			"name": "SUNLU ABS @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU ABS @BBL A1.json"
+		},
+		{
+			"name": "SUNLU ABS Transparent @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU ABS Transparent @BBL A1.json"
+		},
+		{
+			"name": "SUNLU ABS-FR @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU ABS-FR @BBL A1.json"
+		},
+		{
+			"name": "SUNLU High Speed ABS @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU High Speed ABS @BBL A1.json"
+		},
+		{
+			"name": "OVERTURE ABS @BBL A1 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE ABS @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI ABS Rapido @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI ABS Rapido @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI ABS Rapido Metal @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI ABS Rapido Metal @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI Odorless-ABS Rapido @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI Odorless-ABS Rapido @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU ABS @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU ABS @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU ABS Transparent @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU ABS Transparent @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU ABS-FR @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU ABS-FR @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed ABS @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed ABS @BBL A1 0.2 nozzle.json"
 		},
 		{
 			"name": "PolyLite ABS @BBL P1P 0.2 nozzle",
@@ -8064,6 +8152,54 @@
 			"sub_path": "filament/Generic ASA @BBL X1E 0.2 nozzle.json"
 		},
 		{
+			"name": "Fiberon ASA-CF08 @BBL A1",
+			"sub_path": "filament/Fiberon/Fiberon ASA-CF08 @BBL A1.json"
+		},
+		{
+			"name": "OVERTURE ASA @BBL A1",
+			"sub_path": "filament/OVERTURE/OVERTURE ASA @BBL A1.json"
+		},
+		{
+			"name": "QIDI ASA @BBL A1",
+			"sub_path": "filament/QIDI/QIDI ASA @BBL A1.json"
+		},
+		{
+			"name": "QIDI ASA-Aero @BBL A1",
+			"sub_path": "filament/QIDI/QIDI ASA-Aero @BBL A1.json"
+		},
+		{
+			"name": "QIDI ASA-CF20 Core @BBL A1",
+			"sub_path": "filament/QIDI/QIDI ASA-CF20 Core @BBL A1.json"
+		},
+		{
+			"name": "SUNLU ASA @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU ASA @BBL A1.json"
+		},
+		{
+			"name": "Fiberon ASA-CF08 @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon ASA-CF08 @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE ASA @BBL A1 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE ASA @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI ASA @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI ASA @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI ASA-Aero @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI ASA-Aero @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI ASA-CF20 Core @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI ASA-CF20 Core @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU ASA @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU ASA @BBL A1 0.2 nozzle.json"
+		},
+		{
 			"name": "PolyLite ASA @BBL P1P 0.2 nozzle",
 			"sub_path": "filament/PolyLite ASA @BBL P1P 0.2 nozzle.json"
 		},
@@ -8074,6 +8210,30 @@
 		{
 			"name": "PolyLite ASA @BBL X1E 0.2 nozzle",
 			"sub_path": "filament/PolyLite ASA @BBL X1E 0.2 nozzle.json"
+		},
+		{
+			"name": "Fiberon PA6-GF25 @BBL A1",
+			"sub_path": "filament/Fiberon/Fiberon PA6-GF25 @BBL A1.json"
+		},
+		{
+			"name": "Fiberon PA6-GF25 @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PA6-GF25 @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI PAHT-GF (PPA-GF) @BBL A1",
+			"sub_path": "filament/QIDI/QIDI PAHT-GF (PPA-GF) @BBL A1.json"
+		},
+		{
+			"name": "QIDI PAHT-GF (PPA-GF) @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI PAHT-GF (PPA-GF) @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PA6-GF @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU PA6-GF @BBL A1.json"
+		},
+		{
+			"name": "SUNLU PA6-GF @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PA6-GF @BBL A1 0.2 nozzle.json"
 		},
 		{
 			"name": "Generic PA @BBL A1",
@@ -8152,8 +8312,192 @@
 			"sub_path": "filament/Generic PC @BBL X1E 0.2 nozzle.json"
 		},
 		{
+			"name": "OVERTURE PC Professional @BBL A1",
+			"sub_path": "filament/OVERTURE/OVERTURE PC Professional @BBL A1.json"
+		},
+		{
+			"name": "QIDI PC/ABS-FR @BBL A1",
+			"sub_path": "filament/QIDI/QIDI PC-ABS-FR @BBL A1.json"
+		},
+		{
+			"name": "SUNLU PC @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU PC @BBL A1.json"
+		},
+		{
+			"name": "SUNLU PC-ABS @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU PC-ABS @BBL A1.json"
+		},
+		{
+			"name": "OVERTURE PC Professional @BBL A1 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE PC Professional @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI PC/ABS-FR @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI PC-ABS-FR @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PC @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PC @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PC-ABS @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PC-ABS @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "Fiberon PET-CF17 @BBL A1",
+			"sub_path": "filament/Fiberon/Fiberon PET-CF17 @BBL A1.json"
+		},
+		{
+			"name": "Fiberon PET-CF17 @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PET-CF17 @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "Fiberon PET-GF15 @BBL A1",
+			"sub_path": "filament/Fiberon/Fiberon PET-GF15 @BBL A1.json"
+		},
+		{
+			"name": "Fiberon PET-GF15 @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PET-GF15 @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI PET-CF (PET-CF17) @BBL A1",
+			"sub_path": "filament/QIDI/QIDI PET-CF (PET-CF17) @BBL A1.json"
+		},
+		{
+			"name": "QIDI PET-CF (PET-CF17) @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI PET-CF (PET-CF17) @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI PET-GF @BBL A1",
+			"sub_path": "filament/QIDI/QIDI PET-GF @BBL A1.json"
+		},
+		{
+			"name": "QIDI PET-GF @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI PET-GF @BBL A1 0.2 nozzle.json"
+		},
+		{
 			"name": "Bambu PETG-CF @BBL A1M 0.4 nozzle",
 			"sub_path": "filament/Bambu PETG-CF @BBL A1M 0.4 nozzle.json"
+		},
+		{
+			"name": "OVERTURE High Speed PETG @BBL A1",
+			"sub_path": "filament/OVERTURE/OVERTURE High Speed PETG @BBL A1.json"
+		},
+		{
+			"name": "OVERTURE PETG @BBL A1",
+			"sub_path": "filament/OVERTURE/OVERTURE PETG @BBL A1.json"
+		},
+		{
+			"name": "QIDI PETG Basic @BBL A1",
+			"sub_path": "filament/QIDI/QIDI PETG Basic @BBL A1.json"
+		},
+		{
+			"name": "QIDI PETG Rapido @BBL A1",
+			"sub_path": "filament/QIDI/QIDI PETG Rapido @BBL A1.json"
+		},
+		{
+			"name": "QIDI PETG Translucent @BBL A1",
+			"sub_path": "filament/QIDI/QIDI PETG Translucent @BBL A1.json"
+		},
+		{
+			"name": "QIDI PETG-GF @BBL A1",
+			"sub_path": "filament/QIDI/QIDI PETG-GF @BBL A1.json"
+		},
+		{
+			"name": "QIDI PETG-Tough @BBL A1",
+			"sub_path": "filament/QIDI/QIDI PETG-Tough @BBL A1.json"
+		},
+		{
+			"name": "SUNLU High Speed Matte PETG @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU High Speed Matte PETG @BBL A1.json"
+		},
+		{
+			"name": "SUNLU PETG 2.0 @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU PETG 2.0 @BBL A1.json"
+		},
+		{
+			"name": "SUNLU PETG Glow in the Dark @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU PETG Glow in the Dark @BBL A1.json"
+		},
+		{
+			"name": "SUNLU PETG Rainbow @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU PETG Rainbow @BBL A1.json"
+		},
+		{
+			"name": "SUNLU PETG Transparent @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU PETG Transparent @BBL A1.json"
+		},
+		{
+			"name": "OVERTURE High Speed PETG @BBL A1 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE High Speed PETG @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE PETG @BBL A1 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE PETG @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI PETG Basic @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI PETG Basic @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI PETG Rapido @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI PETG Rapido @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI PETG Translucent @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI PETG Translucent @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI PETG-GF @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI PETG-GF @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI PETG-Tough @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI PETG-Tough @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed Matte PETG @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed Matte PETG @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PETG 2.0 @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PETG 2.0 @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PETG Glow in the Dark @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PETG Glow in the Dark @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PETG Rainbow @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PETG Rainbow @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PETG Transparent @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PETG Transparent @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "Fiberon PETG-rCF08 @BBL A1",
+			"sub_path": "filament/Fiberon/Fiberon PETG-rCF08 @BBL A1.json"
+		},
+		{
+			"name": "Fiberon PETG-rCF08 @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PETG-rCF08 @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI PETG-CF @BBL A1",
+			"sub_path": "filament/QIDI/QIDI PETG-CF @BBL A1.json"
+		},
+		{
+			"name": "QIDI PETG-CF @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI PETG-CF @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PETG-CF @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU PETG-CF @BBL A1.json"
+		},
+		{
+			"name": "SUNLU PETG-CF @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PETG-CF @BBL A1 0.2 nozzle.json"
 		},
 		{
 			"name": "PolyLite PETG @BBL A1M 0.2 nozzle",
@@ -8184,6 +8528,250 @@
 			"sub_path": "filament/Bambu PLA Glow @BBL X1E 0.2 nozzle.json"
 		},
 		{
+			"name": "OVERTURE Air PLA @BBL A1",
+			"sub_path": "filament/OVERTURE/OVERTURE Air PLA @BBL A1.json"
+		},
+		{
+			"name": "OVERTURE Easy PLA @BBL A1",
+			"sub_path": "filament/OVERTURE/OVERTURE Easy PLA @BBL A1.json"
+		},
+		{
+			"name": "OVERTURE Glow PLA @BBL A1",
+			"sub_path": "filament/OVERTURE/OVERTURE Glow PLA @BBL A1.json"
+		},
+		{
+			"name": "OVERTURE PLA Professional @BBL A1",
+			"sub_path": "filament/OVERTURE/OVERTURE PLA Professional @BBL A1.json"
+		},
+		{
+			"name": "OVERTURE PLA+ @BBL A1",
+			"sub_path": "filament/OVERTURE/OVERTURE PLA+ @BBL A1.json"
+		},
+		{
+			"name": "OVERTURE Rock PLA @BBL A1",
+			"sub_path": "filament/OVERTURE/OVERTURE Rock PLA @BBL A1.json"
+		},
+		{
+			"name": "OVERTURE Shimmer PLA @BBL A1",
+			"sub_path": "filament/OVERTURE/OVERTURE Shimmer PLA @BBL A1.json"
+		},
+		{
+			"name": "OVERTURE Super PLA+ @BBL A1",
+			"sub_path": "filament/OVERTURE/OVERTURE Super PLA+ @BBL A1.json"
+		},
+		{
+			"name": "OVERTURE Turbo PLA @BBL A1",
+			"sub_path": "filament/OVERTURE/OVERTURE Turbo PLA @BBL A1.json"
+		},
+		{
+			"name": "QIDI PLA Basic @BBL A1",
+			"sub_path": "filament/QIDI/QIDI PLA Basic @BBL A1.json"
+		},
+		{
+			"name": "QIDI PLA Matte Basic @BBL A1",
+			"sub_path": "filament/QIDI/QIDI PLA Matte Basic @BBL A1.json"
+		},
+		{
+			"name": "QIDI PLA Wood @BBL A1",
+			"sub_path": "filament/QIDI/QIDI PLA Wood @BBL A1.json"
+		},
+		{
+			"name": "SUNLU APLA (AntiString PLA) @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU APLA (AntiString PLA) @BBL A1.json"
+		},
+		{
+			"name": "SUNLU LW-PLA @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU LW-PLA @BBL A1.json"
+		},
+		{
+			"name": "SUNLU PLA @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU PLA @BBL A1.json"
+		},
+		{
+			"name": "SUNLU PLA Classic @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU PLA Classic @BBL A1.json"
+		},
+		{
+			"name": "SUNLU PLA Galaxy @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU PLA Galaxy @BBL A1.json"
+		},
+		{
+			"name": "SUNLU PLA Glow in the Dark @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU PLA Glow in the Dark @BBL A1.json"
+		},
+		{
+			"name": "SUNLU PLA Lite @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU PLA Lite @BBL A1.json"
+		},
+		{
+			"name": "SUNLU PLA Transparent @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU PLA Transparent @BBL A1.json"
+		},
+		{
+			"name": "SUNLU PLA Twinkling @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU PLA Twinkling @BBL A1.json"
+		},
+		{
+			"name": "OVERTURE Air PLA @BBL A1 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Air PLA @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Easy PLA @BBL A1 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Easy PLA @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Glow PLA @BBL A1 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Glow PLA @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE PLA Professional @BBL A1 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE PLA Professional @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE PLA+ @BBL A1 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE PLA+ @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Rock PLA @BBL A1 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Rock PLA @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Shimmer PLA @BBL A1 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Shimmer PLA @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Super PLA+ @BBL A1 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Super PLA+ @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Turbo PLA @BBL A1 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Turbo PLA @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI PLA Basic @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI PLA Basic @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI PLA Matte Basic @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI PLA Matte Basic @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI PLA Wood @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI PLA Wood @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU APLA (AntiString PLA) @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU APLA (AntiString PLA) @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU LW-PLA @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU LW-PLA @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Classic @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Classic @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Galaxy @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Galaxy @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Glow in the Dark @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Glow in the Dark @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Lite @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Lite @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Transparent @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Transparent @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Twinkling @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Twinkling @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Wood @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Wood @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE High Speed PLA @BBL A1",
+			"sub_path": "filament/OVERTURE/OVERTURE High Speed PLA @BBL A1.json"
+		},
+		{
+			"name": "QIDI PLA Matte Rapido @BBL A1",
+			"sub_path": "filament/QIDI/QIDI PLA Matte Rapido @BBL A1.json"
+		},
+		{
+			"name": "QIDI PLA Rapido @BBL A1",
+			"sub_path": "filament/QIDI/QIDI PLA Rapido @BBL A1.json"
+		},
+		{
+			"name": "SUNLU High Speed Marble PLA @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU High Speed Marble PLA @BBL A1.json"
+		},
+		{
+			"name": "SUNLU High Speed Matte PLA @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU High Speed Matte PLA @BBL A1.json"
+		},
+		{
+			"name": "SUNLU High Speed PLA @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU High Speed PLA @BBL A1.json"
+		},
+		{
+			"name": "SUNLU High Speed PLA+ 2.0 @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU High Speed PLA+ 2.0 @BBL A1.json"
+		},
+		{
+			"name": "SUNLU High Speed PLA+ @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU High Speed PLA+ @BBL A1.json"
+		},
+		{
+			"name": "SUNLU PLA Meta @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU PLA Meta @BBL A1.json"
+		},
+		{
+			"name": "OVERTURE High Speed PLA @BBL A1 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE High Speed PLA @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI PLA Matte Rapido @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI PLA Matte Rapido @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI PLA Rapido @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI PLA Rapido @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed Marble PLA @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed Marble PLA @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed Matte PLA @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed Matte PLA @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed PLA @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed PLA @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed PLA+ 2.0 @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed PLA+ 2.0 @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed PLA+ @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed PLA+ @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Meta @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Meta @BBL A1 0.2 nozzle.json"
+		},
+		{
 			"name": "Generic PLA High Speed @BBL A1M 0.2 nozzle",
 			"sub_path": "filament/Generic PLA High Speed @BBL A1M 0.2 nozzle.json"
 		},
@@ -8198,6 +8786,118 @@
 		{
 			"name": "Generic PLA High Speed @BBL X2D 0.2 nozzle",
 			"sub_path": "filament/Generic PLA High Speed @BBL X2D 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Silk PLA @BBL A1",
+			"sub_path": "filament/OVERTURE/OVERTURE Silk PLA @BBL A1.json"
+		},
+		{
+			"name": "OVERTURE Silk PLA @BBL A1 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Silk PLA @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI PLA Rapido Metal @BBL A1",
+			"sub_path": "filament/QIDI/QIDI PLA Rapido Metal @BBL A1.json"
+		},
+		{
+			"name": "QIDI PLA Rapido Metal @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI PLA Rapido Metal @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI PLA Rapido Silk @BBL A1",
+			"sub_path": "filament/QIDI/QIDI PLA Rapido Silk @BBL A1.json"
+		},
+		{
+			"name": "QIDI PLA Rapido Silk @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI PLA Rapido Silk @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Matte Dual-Color @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU PLA Matte Dual-Color @BBL A1.json"
+		},
+		{
+			"name": "SUNLU PLA Matte Dual-Color @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Matte Dual-Color @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Metal (PLA Metallic) @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU PLA Metal (PLA Metallic) @BBL A1.json"
+		},
+		{
+			"name": "SUNLU PLA Metal (PLA Metallic) @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Metal (PLA Metallic) @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Rainbow @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU PLA Rainbow @BBL A1.json"
+		},
+		{
+			"name": "SUNLU PLA Rainbow @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Rainbow @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Transparent Rainbow @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU PLA Transparent Rainbow @BBL A1.json"
+		},
+		{
+			"name": "SUNLU PLA Transparent Rainbow @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Transparent Rainbow @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ 2.0 @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ 2.0 @BBL A1.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ 2.0 @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ 2.0 @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Dual-Color @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Dual-Color @BBL A1.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Dual-Color @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Dual-Color @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Four-Color @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Four-Color @BBL A1.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Four-Color @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Four-Color @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Rainbow @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Rainbow @BBL A1.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Rainbow @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Rainbow @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Tri-Color @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Tri-Color @BBL A1.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Tri-Color @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Tri-Color @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI PLA-CF @BBL A1",
+			"sub_path": "filament/QIDI/QIDI PLA-CF @BBL A1.json"
+		},
+		{
+			"name": "QIDI PLA-CF @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI PLA-CF @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA-CF @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU PLA-CF @BBL A1.json"
+		},
+		{
+			"name": "SUNLU PLA-CF @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA-CF @BBL A1 0.2 nozzle.json"
 		},
 		{
 			"name": "Overture Matte PLA @BBL A1M 0.2 nozzle",
@@ -8240,6 +8940,14 @@
 			"sub_path": "filament/PolyTerra PLA @BBL X1C 0.2 nozzle.json"
 		},
 		{
+			"name": "SUNLU PVA @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU PVA @BBL A1.json"
+		},
+		{
+			"name": "SUNLU PVA @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PVA @BBL A1 0.2 nozzle.json"
+		},
+		{
 			"name": "Bambu TPU 95A HF @BBL H2D 0.4 nozzle",
 			"sub_path": "filament/Bambu TPU 95A HF @BBL H2D 0.4 nozzle.json"
 		},
@@ -8262,6 +8970,182 @@
 		{
 			"name": "Generic TPU @BBL H2S",
 			"sub_path": "filament/Generic TPU @BBL H2S.json"
+		},
+		{
+			"name": "OVERTURE Easy Nylon @BBL A1",
+			"sub_path": "filament/OVERTURE/OVERTURE Easy Nylon @BBL A1.json"
+		},
+		{
+			"name": "OVERTURE Easy Nylon @BBL A1 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Easy Nylon @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Nylon @BBL A1",
+			"sub_path": "filament/OVERTURE/OVERTURE Nylon @BBL A1.json"
+		},
+		{
+			"name": "OVERTURE Nylon @BBL A1 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Nylon @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI UltraPA Nylon (PPA) @BBL A1",
+			"sub_path": "filament/QIDI/QIDI UltraPA Nylon (PPA) @BBL A1.json"
+		},
+		{
+			"name": "QIDI UltraPA Nylon (PPA) @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI UltraPA Nylon (PPA) @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU Easy PA (Easy Nylon / E-PA) @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU Easy PA (Easy Nylon - E-PA) @BBL A1.json"
+		},
+		{
+			"name": "SUNLU Easy PA (Easy Nylon / E-PA) @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Easy PA (Easy Nylon - E-PA) @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "Fiberon PA12-CF10 @BBL A1",
+			"sub_path": "filament/Fiberon/Fiberon PA12-CF10 @BBL A1.json"
+		},
+		{
+			"name": "Fiberon PA12-CF10 @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PA12-CF10 @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "Fiberon PA6-CF20 @BBL A1",
+			"sub_path": "filament/Fiberon/Fiberon PA6-CF20 @BBL A1.json"
+		},
+		{
+			"name": "Fiberon PA6-CF20 @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PA6-CF20 @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "Fiberon PA612-CF15 @BBL A1",
+			"sub_path": "filament/Fiberon/Fiberon PA612-CF15 @BBL A1.json"
+		},
+		{
+			"name": "Fiberon PA612-CF15 @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PA612-CF15 @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "Fiberon PA612-ESD @BBL A1",
+			"sub_path": "filament/Fiberon/Fiberon PA612-ESD @BBL A1.json"
+		},
+		{
+			"name": "Fiberon PA612-ESD @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PA612-ESD @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI PA12-CF @BBL A1",
+			"sub_path": "filament/QIDI/QIDI PA12-CF @BBL A1.json"
+		},
+		{
+			"name": "QIDI PA12-CF @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI PA12-CF @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI PAHT-CF (PPA-CF) @BBL A1",
+			"sub_path": "filament/QIDI/QIDI PAHT-CF (PPA-CF) @BBL A1.json"
+		},
+		{
+			"name": "QIDI PAHT-CF (PPA-CF) @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI PAHT-CF (PPA-CF) @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI UltraPA-CF25 (PPA-CF25) @BBL A1",
+			"sub_path": "filament/QIDI/QIDI UltraPA-CF25 (PPA-CF25) @BBL A1.json"
+		},
+		{
+			"name": "QIDI UltraPA-CF25 (PPA-CF25) @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI UltraPA-CF25 (PPA-CF25) @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PA12-CF @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU PA12-CF @BBL A1.json"
+		},
+		{
+			"name": "SUNLU PA12-CF @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PA12-CF @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PA6-CF @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU PA6-CF @BBL A1.json"
+		},
+		{
+			"name": "SUNLU PA6-CF @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PA6-CF @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE High Speed TPU 95A @BBL A1",
+			"sub_path": "filament/OVERTURE/OVERTURE High Speed TPU 95A @BBL A1.json"
+		},
+		{
+			"name": "OVERTURE High Speed TPU 95A @BBL A1 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE High Speed TPU 95A @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Matte TPU @BBL A1",
+			"sub_path": "filament/OVERTURE/OVERTURE Matte TPU @BBL A1.json"
+		},
+		{
+			"name": "OVERTURE Matte TPU @BBL A1 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Matte TPU @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE TPU 95A @BBL A1",
+			"sub_path": "filament/OVERTURE/OVERTURE TPU 95A @BBL A1.json"
+		},
+		{
+			"name": "OVERTURE TPU 95A @BBL A1 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE TPU 95A @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI TPU-Aero @BBL A1",
+			"sub_path": "filament/QIDI/QIDI TPU-Aero @BBL A1.json"
+		},
+		{
+			"name": "QIDI TPU-Aero @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI TPU-Aero @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI TPU-GF @BBL A1",
+			"sub_path": "filament/QIDI/QIDI TPU-GF @BBL A1.json"
+		},
+		{
+			"name": "QIDI TPU-GF @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI TPU-GF @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI TPU95A-HF @BBL A1",
+			"sub_path": "filament/QIDI/QIDI TPU95A-HF @BBL A1.json"
+		},
+		{
+			"name": "QIDI TPU95A-HF @BBL A1 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI TPU95A-HF @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk TPU (TPU-SILK) @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU Silk TPU (TPU-SILK) @BBL A1.json"
+		},
+		{
+			"name": "SUNLU Silk TPU (TPU-SILK) @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk TPU (TPU-SILK) @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU TPU 90A @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU TPU 90A @BBL A1.json"
+		},
+		{
+			"name": "SUNLU TPU 90A @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU TPU 90A @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU TPU 95A @BBL A1",
+			"sub_path": "filament/SUNLU/SUNLU TPU 95A @BBL A1.json"
+		},
+		{
+			"name": "SUNLU TPU 95A @BBL A1 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU TPU 95A @BBL A1 0.2 nozzle.json"
 		}
 	],
 	"machine_list": [

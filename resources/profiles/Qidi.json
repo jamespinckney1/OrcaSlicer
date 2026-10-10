@@ -7081,20 +7081,1392 @@
 			"sub_path": "filament/Qidi TPU 95A-HF @Qidi X-Plus 4 0.8 nozzle.json"
 		},
 		{
+			"name": "QIDI Odorless-ABS Rapido @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI Odorless-ABS Rapido @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU ABS @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU ABS @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU ABS Transparent @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU ABS Transparent @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU ABS-FR @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU ABS-FR @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed ABS @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed ABS @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI Odorless-ABS Rapido @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/QIDI/QIDI Odorless-ABS Rapido @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU ABS @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU ABS @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU ABS Transparent @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU ABS Transparent @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU ABS-FR @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU ABS-FR @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed ABS @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed ABS @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "QIDI Odorless-ABS Rapido @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/QIDI/QIDI Odorless-ABS Rapido @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU ABS @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU ABS @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU ABS Transparent @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU ABS Transparent @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU ABS-FR @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU ABS-FR @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed ABS @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed ABS @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "QIDI Odorless-ABS Rapido @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/QIDI/QIDI Odorless-ABS Rapido @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU ABS @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU ABS @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU ABS Transparent @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU ABS Transparent @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU ABS-FR @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU ABS-FR @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed ABS @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed ABS @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU ABS-GF @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU ABS-GF @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU ABS-GF @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU ABS-GF @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU ABS-GF @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU ABS-GF @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Fiberon ASA-CF08 @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon ASA-CF08 @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE ASA @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE ASA @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI ASA-Aero @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI ASA-Aero @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI ASA-CF20 Core @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI ASA-CF20 Core @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU ASA @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU ASA @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "Fiberon ASA-CF08 @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon ASA-CF08 @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "OVERTURE ASA @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE ASA @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "QIDI ASA-CF20 Core @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/QIDI/QIDI ASA-CF20 Core @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU ASA @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU ASA @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Fiberon ASA-CF08 @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon ASA-CF08 @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "OVERTURE ASA @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE ASA @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "QIDI ASA-Aero @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/QIDI/QIDI ASA-Aero @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "QIDI ASA-CF20 Core @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/QIDI/QIDI ASA-CF20 Core @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU ASA @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU ASA @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Fiberon ASA-CF08 @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon ASA-CF08 @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "OVERTURE ASA @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE ASA @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "QIDI ASA-Aero @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/QIDI/QIDI ASA-Aero @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "QIDI ASA-CF20 Core @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/QIDI/QIDI ASA-CF20 Core @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU ASA @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU ASA @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Easy Nylon @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Easy Nylon @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Nylon @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Nylon @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "QIDI UltraPA Nylon (PPA) @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/QIDI/QIDI UltraPA Nylon (PPA) @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU Easy PA (Easy Nylon / E-PA) @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Easy PA (Easy Nylon - E-PA) @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Easy Nylon @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Easy Nylon @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Nylon @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Nylon @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "QIDI UltraPA Nylon (PPA) @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/QIDI/QIDI UltraPA Nylon (PPA) @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU Easy PA (Easy Nylon / E-PA) @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Easy PA (Easy Nylon - E-PA) @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Easy Nylon @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Easy Nylon @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Nylon @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Nylon @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "QIDI UltraPA Nylon (PPA) @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/QIDI/QIDI UltraPA Nylon (PPA) @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU Easy PA (Easy Nylon / E-PA) @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Easy PA (Easy Nylon - E-PA) @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Fiberon PA12-CF10 @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PA12-CF10 @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Fiberon PA6-CF20 @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PA6-CF20 @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Fiberon PA612-CF15 @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PA612-CF15 @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Fiberon PA612-ESD @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PA612-ESD @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "QIDI PAHT-CF (PPA-CF) @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/QIDI/QIDI PAHT-CF (PPA-CF) @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "QIDI UltraPA-CF25 (PPA-CF25) @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/QIDI/QIDI UltraPA-CF25 (PPA-CF25) @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU PA12-CF @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PA12-CF @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU PA6-CF @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PA6-CF @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Fiberon PA12-CF10 @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PA12-CF10 @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Fiberon PA6-CF20 @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PA6-CF20 @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Fiberon PA612-CF15 @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PA612-CF15 @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Fiberon PA612-ESD @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PA612-ESD @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "QIDI PAHT-CF (PPA-CF) @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/QIDI/QIDI PAHT-CF (PPA-CF) @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "QIDI UltraPA-CF25 (PPA-CF25) @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/QIDI/QIDI UltraPA-CF25 (PPA-CF25) @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU PA12-CF @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PA12-CF @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU PA6-CF @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PA6-CF @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Fiberon PA12-CF10 @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PA12-CF10 @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Fiberon PA6-CF20 @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PA6-CF20 @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Fiberon PA612-CF15 @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PA612-CF15 @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Fiberon PA612-ESD @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PA612-ESD @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "QIDI PAHT-CF (PPA-CF) @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/QIDI/QIDI PAHT-CF (PPA-CF) @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "QIDI UltraPA-CF25 (PPA-CF25) @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/QIDI/QIDI UltraPA-CF25 (PPA-CF25) @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU PA12-CF @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PA12-CF @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU PA6-CF @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PA6-CF @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Fiberon PA6-GF25 @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PA6-GF25 @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "QIDI PAHT-GF (PPA-GF) @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/QIDI/QIDI PAHT-GF (PPA-GF) @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU PA6-GF @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PA6-GF @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Fiberon PA6-GF25 @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PA6-GF25 @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "QIDI PAHT-GF (PPA-GF) @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/QIDI/QIDI PAHT-GF (PPA-GF) @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU PA6-GF @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PA6-GF @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Fiberon PA6-GF25 @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PA6-GF25 @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "QIDI PAHT-GF (PPA-GF) @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/QIDI/QIDI PAHT-GF (PPA-GF) @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU PA6-GF @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PA6-GF @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Fiberon PET-CF17 @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PET-CF17 @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Fiberon PET-GF15 @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PET-GF15 @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "QIDI PET-CF (PET-CF17) @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/QIDI/QIDI PET-CF (PET-CF17) @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Fiberon PET-CF17 @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PET-CF17 @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Fiberon PET-GF15 @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PET-GF15 @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "QIDI PET-CF (PET-CF17) @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/QIDI/QIDI PET-CF (PET-CF17) @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Fiberon PET-CF17 @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PET-CF17 @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Fiberon PET-GF15 @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PET-GF15 @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "QIDI PET-CF (PET-CF17) @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/QIDI/QIDI PET-CF (PET-CF17) @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Fiberon PPS-CF10 @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PPS-CF10 @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Fiberon PPS-GF20 @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PPS-GF20 @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "QIDI PPS-GF20 @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/QIDI/QIDI PPS-GF20 @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Fiberon PPS-CF10 @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PPS-CF10 @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Fiberon PPS-GF20 @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PPS-GF20 @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "QIDI PPS-GF20 @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/QIDI/QIDI PPS-GF20 @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Fiberon PPS-CF10 @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PPS-CF10 @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Fiberon PPS-GF20 @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PPS-GF20 @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "QIDI PPS-GF20 @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/QIDI/QIDI PPS-GF20 @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "OVERTURE PC Professional @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE PC Professional @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI PC/ABS-FR @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI PC-ABS-FR @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PC @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PC @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PC-ABS @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PC-ABS @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE PC Professional @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE PC Professional @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU PC @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PC @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU PC-ABS @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PC-ABS @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "OVERTURE PC Professional @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE PC Professional @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU PC @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PC @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU PC-ABS @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PC-ABS @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "OVERTURE PC Professional @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE PC Professional @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU PC @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PC @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU PC-ABS @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PC-ABS @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Fiberon PETG-ESD @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PETG-ESD @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE High Speed PETG @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE High Speed PETG @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE PETG @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE PETG @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI PETG-GF @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI PETG-GF @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed Matte PETG @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed Matte PETG @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PETG 2.0 @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PETG 2.0 @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PETG @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PETG @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PETG Glow in the Dark @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PETG Glow in the Dark @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PETG Rainbow @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PETG Rainbow @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PETG Transparent @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PETG Transparent @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "Fiberon PETG-ESD @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PETG-ESD @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "OVERTURE High Speed PETG @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE High Speed PETG @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "OVERTURE PETG @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE PETG @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed Matte PETG @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed Matte PETG @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU PETG 2.0 @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PETG 2.0 @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU PETG @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PETG @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU PETG Glow in the Dark @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PETG Glow in the Dark @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU PETG Rainbow @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PETG Rainbow @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU PETG Transparent @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PETG Transparent @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Fiberon PETG-ESD @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PETG-ESD @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "OVERTURE High Speed PETG @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE High Speed PETG @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "OVERTURE PETG @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE PETG @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed Matte PETG @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed Matte PETG @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU PETG 2.0 @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PETG 2.0 @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU PETG @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PETG @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU PETG Glow in the Dark @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PETG Glow in the Dark @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU PETG Rainbow @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PETG Rainbow @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU PETG Transparent @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PETG Transparent @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Fiberon PETG-ESD @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PETG-ESD @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "OVERTURE High Speed PETG @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE High Speed PETG @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "OVERTURE PETG @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE PETG @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed Matte PETG @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed Matte PETG @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU PETG 2.0 @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PETG 2.0 @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU PETG @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PETG @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU PETG Glow in the Dark @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PETG Glow in the Dark @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU PETG Rainbow @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PETG Rainbow @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU PETG Transparent @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PETG Transparent @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Fiberon PETG-rCF08 @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PETG-rCF08 @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU PETG-CF @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PETG-CF @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Fiberon PETG-rCF08 @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PETG-rCF08 @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU PETG-CF @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PETG-CF @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Fiberon PETG-rCF08 @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Fiberon/Fiberon PETG-rCF08 @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU PETG-CF @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PETG-CF @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
 			"name": "Generic PLA High Speed @Qidi X-Plus 4 0.2 nozzle",
 			"sub_path": "filament/Generic PLA High Speed @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Air PLA @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Air PLA @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Easy PLA @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Easy PLA @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Glow PLA @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Glow PLA @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Matte PLA @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Matte PLA @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Rock PLA @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Rock PLA @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Shimmer PLA @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Shimmer PLA @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Silk PLA @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Silk PLA @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Turbo PLA @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Turbo PLA @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI PLA Rapido Silk @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI PLA Rapido Silk @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI PLA Wood @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI PLA Wood @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI PLA-CF @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI PLA-CF @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU APLA (AntiString PLA) @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU APLA (AntiString PLA) @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU LW-PLA @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU LW-PLA @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Classic @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Classic @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Galaxy @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Galaxy @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Glow in the Dark @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Glow in the Dark @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Lite @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Lite @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Matte @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Matte @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Matte Dual-Color @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Matte Dual-Color @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Metal (PLA Metallic) @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Metal (PLA Metallic) @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Rainbow @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Rainbow @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Transparent @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Transparent @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Transparent Rainbow @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Transparent Rainbow @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Twinkling @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Twinkling @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Wood @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Wood @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ 2.0 @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ 2.0 @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Dual-Color @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Dual-Color @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Four-Color @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Four-Color @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Rainbow @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Rainbow @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Tri-Color @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Tri-Color @Qidi X-Plus 4 0.2 nozzle.json"
 		},
 		{
 			"name": "Generic PLA High Speed @Qidi X-Plus 4 0.4 nozzle",
 			"sub_path": "filament/Generic PLA High Speed @Qidi X-Plus 4 0.4 nozzle.json"
 		},
 		{
+			"name": "OVERTURE Air PLA @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Air PLA @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Easy PLA @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Easy PLA @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Glow PLA @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Glow PLA @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Matte PLA @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Matte PLA @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Rock PLA @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Rock PLA @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Shimmer PLA @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Shimmer PLA @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Turbo PLA @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Turbo PLA @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "QIDI PLA Wood @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/QIDI/QIDI PLA Wood @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU APLA (AntiString PLA) @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU APLA (AntiString PLA) @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU LW-PLA @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU LW-PLA @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Classic @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Classic @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Galaxy @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Galaxy @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Glow in the Dark @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Glow in the Dark @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Lite @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Lite @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Matte @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Matte @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Transparent @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Transparent @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Twinkling @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Twinkling @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Wood @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Wood @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
 			"name": "Generic PLA High Speed @Qidi X-Plus 4 0.6 nozzle",
 			"sub_path": "filament/Generic PLA High Speed @Qidi X-Plus 4 0.6 nozzle.json"
 		},
 		{
+			"name": "OVERTURE Air PLA @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Air PLA @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Easy PLA @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Easy PLA @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Glow PLA @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Glow PLA @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Matte PLA @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Matte PLA @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Rock PLA @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Rock PLA @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Shimmer PLA @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Shimmer PLA @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Silk PLA @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Silk PLA @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Turbo PLA @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Turbo PLA @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "QIDI PLA Wood @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/QIDI/QIDI PLA Wood @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU APLA (AntiString PLA) @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU APLA (AntiString PLA) @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU LW-PLA @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU LW-PLA @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Classic @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Classic @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Galaxy @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Galaxy @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Glow in the Dark @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Glow in the Dark @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Lite @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Lite @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Matte @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Matte @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Matte Dual-Color @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Matte Dual-Color @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Metal (PLA Metallic) @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Metal (PLA Metallic) @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Rainbow @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Rainbow @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Transparent @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Transparent @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Transparent Rainbow @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Transparent Rainbow @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Twinkling @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Twinkling @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Wood @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Wood @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ 2.0 @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ 2.0 @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Dual-Color @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Dual-Color @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Four-Color @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Four-Color @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Rainbow @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Rainbow @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Tri-Color @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Tri-Color @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
 			"name": "Generic PLA High Speed @Qidi X-Plus 4 0.8 nozzle",
 			"sub_path": "filament/Generic PLA High Speed @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Air PLA @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Air PLA @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Easy PLA @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Easy PLA @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Glow PLA @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Glow PLA @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Matte PLA @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Matte PLA @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Rock PLA @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Rock PLA @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Shimmer PLA @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Shimmer PLA @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Silk PLA @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Silk PLA @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Turbo PLA @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Turbo PLA @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "QIDI PLA Rapido Silk @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/QIDI/QIDI PLA Rapido Silk @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "QIDI PLA Wood @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/QIDI/QIDI PLA Wood @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU APLA (AntiString PLA) @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU APLA (AntiString PLA) @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU LW-PLA @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU LW-PLA @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Classic @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Classic @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Galaxy @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Galaxy @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Glow in the Dark @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Glow in the Dark @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Lite @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Lite @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Matte @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Matte @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Matte Dual-Color @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Matte Dual-Color @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Metal (PLA Metallic) @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Metal (PLA Metallic) @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Rainbow @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Rainbow @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Transparent @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Transparent @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Transparent Rainbow @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Transparent Rainbow @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Twinkling @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Twinkling @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Wood @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Wood @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ 2.0 @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ 2.0 @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Dual-Color @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Dual-Color @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Four-Color @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Four-Color @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Rainbow @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Rainbow @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Tri-Color @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Tri-Color @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Silk PLA @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Silk PLA @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Matte Dual-Color @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Matte Dual-Color @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Metal (PLA Metallic) @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Metal (PLA Metallic) @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Rainbow @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Rainbow @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Transparent Rainbow @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Transparent Rainbow @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ 2.0 @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ 2.0 @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Dual-Color @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Dual-Color @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Four-Color @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Four-Color @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Rainbow @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Rainbow @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk PLA+ Tri-Color @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Tri-Color @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "OVERTURE PLA Professional @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE PLA Professional @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE PLA+ @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE PLA+ @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Super PLA+ @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Super PLA+ @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA+ 2.0 @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA+ 2.0 @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA+ @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA+ @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE PLA Professional @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE PLA Professional @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "OVERTURE PLA+ @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE PLA+ @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Super PLA+ @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Super PLA+ @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA+ 2.0 @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA+ 2.0 @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA+ @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA+ @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "OVERTURE PLA Professional @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE PLA Professional @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "OVERTURE PLA+ @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE PLA+ @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Super PLA+ @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Super PLA+ @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA+ 2.0 @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA+ 2.0 @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA+ @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA+ @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "OVERTURE PLA Professional @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE PLA Professional @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "OVERTURE PLA+ @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE PLA+ @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Super PLA+ @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Super PLA+ @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA+ 2.0 @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA+ 2.0 @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA+ @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA+ @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA-CF @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA-CF @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA-CF @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA-CF @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA-CF @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA-CF @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "OVERTURE High Speed TPU 95A @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE High Speed TPU 95A @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "OVERTURE Matte TPU @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE Matte TPU @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "OVERTURE TPU 95A @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE TPU 95A @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "QIDI TPU95A-HF @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/QIDI/QIDI TPU95A-HF @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU Silk TPU (TPU-SILK) @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU Silk TPU (TPU-SILK) @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU TPU 90A @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU TPU 90A @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU TPU 95A @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU TPU 95A @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "OVERTURE High Speed PLA @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE High Speed PLA @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed Marble PLA @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed Marble PLA @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed Matte PLA @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed Matte PLA @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed PLA @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed PLA @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed PLA+ 2.0 @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed PLA+ 2.0 @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed PLA+ @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed PLA+ @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Meta @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Meta @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA-CF @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA-CF @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "OVERTURE High Speed PLA @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE High Speed PLA @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed Marble PLA @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed Marble PLA @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed Matte PLA @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed Matte PLA @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed PLA @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed PLA @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed PLA+ 2.0 @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed PLA+ 2.0 @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed PLA+ @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed PLA+ @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Meta @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Meta @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "OVERTURE High Speed PLA @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE High Speed PLA @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed Marble PLA @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed Marble PLA @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed Matte PLA @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed Matte PLA @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed PLA @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed PLA @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed PLA+ 2.0 @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed PLA+ 2.0 @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed PLA+ @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed PLA+ @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Meta @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Meta @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "OVERTURE High Speed PLA @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/OVERTURE/OVERTURE High Speed PLA @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed Marble PLA @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed Marble PLA @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed Matte PLA @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed Matte PLA @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed PLA @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed PLA @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed PLA+ 2.0 @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed PLA+ 2.0 @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU High Speed PLA+ @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU High Speed PLA+ @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA Meta @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA Meta @Qidi X-Plus 4 0.8 nozzle.json"
 		}
 	],
 	"machine_list": [
