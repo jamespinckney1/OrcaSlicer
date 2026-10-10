@@ -242,6 +242,7 @@
 #include "MsgDialog.hpp"
 #include "ShopNaming.hpp"
 #include "ShopPrinters.hpp"
+#include "QidiBoxDialog.hpp"
 #include <wx/textdlg.h>
 #include "Widgets/MultiNozzleSync.hpp"           // NozzleOption, tryPopUpMultiNozzleDialog, setExtruderNozzleCount
 #include "DeviceCore/DevNozzleSystem.h"          // DevNozzle, GetExtNozzles / GetRackNozzles
@@ -870,6 +871,7 @@ struct Sidebar::priv
     ComboBox*                combo_shop_printer  = nullptr;
     Button*                  btn_shop_save       = nullptr;
     Button*                  btn_shop_delete     = nullptr;
+    Button*                  btn_qidi_box        = nullptr;
     std::vector<ShopPrinter> shop_items;
 
     wxPanel *scrolled = nullptr;
@@ -1080,13 +1082,28 @@ void Sidebar::priv::layout_printer(bool isBBL, bool isDual)
             btn_shop_delete->SetStyle(ButtonStyle::Regular, ButtonType::Compact);
             btn_shop_delete->SetToolTip(_L("Delete the selected shop machine."));
             btn_shop_delete->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { plater->sidebar().delete_shop_printer(); });
+            btn_qidi_box = new Button(m_panel_printer_content, _L("Box"));
+            btn_qidi_box->SetStyle(ButtonStyle::Regular, ButtonType::Compact);
+            btn_qidi_box->SetToolTip(_L("QIDI Box slots: load, unload, eject and read RFID on the connected printer."));
+            btn_qidi_box->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
+                MachineObject* obj = wxGetApp().getDeviceManager() ? wxGetApp().getDeviceManager()->get_selected_machine() : nullptr;
+                if (!obj) {
+                    MessageDialog dlg(plater, _L("No printer is connected. Connect the Plus 4 on the Device tab, then try again."),
+                                      _L("QIDI Box"), wxICON_INFORMATION | wxOK);
+                    dlg.ShowModal();
+                    return;
+                }
+                QidiBoxDialog dlg(plater, obj);
+                dlg.ShowModal();
+            });
             plater->sidebar().refresh_shop_printers();
         }
         hsizer_shop_printer = new wxBoxSizer(wxHORIZONTAL);
         hsizer_shop_printer->Add(label_shop_printer, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(6));
         hsizer_shop_printer->Add(combo_shop_printer, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(4));
         hsizer_shop_printer->Add(btn_shop_save, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(4));
-        hsizer_shop_printer->Add(btn_shop_delete, 0, wxALIGN_CENTER_VERTICAL);
+        hsizer_shop_printer->Add(btn_shop_delete, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(4));
+        hsizer_shop_printer->Add(btn_qidi_box, 0, wxALIGN_CENTER_VERTICAL);
         vsizer_printer->AddSpacer(FromDIP(SidebarProps::ContentMarginV()));
         vsizer_printer->Add(hsizer_shop_printer, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(SidebarProps::ContentMargin()));
 
