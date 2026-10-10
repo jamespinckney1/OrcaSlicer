@@ -169,6 +169,10 @@ set(SLIC3R_GUI_SOURCES
     GUI/EnvisionInbox.hpp
     GUI/ShopPrintHistory.cpp
     GUI/ShopPrintHistory.hpp
+    GUI/BedMeshAnalysis.cpp
+    GUI/BedMeshAnalysis.hpp
+    GUI/BedMeshView.cpp
+    GUI/BedMeshView.hpp
     GUI/ShopCalibration.cpp
     GUI/ShopCalibration.hpp
     GUI/CalibrationLogDialog.cpp

@@ -23,6 +23,8 @@
 #include <wx/utils.h>
 #include <wx/webview.h>
 #include <wx/numdlg.h>
+#include <wx/collpane.h>
+#include "slic3r/GUI/BedMeshView.hpp"
 #include <regex>
 #include "slic3r/Utils/Http.hpp"
 #include "slic3r/GUI/MsgDialog.hpp"
@@ -376,6 +378,20 @@ void PrinterWebView::build_shop_bar(wxBoxSizer* sizer)
     bar->Add(m_shop_status, 1, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(10));
     m_shop_bar->SetSizer(bar);
     sizer->Add(m_shop_bar, 0, wxEXPAND);
+
+    // Bed mesh health, collapsed by default; fetches the mesh when first expanded.
+    m_mesh_pane = new wxCollapsiblePane(this, wxID_ANY, _L("Bed mesh health"), wxDefaultPosition, wxDefaultSize,
+                                        wxCP_DEFAULT_STYLE | wxCP_NO_TLW_RESIZE);
+    auto* pane_sizer = new wxBoxSizer(wxVERTICAL);
+    m_mesh_panel     = new BedMeshPanel(m_mesh_pane->GetPane(), [this]() { return moonraker_base_url(); });
+    pane_sizer->Add(m_mesh_panel, 1, wxEXPAND);
+    m_mesh_pane->GetPane()->SetSizer(pane_sizer);
+    m_mesh_pane->Bind(wxEVT_COLLAPSIBLEPANE_CHANGED, [this](wxCollapsiblePaneEvent& e) {
+        if (!e.GetCollapsed())
+            m_mesh_panel->refresh_from_printer();
+        Layout();
+    });
+    sizer->Add(m_mesh_pane, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(6));
 }
 
 // The printer's API root: scheme://host[:port] of the page shown here (Moonraker is proxied there
@@ -478,9 +494,11 @@ void PrinterWebView::on_rebuild_full_mesh()
     Http::post(base + "/printer/gcode/script?script=" + Http::url_encode(script))
         .timeout_connect(5)
         .timeout_max(1800)
-        .on_complete([finish](std::string body, unsigned status) {
-            if (status == 200)
+        .on_complete([finish, self](std::string body, unsigned status) {
+            if (status == 200) {
                 finish(_L("Full-bed mesh rebuilt and saved. Quick start will use it."));
+                wxGetApp().CallAfter([self]() { if (self && self->m_mesh_pane && !self->m_mesh_pane->IsCollapsed()) self->m_mesh_panel->refresh_from_printer(); });
+            }
             else
                 finish(format_wxstr(_L("The printer reported an error (HTTP %1%). Is SHOP_FULL_MESH installed?"), status));
         })

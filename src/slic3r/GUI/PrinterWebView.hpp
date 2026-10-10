@@ -72,6 +72,8 @@ private:
     wxPanel*      m_shop_bar{nullptr};
     wxStaticText* m_shop_status{nullptr};
     wxButton*     m_btn_full_mesh{nullptr};
+    class wxCollapsiblePane* m_mesh_pane{nullptr};
+    class BedMeshPanel*      m_mesh_panel{nullptr};
     bool          m_full_mesh_running{false};
 
     wxWebView* m_browser;
