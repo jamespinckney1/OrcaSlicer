@@ -47,6 +47,7 @@
 #include <ctime>
 #include <boost/filesystem/operations.hpp>
 #include "slic3r/GUI/calib_dlg.hpp"
+#include "CalibrationLogDialog.hpp"
 #include <wx/panel.h>
 #include <wx/settings.h>
 #include <wx/textentry.h>
@@ -3609,6 +3610,12 @@ void MainFrame::init_menubar_as_editor()
                      { wxLaunchDefaultBrowser("https://www.orcaslicer.com/wiki/calibration_guide", wxBROWSER_NEW_WINDOW); }, "", nullptr, [this]()
                      {return m_plater->is_view3D_shown();; }, this);
 
+    // Print-shop: per-printer calibration results
+    m_topbar->GetCalibMenu()->AppendSeparator();
+    append_menu_item(m_topbar->GetCalibMenu(), wxID_ANY, _L("Shop calibration log") + dots, _L("Record calibration results per printer and filament and apply them to filament presets"),
+        [this](wxCommandEvent&) { CalibrationLogDialog dlg(this); dlg.ShowModal(); }, "", nullptr,
+        []() { return true; }, this);
+
 #else
     // On Mac, the Apple menu ignores non-standard custom items, so add Preset Bundle to the File menu
     fileMenu->AppendSeparator();
@@ -3713,6 +3720,12 @@ void MainFrame::init_menubar_as_editor()
     append_menu_item(calib_menu, wxID_ANY, _L("Calibration Guide"), _L("Calibration Guide"),
         [](wxCommandEvent&) { wxLaunchDefaultBrowser("https://www.orcaslicer.com/wiki/calibration_guide", wxBROWSER_NEW_WINDOW); }, "", nullptr,
         [this]() {return m_plater->is_view3D_shown();; }, this);
+
+    // Print-shop: per-printer calibration results
+    calib_menu->AppendSeparator();
+    append_menu_item(calib_menu, wxID_ANY, _L("Shop calibration log") + dots, _L("Record calibration results per printer and filament and apply them to filament presets"),
+        [this](wxCommandEvent&) { CalibrationLogDialog dlg(this); dlg.ShowModal(); }, "", nullptr,
+        []() { return true; }, this);
 
     m_menubar->Append(calib_menu,wxString::Format("&%s", _L("Calibration")));
     if (helpMenu)

@@ -165,6 +165,10 @@ set(SLIC3R_GUI_SOURCES
     GUI/QidiBoxDialog.hpp
     GUI/GCodeEditDialog.cpp
     GUI/GCodeEditDialog.hpp
+    GUI/ShopCalibration.cpp
+    GUI/ShopCalibration.hpp
+    GUI/CalibrationLogDialog.cpp
+    GUI/CalibrationLogDialog.hpp
     GUI/EncodedFilament.hpp
     GUI/EncodedFilament.cpp
     GUI/ExtraRenderers.cpp
