@@ -159,6 +159,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/StartGCodeLibrary.hpp
     GUI/ShopNaming.cpp
     GUI/ShopNaming.hpp
+    GUI/ShopPrinters.cpp
+    GUI/ShopPrinters.hpp
     GUI/EncodedFilament.hpp
     GUI/EncodedFilament.cpp
     GUI/ExtraRenderers.cpp

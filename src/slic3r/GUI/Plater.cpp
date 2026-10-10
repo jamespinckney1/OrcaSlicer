@@ -10,6 +10,7 @@
 #include <boost/optional/optional.hpp>
 #include <cmath>
 #include <boost/algorithm/string/join.hpp>
+#include <boost/algorithm/string/trim.hpp>
 #include <cassert>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
@@ -240,6 +241,8 @@
 #include "PresetComboBoxes.hpp"
 #include "MsgDialog.hpp"
 #include "ShopNaming.hpp"
+#include "ShopPrinters.hpp"
+#include <wx/textdlg.h>
 #include "Widgets/MultiNozzleSync.hpp"           // NozzleOption, tryPopUpMultiNozzleDialog, setExtruderNozzleCount
 #include "DeviceCore/DevNozzleSystem.h"          // DevNozzle, GetExtNozzles / GetRackNozzles
 #include "ProjectDirtyStateManager.hpp"
@@ -861,6 +864,14 @@ struct Sidebar::priv
 {
     Plater *plater;
 
+    // Print-shop machine switcher (row above the printer preset).
+    wxBoxSizer*              hsizer_shop_printer = nullptr;
+    Label*                   label_shop_printer  = nullptr;
+    ComboBox*                combo_shop_printer  = nullptr;
+    Button*                  btn_shop_save       = nullptr;
+    Button*                  btn_shop_delete     = nullptr;
+    std::vector<ShopPrinter> shop_items;
+
     wxPanel *scrolled = nullptr;
     PlaterPresetComboBox *combo_sla_print = nullptr;
     PlaterPresetComboBox *combo_sla_material = nullptr;
@@ -1045,6 +1056,40 @@ void Sidebar::priv::layout_printer(bool isBBL, bool isDual)
     }
 
     if (vsizer_printer->GetItemCount() == 0) {
+        // Print-shop machine switcher
+        if (!combo_shop_printer) {
+            label_shop_printer = new Label(m_panel_printer_content, _L("Machine"), LB_PROPAGATE_MOUSE_EVENT);
+            label_shop_printer->SetFont(Label::Body_12);
+            combo_shop_printer = new ComboBox(m_panel_printer_content, wxID_ANY, wxString(""), wxDefaultPosition,
+                                              wxDefaultSize, 0, nullptr, wxCB_READONLY);
+            combo_shop_printer->GetDropDown().SetUseContentWidth(true);
+            combo_shop_printer->SetToolTip(_L("Shop machines: picking one applies its printer, process and filament presets."));
+            combo_shop_printer->Bind(wxEVT_COMBOBOX, [this](wxCommandEvent&) {
+                const int sel = combo_shop_printer->GetSelection();
+                // Deferred: applying presets rebuilds sidebar widgets, including this combo's neighbours.
+                combo_shop_printer->CallAfter([this, sel]() {
+                    if (sel > 0 && size_t(sel) <= shop_items.size())
+                        plater->sidebar().apply_shop_printer(size_t(sel) - 1);
+                });
+            });
+            btn_shop_save = new Button(m_panel_printer_content, _L("Save"));
+            btn_shop_save->SetStyle(ButtonStyle::Regular, ButtonType::Compact);
+            btn_shop_save->SetToolTip(_L("Save the current printer, process and filament selection as a named shop machine."));
+            btn_shop_save->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { plater->sidebar().save_shop_printer(); });
+            btn_shop_delete = new Button(m_panel_printer_content, _L("Delete"));
+            btn_shop_delete->SetStyle(ButtonStyle::Regular, ButtonType::Compact);
+            btn_shop_delete->SetToolTip(_L("Delete the selected shop machine."));
+            btn_shop_delete->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { plater->sidebar().delete_shop_printer(); });
+            plater->sidebar().refresh_shop_printers();
+        }
+        hsizer_shop_printer = new wxBoxSizer(wxHORIZONTAL);
+        hsizer_shop_printer->Add(label_shop_printer, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(6));
+        hsizer_shop_printer->Add(combo_shop_printer, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(4));
+        hsizer_shop_printer->Add(btn_shop_save, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(4));
+        hsizer_shop_printer->Add(btn_shop_delete, 0, wxALIGN_CENTER_VERTICAL);
+        vsizer_printer->AddSpacer(FromDIP(SidebarProps::ContentMarginV()));
+        vsizer_printer->Add(hsizer_shop_printer, 0, wxEXPAND | wxLEFT | wxRIGHT, FromDIP(SidebarProps::ContentMargin()));
+
         wxBoxSizer *hsizer_printer = new wxBoxSizer(wxHORIZONTAL);
         hsizer_printer->Add(panel_printer_preset, 1, wxEXPAND, 0);
         hsizer_printer->Add(panel_nozzle_dia , 0, wxLEFT, FromDIP(4));
@@ -3899,6 +3944,131 @@ void Sidebar::update_all_preset_comboboxes()
 
     p_mainframe->show_device(use_native_device_tab);
     p_mainframe->m_tabpanel->SetSelection(p_mainframe->m_tabpanel->GetSelection());
+}
+
+// ---- Print-shop: machine switcher -------------------------------------------------------------
+
+void Sidebar::refresh_shop_printers()
+{
+    if (!p->combo_shop_printer)
+        return;
+    p->shop_items = ShopPrinters::get().list();
+    p->combo_shop_printer->Clear();
+    p->combo_shop_printer->Append(_L("Select a machine..."));
+    for (const ShopPrinter& m : p->shop_items)
+        p->combo_shop_printer->Append(from_u8(m.name));
+    p->combo_shop_printer->SetSelection(0);
+    p->btn_shop_delete->Enable(!p->shop_items.empty());
+}
+
+void Sidebar::apply_shop_printer(size_t idx)
+{
+    if (idx >= p->shop_items.size())
+        return;
+    const ShopPrinter m = p->shop_items[idx];
+    PresetBundle& bundle = *wxGetApp().preset_bundle;
+
+    if (!bundle.printers.find_preset(m.printer_preset, false)) {
+        MessageDialog dlg(this, format_wxstr(_L("The printer preset \"%1%\" saved for machine \"%2%\" no longer exists."), m.printer_preset, m.name),
+                          _L("Shop machine"), wxICON_WARNING | wxOK);
+        dlg.ShowModal();
+        return;
+    }
+
+    // Printer, with its physical printer (host) when one was saved and still exists.
+    if (!m.physical_printer.empty() && bundle.physical_printers.find_printer(m.physical_printer))
+        bundle.physical_printers.select_printer(m.physical_printer, m.printer_preset);
+    else
+        bundle.physical_printers.unselect_printer();
+    {
+        wxWindowUpdateLocker no_updates(filament_panel());
+        wxGetApp().get_tab(Preset::TYPE_PRINTER)->select_preset(m.printer_preset);
+    }
+
+    // Process
+    if (!m.process_preset.empty() && bundle.prints.find_preset(m.process_preset, false))
+        wxGetApp().get_tab(Preset::TYPE_PRINT)->select_preset(m.process_preset);
+
+    // Filaments, per extruder as far as both sides have slots.
+    bool any_filament = false;
+    for (size_t i = 0; i < m.filament_presets.size() && i < bundle.filament_presets.size(); ++i) {
+        if (bundle.filaments.find_preset(m.filament_presets[i], false)) {
+            bundle.set_filament_preset(i, m.filament_presets[i]);
+            any_filament = true;
+        }
+    }
+    if (any_filament && !bundle.filament_presets.empty())
+        wxGetApp().get_tab(Preset::TYPE_FILAMENT)->select_preset(bundle.filament_presets[0]);
+
+    bundle.export_selections(*wxGetApp().app_config);
+    update_all_preset_comboboxes();
+    update_dynamic_filament_list();
+    p->plater->on_config_change(bundle.full_config());
+    p->plater->update_project_dirty_from_presets();
+
+    // keep the chosen machine visible in the combo after the relayout
+    if (p->combo_shop_printer && size_t(p->combo_shop_printer->GetCount()) > idx + 1)
+        p->combo_shop_printer->SetSelection(int(idx) + 1);
+}
+
+void Sidebar::save_shop_printer()
+{
+    PresetBundle& bundle = *wxGetApp().preset_bundle;
+    wxString suggestion;
+    if (p->combo_shop_printer && p->combo_shop_printer->GetSelection() > 0)
+        suggestion = p->combo_shop_printer->GetValue();
+    wxTextEntryDialog dlg(this, _L("Name for this machine (the current printer, process and filament presets will be saved with it):"),
+                          _L("Save shop machine"), suggestion);
+    if (dlg.ShowModal() != wxID_OK)
+        return;
+    std::string name = into_u8(dlg.GetValue());
+    boost::algorithm::trim(name);
+    if (name.empty())
+        return;
+
+    ShopPrinters& shop = ShopPrinters::get();
+    if (shop.find(name)) {
+        MessageDialog confirm(this, format_wxstr(_L("A machine named \"%1%\" already exists. Replace it with the current selection?"), name),
+                              _L("Save shop machine"), wxICON_QUESTION | wxYES_NO);
+        if (confirm.ShowModal() != wxID_YES)
+            return;
+    }
+
+    ShopPrinter m;
+    m.name             = name;
+    m.printer_preset   = bundle.printers.get_selected_preset_name();
+    m.physical_printer = bundle.physical_printers.has_selection() ? bundle.physical_printers.get_selected_printer_name() : std::string();
+    m.process_preset   = bundle.prints.get_selected_preset_name();
+    m.filament_presets = bundle.filament_presets;
+    shop.add_or_replace(m);
+    if (!shop.save()) {
+        MessageDialog err(this, _L("Could not write the shop machines file") + ":\n" + from_u8(ShopPrinters::path()),
+                          _L("Save shop machine"), wxICON_ERROR | wxOK);
+        err.ShowModal();
+    }
+    refresh_shop_printers();
+    for (size_t i = 0; i < p->shop_items.size(); ++i)
+        if (p->shop_items[i].name == name) {
+            p->combo_shop_printer->SetSelection(int(i) + 1);
+            break;
+        }
+}
+
+void Sidebar::delete_shop_printer()
+{
+    if (!p->combo_shop_printer)
+        return;
+    const int sel = p->combo_shop_printer->GetSelection();
+    if (sel <= 0 || size_t(sel) > p->shop_items.size())
+        return;
+    const std::string name = p->shop_items[sel - 1].name;
+    MessageDialog confirm(this, format_wxstr(_L("Delete the shop machine \"%1%\"? Presets themselves are not deleted."), name),
+                          _L("Delete shop machine"), wxICON_WARNING | wxYES_NO);
+    if (confirm.ShowModal() != wxID_YES)
+        return;
+    ShopPrinters::get().remove(name);
+    ShopPrinters::get().save();
+    refresh_shop_printers();
 }
 
 void Sidebar::update_presets(Preset::Type preset_type)

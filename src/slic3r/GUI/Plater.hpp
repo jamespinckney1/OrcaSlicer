@@ -191,6 +191,11 @@ public:
     void update_all_preset_comboboxes();
     //void update_partplate(PartPlateList& list);
     void update_presets(Slic3r::Preset::Type preset_type);
+    // Print-shop: named machines that apply printer + process + filament presets in one pick.
+    void refresh_shop_printers();
+    void apply_shop_printer(size_t idx);
+    void save_shop_printer();
+    void delete_shop_printer();
     //BBS
     const std::vector<BedType>& get_cur_combox_bed_types() { return m_cur_combox_bed_types; }
     void update_presets_from_to(Slic3r::Preset::Type preset_type, std::string from, std::string to);
