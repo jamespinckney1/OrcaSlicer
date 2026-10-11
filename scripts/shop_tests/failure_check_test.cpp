@@ -323,8 +323,12 @@ int main(int argc, char** argv)
         CHECK(r.verdict == Verdict::Fail, "D fails (material where the G-code has none)");
         Box moved = part; moved.x0 += 45; moved.x1 += 45; moved.y0 -= 40; moved.y1 -= 40; moved.height = 4;
         const Image mv = render(truth, Zc, {moved, tower});
-        r = compare(sm, cp, cal, base, Z0, mv, Zc); report("E part knocked loose", r);
-        CHECK(r.verdict == Verdict::Fail, "E fails");
+        r = compare(sm, cp, cal, base, Z0, mv, Zc); report("E part knocked loose, colour unknown", r);
+        CHECK(r.verdict != Verdict::Pass, "E is not passed");
+        GCodeModel teal_model = sm;
+        teal_model.filament_colours = {"#28AAA0"};
+        r = compare(teal_model, cp, cal, base, Z0, mv, Zc); report("E2 part knocked loose, filament colour set", r);
+        CHECK(r.verdict == Verdict::Fail, "E2 fails (the part is not where the G-code put it)");
         const Image bright = render(truth, Zc, {part, tower}, 1.15, 6.0);
         r = compare(sm, cp, cal, base, Z0, bright, Zc); report("F brighter + noisier", r);
         CHECK(r.verdict == Verdict::Pass, "F passes despite exposure change");

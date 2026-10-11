@@ -537,10 +537,12 @@ void FailureCheckMonitor::handle_checkpoint(Job& job, int index, double z)
         post_event(ev);
         break;
     case FailureCheck::Verdict::Unsure:
+        // No popup: the check exists so nobody has to watch. An uncertain reading lets the print go on
+        // and is noted in the status line and the job folder (cpN.jpg / cpN.json).
+        ++job.passed;
         shop_send_script(job.api, "SHOP_CHECK_OK");
-        set_status(job.host, (boost::format(_u8L("Failure check: \"%1%\" uncertain, print continues")) % label).str());
-        ev.mode = FailureCheckEvent::Mode::Notice;
-        post_event(ev);
+        set_status(job.host, (boost::format(_u8L("Failure check: \"%1%\" uncertain (%2%), print continues")) % label %
+                              (res.reasons.empty() ? std::string() : res.reasons.front())).str());
         break;
     }
 }

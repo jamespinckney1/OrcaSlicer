@@ -829,15 +829,14 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
     std::vector<float> base(size_t(W) * H * 3), cur(size_t(W) * H * 3);
     std::vector<uint8_t> valid(size_t(W) * H, 0);
     std::vector<double>  tex_b1(size_t(W) * H, 0), tex_b2(size_t(W) * H, 0), tex_c1(size_t(W) * H, 0), tex_c2(size_t(W) * H, 0);
-    double sum_b = 0, sum_c = 0;
     int    n_valid = 0;
     for (int gy = 0; gy < H; ++gy)
         for (int gx = 0; gx < W; ++gx) {
             const double x = res.grid_x0 + (gx + 0.5) * cell, y = res.grid_y0 + (gy + 0.5) * cell;
             if (std::abs(x - camera.park_x) < 45 && y > model.bed_max_y - 40)
                 continue;
-            // The plate's edge is high-contrast, so a few pixels of calibration error would read as change.
-            if (x < model.bed_min_x + 4 || x > model.bed_max_x - 4 || y < model.bed_min_y + 4 || y > model.bed_max_y - 4)
+            // The plate's edge is high-contrast, and calibration error grows as the bed drops, so stay 10 mm clear.
+            if (x < model.bed_min_x + 10 || x > model.bed_max_x - 10 || y < model.bed_min_y + 10 || y > model.bed_max_y - 10)
                 continue;
             float acc_b[3] = {0, 0, 0}, acc_c[3] = {0, 0, 0};
             bool  ok = true;
@@ -884,8 +883,6 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
                 base[i * 3 + c] = acc_b[c];
                 cur[i * 3 + c]  = acc_c[c];
             }
-            sum_b += acc_b[0] + acc_b[1] + acc_b[2];
-            sum_c += acc_c[0] + acc_c[1] + acc_c[2];
             ++n_valid;
         }
     res.valid_cells = n_valid;
@@ -893,62 +890,6 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
         res.reasons.push_back("the camera sees too little of the bed for a reliable check");
         return res;
     }
-    const double gain = std::clamp(sum_b / std::max(sum_c, 1.0), 0.7, 1.4); // lighting / exposure drift
-
-    // Per-cell difference, smoothed over the 3 x 3 neighbourhood to suppress the plate's sparkle.
-    std::vector<float> diff(size_t(W) * H, 0);
-    for (size_t i = 0; i < diff.size(); ++i)
-        if (valid[i])
-            diff[i] = (std::abs(float(cur[i * 3] * gain) - base[i * 3]) + std::abs(float(cur[i * 3 + 1] * gain) - base[i * 3 + 1]) +
-                       std::abs(float(cur[i * 3 + 2] * gain) - base[i * 3 + 2])) / 3.0f;
-    // Texture change: brightness spread over the 3 x 3 cell neighbourhood (6 mm), reference vs now.
-    for (int gy = 0; gy < H; ++gy)
-        for (int gx = 0; gx < W; ++gx) {
-            const size_t i = size_t(gy) * W + gx;
-            if (!valid[i])
-                continue;
-            double b1 = 0, b2 = 0, c1 = 0, c2 = 0, n = 0;
-            for (int dy = -1; dy <= 1; ++dy)
-                for (int dx = -1; dx <= 1; ++dx) {
-                    const int xx = gx + dx, yy = gy + dy;
-                    if (xx < 0 || yy < 0 || xx >= W || yy >= H || !valid[size_t(yy) * W + xx])
-                        continue;
-                    const size_t j = size_t(yy) * W + xx;
-                    b1 += tex_b1[j]; b2 += tex_b2[j]; c1 += tex_c1[j]; c2 += tex_c2[j];
-                    n += 16;
-                }
-            const double sb = std::sqrt(std::max(0.0, b2 / n - (b1 / n) * (b1 / n)));
-            const double sc = std::sqrt(std::max(0.0, c2 / n - (c1 / n) * (c1 / n))) * gain;
-            diff[i]         = std::max(diff[i], float(1.5 * std::abs(sc - sb)));
-        }
-    std::vector<float> sm(diff.size(), 0), all;
-    all.reserve(n_valid);
-    for (int gy = 0; gy < H; ++gy)
-        for (int gx = 0; gx < W; ++gx) {
-            const size_t i = size_t(gy) * W + gx;
-            if (!valid[i])
-                continue;
-            float s = 0;
-            int   n = 0;
-            for (int dy = -1; dy <= 1; ++dy)
-                for (int dx = -1; dx <= 1; ++dx) {
-                    const int xx = gx + dx, yy = gy + dy;
-                    if (xx < 0 || yy < 0 || xx >= W || yy >= H || !valid[size_t(yy) * W + xx])
-                        continue;
-                    s += diff[size_t(yy) * W + xx];
-                    ++n;
-                }
-            sm[i] = s / n;
-            all.push_back(sm[i]);
-        }
-    const double med = median(all);
-    std::vector<float> dev;
-    dev.reserve(all.size());
-    for (float v : all)
-        dev.push_back(float(std::abs(v - med)));
-    const double mad = median(dev) * 1.4826;
-    res.threshold    = std::max(18.0, med + 5.0 * mad);
-
     // Where the G-code says material is, as the camera sees it now.
     PlaneMapper pm(camera, current_z);
     if (!pm.ok) {
@@ -981,9 +922,140 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
             for (size_t i = a; i < b; ++i)
                 rasterize(footprint, pm, model.segments[i], -current_z);
     }
+    // Exposure drift: the camera re-exposes when bright parts fill the view, which shifts the whole
+    // plate. Measure it only on plate well away (16 mm) from anything the G-code prints, as the median
+    // brightness ratio, so neither the parts nor a failure can skew it.
+    const Grid background_excl = dilate(allowed, 8);
+    std::vector<uint8_t> background(size_t(W) * H, 0);
+    std::vector<float> ratios;
+    std::array<std::vector<float>, 16> curve_samples;
+    for (int gy = 0; gy < H; ++gy)
+        for (int gx = 0; gx < W; ++gx) {
+            const size_t i = size_t(gy) * W + gx;
+            if (!valid[i] || background_excl.get(gx, gy))
+                continue;
+            background[i]   = 1;
+            const double lb = (base[i * 3] + base[i * 3 + 1] + base[i * 3 + 2]) / 3.0;
+            const double lc = (cur[i * 3] + cur[i * 3 + 1] + cur[i * 3 + 2]) / 3.0;
+            if (lc > 8.0)
+                ratios.push_back(float(std::clamp(lb / lc, 0.4, 2.5)));
+            curve_samples[std::min(15, int(lc / 16.0))].push_back(float(lb));
+        }
+    const double gain = ratios.size() >= 50 ? std::clamp(median(ratios), 0.5, 2.0) : 1.0;
+    // The camera's re-exposure is not a plain scale (dark plate and bright glitter respond differently),
+    // so fit a tone curve: for each brightness band of the current photo, the median brightness the same
+    // plate had in the reference. It is learnt from the empty plate as a whole and applied by brightness,
+    // never by position, so a failure cannot teach it to hide itself.
+    std::array<double, 16> curve{};
+    std::array<bool, 16>   have{};
+    for (int b = 0; b < 16; ++b)
+        if (curve_samples[b].size() >= 20) {
+            curve[b] = median(curve_samples[b]);
+            have[b]  = true;
+        }
+    for (int b = 0; b < 16; ++b)
+        if (!have[b]) {
+            int lo = b - 1, hi = b + 1;
+            while (lo >= 0 && !have[lo]) --lo;
+            while (hi < 16 && !have[hi]) ++hi;
+            const double centre = b * 16.0 + 8.0;
+            if (lo >= 0 && hi < 16)
+                curve[b] = curve[lo] + (curve[hi] - curve[lo]) * double(b - lo) / double(hi - lo);
+            else if (lo >= 0)
+                curve[b] = curve[lo] * centre / (lo * 16.0 + 8.0);
+            else if (hi < 16)
+                curve[b] = curve[hi] * centre / (hi * 16.0 + 8.0);
+            else
+                curve[b] = centre * gain;
+        }
+    for (int b = 1; b < 16; ++b) // keep it monotonic
+        curve[b] = std::max(curve[b], curve[b - 1]);
+    auto tone_gain = [&](double lc) {
+        const double f = std::clamp(lc / 16.0 - 0.5, 0.0, 15.0);
+        const int    b = int(f);
+        const double t = f - b;
+        const double v = b < 15 ? curve[b] * (1 - t) + curve[b + 1] * t : curve[15];
+        return std::clamp(v / std::max(lc, 4.0), 0.4, 2.5);
+    };
+    std::vector<float> cell_gain(size_t(W) * H, float(gain));
+    for (size_t i = 0; i < cell_gain.size(); ++i)
+        if (valid[i])
+            cell_gain[i] = float(tone_gain((cur[i * 3] + cur[i * 3 + 1] + cur[i * 3 + 2]) / 3.0));
+
+    // Per-cell difference, smoothed over the 3 x 3 neighbourhood to suppress the plate's sparkle.
+    std::vector<float> diff(size_t(W) * H, 0), ref_texture(size_t(W) * H, 0);
+    for (size_t i = 0; i < diff.size(); ++i)
+        if (valid[i])
+            diff[i] = (std::abs(cur[i * 3] * cell_gain[i] - base[i * 3]) + std::abs(cur[i * 3 + 1] * cell_gain[i] - base[i * 3 + 1]) +
+                       std::abs(cur[i * 3 + 2] * cell_gain[i] - base[i * 3 + 2])) / 3.0f;
+    // Texture change: brightness spread over the 3 x 3 cell neighbourhood (6 mm), reference vs now.
+    // The camera also changes contrast when it re-exposes, which changes how the glitter looks, so
+    // texture only counts while the exposure barely moved (dark filament, which does not make the camera
+    // re-expose and barely changes colour on the dark plate). Bright filament stands out by colour.
+    const double exposure_shift = std::abs(std::log(gain));
+    const double texture_weight = 1.5 * std::clamp(1.0 - (exposure_shift - 0.10) / 0.15, 0.0, 1.0);
+    for (int gy = 0; gy < H; ++gy)
+        for (int gx = 0; gx < W; ++gx) {
+            const size_t i = size_t(gy) * W + gx;
+            if (!valid[i])
+                continue;
+            double b1 = 0, b2 = 0, c1 = 0, c2 = 0, n = 0;
+            for (int dy = -1; dy <= 1; ++dy)
+                for (int dx = -1; dx <= 1; ++dx) {
+                    const int xx = gx + dx, yy = gy + dy;
+                    if (xx < 0 || yy < 0 || xx >= W || yy >= H || !valid[size_t(yy) * W + xx])
+                        continue;
+                    const size_t j = size_t(yy) * W + xx;
+                    b1 += tex_b1[j]; b2 += tex_b2[j]; c1 += tex_c1[j]; c2 += tex_c2[j];
+                    n += 16;
+                }
+            const double sb = std::sqrt(std::max(0.0, b2 / n - (b1 / n) * (b1 / n)));
+            const double sc = std::sqrt(std::max(0.0, c2 / n - (c1 / n) * (c1 / n))) * cell_gain[i];
+            diff[i]         = std::max(diff[i], float(texture_weight * std::abs(sc - sb)));
+            ref_texture[i]  = float(sb);
+        }
+    std::vector<float> sm(diff.size(), 0), all;
+    all.reserve(n_valid);
+    for (int gy = 0; gy < H; ++gy)
+        for (int gx = 0; gx < W; ++gx) {
+            const size_t i = size_t(gy) * W + gx;
+            if (!valid[i])
+                continue;
+            float s = 0;
+            int   n = 0;
+            for (int dy = -1; dy <= 1; ++dy)
+                for (int dx = -1; dx <= 1; ++dx) {
+                    const int xx = gx + dx, yy = gy + dy;
+                    if (xx < 0 || yy < 0 || xx >= W || yy >= H || !valid[size_t(yy) * W + xx])
+                        continue;
+                    s += diff[size_t(yy) * W + xx];
+                    ++n;
+                }
+            sm[i] = s / n;
+            if (background[i])
+                all.push_back(sm[i]); // noise level measured on the empty plate only
+        }
+    if (all.size() < 50)
+        for (size_t i = 0; i < sm.size(); ++i)
+            if (valid[i])
+                all.push_back(sm[i]);
+    // Noise differs across the plate: where the glitter catches the light it sparkles differently in
+    // every photo. The reference photo (which cannot contain a failure) shows where: the threshold rises
+    // with the reference's local texture there, never below the whole plate's noise level.
+    auto robust_level = [](std::vector<float> v) {
+        const double m = median(v);
+        for (float& x : v)
+            x = float(std::abs(x - m));
+        return m + 5.0 * 1.4826 * median(v);
+    };
+    res.threshold = std::max(18.0, robust_level(all));
+    constexpr double texture_k = 1.5;
     std::vector<uint8_t> changed(size_t(W) * H, 0);
-    for (size_t i = 0; i < changed.size(); ++i)
-        changed[i] = valid[i] && sm[i] > res.threshold;
+    for (int gy = 0; gy < H; ++gy)
+        for (int gx = 0; gx < W; ++gx) {
+            const size_t i  = size_t(gy) * W + gx;
+            changed[i]      = valid[i] && sm[i] > std::max(res.threshold, texture_k * ref_texture[i]);
+        }
 
     // Line each part up with what changed. Parts are the connected groups of G-code material (a part and
     // its supports and brim count as one); each gets the whole-cell offset with the most overlap,
@@ -1089,8 +1161,12 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
         footprint = new_footprint;
         res.expected = allowed.v;
     }
-    const Grid allowed_wide = dilate(allowed, 4); // margin for what the offset does not absorb
-    const Grid allowed_far  = dilate(allowed_wide, 4); // 16 mm from any G-code material
+    // Margin for what the offset does not absorb: 8 mm, plus the printed height, since a tall part
+    // throws a shadow and reflects the chamber light onto the plate around it.
+    const double printed_height = cp.layer > 0 && cp.layer <= model.layer_z.size() ? model.layer_z[cp.layer - 1] : 0.0;
+    const int    margin_cells   = 4 + int(std::ceil(printed_height / cell));
+    const Grid allowed_wide = dilate(allowed, margin_cells);
+    const Grid allowed_far  = dilate(allowed_wide, 4); // a further 16 mm
     const Grid core         = erode4(footprint);
     // Candidate cells: changed where the G-code has nothing. Only connected patches of 8+ cells (32 mm2)
     // count; spaghetti and blobs form patches, while the plate's glitter gives isolated specks.
@@ -1100,6 +1176,26 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
             const size_t i = size_t(gy) * W + gx;
             candidate[i]   = changed[i] && !allowed_wide.get(gx, gy);
         }
+    // Keep only solid change: a cell needs at least 5 changed cells in its 3 x 3 neighbourhood. Glitter
+    // that sparkles differently gives loose specks; spaghetti, blobs and parts give solid patches.
+    {
+        std::vector<uint8_t> solid(candidate.size(), 0);
+        for (int gy = 0; gy < H; ++gy)
+            for (int gx = 0; gx < W; ++gx) {
+                const size_t i = size_t(gy) * W + gx;
+                if (!candidate[i])
+                    continue;
+                int n = 0;
+                for (int dy = -1; dy <= 1; ++dy)
+                    for (int dx = -1; dx <= 1; ++dx) {
+                        const int xx = gx + dx, yy = gy + dy;
+                        if (xx >= 0 && yy >= 0 && xx < W && yy < H && changed[size_t(yy) * W + xx])
+                            ++n;
+                    }
+                solid[i] = n >= 5;
+            }
+        candidate.swap(solid);
+    }
     std::vector<uint8_t> unexpected_cell(size_t(W) * H, 0);
     {
         std::vector<uint8_t> seen(size_t(W) * H, 0);
@@ -1127,15 +1223,14 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
                         }
                     }
             }
-            // A thin band hugging a part is leftover calibration error; spaghetti, blobs and parts that
-            // moved reach well away from where the G-code printed, or cover a large area.
-            bool reaches_out = false;
+            // A band hugging a part (leftover calibration error, the part's shadow) is not a failure,
+            // however long; spaghetti, blobs and parts that moved put a real patch of material well
+            // away (16 mm) from where the G-code printed.
+            size_t far_cells = 0;
             for (size_t i : comp)
-                if (!allowed_far.get(int(i % W), int(i / W))) {
-                    reaches_out = true;
-                    break;
-                }
-            if (comp.size() >= 8 && (reaches_out || comp.size() >= 100))
+                if (!allowed_far.get(int(i % W), int(i / W)))
+                    ++far_cells;
+            if (comp.size() >= 8 && far_cells >= 8)
                 for (size_t i : comp)
                     unexpected_cell[i] = 1;
         }
@@ -1179,7 +1274,7 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
             std::snprintf(buf, sizeof(buf), "%.0f%% of the first layer printed so far shows no new material (not sticking, or not extruding)",
                           res.missing_fraction * 100.0);
         else
-            std::snprintf(buf, sizeof(buf), "%.0f%% of the latest layer's area shows no material (the part may have come loose)",
+            std::snprintf(buf, sizeof(buf), "%.0f%% of the latest layer is not where the G-code put it (the part may have come loose)",
                           res.missing_fraction * 100.0);
         res.reasons.push_back(buf);
         // Unchanged pixels only prove something when the filament should look different from the plate:
@@ -1202,7 +1297,7 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
             if (n > 0)
                 visible = std::sqrt((fr - pr / n) * (fr - pr / n) + (fg - pg / n) * (fg - pg / n) + (fb - pb / n) * (fb - pb / n)) >= 90.0;
         }
-        if (first_layer && visible) {
+        if (visible) {
             fail = true;
         } else {
             unsure = true;

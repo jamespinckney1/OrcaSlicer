@@ -169,22 +169,30 @@ purge lines count as expected material.
   strands a print. The checkpoint saves the same states as Qidi's PAUSE, so Resume on the
   touchscreen works during a checkpoint or a hold.
 - **Comparison** (`FailureCheck.*`, no GUI): both photos are resampled onto a 2 mm bed grid using
-  the camera calibration and the toolhead Z at each photo (the bed moves in Z, the camera does not).
-  A cell has changed when its colour or its texture changed: dark matte filament on the dark plate
-  barely changes colour, but it hides the plate's glitter. The calibration is only good to about a
-  centimetre and its error varies across the bed, so each separate part (with its supports and
-  brim) is first lined up with what changed, within 16 mm on the first layer; later checkpoints
-  start from those first-layer offsets and may move a part only 6 mm, so a real layer shift still
-  shows. Changed cells beyond an 8 mm margin that form patches of at least 32 mm2 and either reach
-  16 mm away from the G-code's material or cover 4 cm2 count as unexpected; 3 cm2 or more fails the
-  check. On the first layer, an expected area with no visible change fails the check only when the
-  job's filament colour is set and clearly differs from the plate; otherwise it is reported as
-  uncertain.
-- **Verdicts.** Pass: the print resumes silently. Fail: the printer holds and a window shows the
-  photo (red = unexplained material, orange = expected but not seen, green = outline of the lined-up G-code) next to
-  a top view of the G-code, with Resume / Cancel print. Uncertain: the print resumes and the same
-  window asks you to look. Without a camera calibration every checkpoint photo is shown for review
-  and the print resumes after 25 s unless you press Keep paused.
+  the camera calibration and the toolhead Z at each photo (the bed moves in Z, the camera does not),
+  staying 10 mm clear of the plate edge.
+  - Exposure: bright parts make the camera re-expose and change contrast. A tone curve (brightness now
+    to brightness in the reference) is learnt from plate at least 16 mm from anything the G-code
+    prints and applied by brightness, never by position, so a failure cannot teach it to hide itself.
+  - Change: colour difference, plus texture (dark matte filament hides the plate's glitter) while the
+    exposure barely moved. The threshold is the empty plate's noise level, raised where the reference
+    photo's glitter is strong.
+  - Alignment: the calibration is only good to about a centimetre and its error varies across the bed,
+    so each separate part (with its supports and brim) is lined up with what changed, within 16 mm on
+    the first layer; later checkpoints start from those offsets and may move a part only 6 mm.
+  - Unexpected material: solid patches (most of each cell's neighbours changed) beyond a margin of
+    8 mm plus the printed height (tall parts cast shadows and reflect light), counted only where at
+    least 32 mm2 lies a further 16 mm out; 3 cm2 or more fails the check.
+  - Missing material: when at least 60% of the latest layer shows no change, the check fails if the
+    job's filament colour is set and clearly differs from the plate, and is uncertain otherwise.
+- **Replaying a checkpoint.** `scripts/shop_tests/failure_check_replay.cpp` reruns one comparison from
+  a job folder and draws what the check saw.
+- **Verdicts.** Pass: the print resumes silently. Fail: the printer holds and beeps, and a window shows
+  the photo (red = unexplained material, orange = expected but not seen, green = outline of the
+  lined-up G-code) next to a top view of the G-code, with Resume / Cancel print. Uncertain: the print
+  resumes with no popup; the Device tab status line and the job folder record it. Without a camera
+  calibration every checkpoint photo is shown for review and the print resumes after 25 s unless you
+  press Keep paused.
 - **Camera calibration** (Device tab, printer idle, empty plate): the printer moves to 11 poses
   (`SHOP_CAMERA_POSE`); you click the plate corners at bed heights 10 and 170 mm and the nozzle tip
   at a 3 x 3 grid. The plate's exact size is solved for, so the printable area is only a first
