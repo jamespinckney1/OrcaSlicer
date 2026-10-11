@@ -365,7 +365,9 @@ def build_preset(product, printer_key, printer, noz, parent, triple=None, parent
         preset["nozzle_temperature_initial_layer"] = [str(mid)]
         preset["nozzle_temperature_range_low"] = [str(int(tmin))]
         preset["nozzle_temperature_range_high"] = [str(int(tmax))]
-    bmax = product.get("bed_temp_max_c")
+    # The top of the manufacturer's bed range, unless they name a starting value (a wide range such as
+    # 60-100 C with "start at 80 C" would otherwise put PETG on a 100 C bed).
+    bmax = product.get("bed_temp_recommended_c") or product.get("bed_temp_max_c")
     if bmax is not None:
         for k in printer["plate_keys"]:
             preset[k] = [str(int(bmax))]

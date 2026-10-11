@@ -1,6 +1,6 @@
 {
 	"name": "Creality",
-	"version": "02.03.90.87",
+	"version": "02.03.90.88",
 	"force_update": "0",
 	"description": "Creality configurations",
 	"machine_model_list": [
@@ -4817,6 +4817,18 @@
 			"sub_path": "filament/HP-TPU @Sermoon M300-all.json"
 		},
 		{
+			"name": "Creality CR-PETG @Creality CR-10 Smart",
+			"sub_path": "filament/Creality/Creality CR-PETG @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "Creality Hyper PETG @Creality CR-10 Smart",
+			"sub_path": "filament/Creality/Creality Hyper PETG @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "Creality Soleyin Basic PETG @Creality CR-10 Smart",
+			"sub_path": "filament/Creality/Creality Soleyin Basic PETG @Creality CR-10 Smart.json"
+		},
+		{
 			"name": "Fiberon PETG-ESD @Creality CR-10 Smart",
 			"sub_path": "filament/Fiberon/Fiberon PETG-ESD @Creality CR-10 Smart.json"
 		},
@@ -4869,6 +4881,26 @@
 			"sub_path": "filament/SUNLU/SUNLU PETG Transparent @Creality CR-10 Smart.json"
 		},
 		{
+			"name": "YOOPAI PETG @Creality CR-10 Smart",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "YOOPAI PETG HF @Creality CR-10 Smart",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG HF @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "YOOPAI PETG Multicolor @Creality CR-10 Smart",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG Multicolor @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "YOOPAI PETG Transparent @Creality CR-10 Smart",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG Transparent @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "Creality Hyper ABS @Creality CR-10 Smart",
+			"sub_path": "filament/Creality/Creality Hyper ABS @Creality CR-10 Smart.json"
+		},
+		{
 			"name": "OVERTURE ABS @Creality CR-10 Smart",
 			"sub_path": "filament/OVERTURE/OVERTURE ABS @Creality CR-10 Smart.json"
 		},
@@ -4895,6 +4927,10 @@
 		{
 			"name": "SUNLU ABS-FR @Creality CR-10 Smart",
 			"sub_path": "filament/SUNLU/SUNLU ABS-FR @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "Creality Hyper ABS @Creality Ender-3 Pro",
+			"sub_path": "filament/Creality/Creality Hyper ABS @Creality Ender-3 Pro.json"
 		},
 		{
 			"name": "Generic ABS @Creality Ender-3V3-all",
@@ -4943,6 +4979,14 @@
 		{
 			"name": "SUNLU High Speed ABS @Creality Ender-3 Pro",
 			"sub_path": "filament/SUNLU/SUNLU High Speed ABS @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "Creality HP-ASA @Creality CR-10 Smart",
+			"sub_path": "filament/Creality/Creality HP-ASA @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "Creality HP-ASA @Creality Ender-3 Pro",
+			"sub_path": "filament/Creality/Creality HP-ASA @Creality Ender-3 Pro.json"
 		},
 		{
 			"name": "Generic ASA @Creality Ender-3V3-all",
@@ -5007,6 +5051,18 @@
 		{
 			"name": "Generic PC @Creality K1-all",
 			"sub_path": "filament/Generic PC @Creality K1-all.json"
+		},
+		{
+			"name": "Creality CR-PETG @Creality Ender-3 Pro",
+			"sub_path": "filament/Creality/Creality CR-PETG @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "Creality Hyper PETG @Creality Ender-3 Pro",
+			"sub_path": "filament/Creality/Creality Hyper PETG @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "Creality Soleyin Basic PETG @Creality Ender-3 Pro",
+			"sub_path": "filament/Creality/Creality Soleyin Basic PETG @Creality Ender-3 Pro.json"
 		},
 		{
 			"name": "Fiberon PETG-ESD @Creality Ender-3 Pro",
@@ -5075,6 +5131,82 @@
 		{
 			"name": "SUNLU PETG Transparent @Creality Ender-3 Pro",
 			"sub_path": "filament/SUNLU/SUNLU PETG Transparent @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "YOOPAI PETG @Creality Ender-3 Pro",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "YOOPAI PETG HF @Creality Ender-3 Pro",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG HF @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "YOOPAI PETG Multicolor @Creality Ender-3 Pro",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG Multicolor @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "YOOPAI PETG Transparent @Creality Ender-3 Pro",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG Transparent @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "Creality CR-PLA @Creality CR-10 Smart",
+			"sub_path": "filament/Creality/Creality CR-PLA @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "Creality CR-PLA Carbon @Creality CR-10 Smart",
+			"sub_path": "filament/Creality/Creality CR-PLA Carbon @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "Creality CR-PLA Matte @Creality CR-10 Smart",
+			"sub_path": "filament/Creality/Creality CR-PLA Matte @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "Creality CR-Silk @Creality CR-10 Smart",
+			"sub_path": "filament/Creality/Creality CR-Silk @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "Creality CR-Wood @Creality CR-10 Smart",
+			"sub_path": "filament/Creality/Creality CR-Wood @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "Creality Ender Fast PLA @Creality CR-10 Smart",
+			"sub_path": "filament/Creality/Creality Ender Fast PLA @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "Creality Ender-PLA @Creality CR-10 Smart",
+			"sub_path": "filament/Creality/Creality Ender-PLA @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "Creality Ender-PLA+ @Creality CR-10 Smart",
+			"sub_path": "filament/Creality/Creality Ender-PLA+ @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "Creality Hyper PLA @Creality CR-10 Smart",
+			"sub_path": "filament/Creality/Creality Hyper PLA @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "Creality Hyper PLA Lightweight @Creality CR-10 Smart",
+			"sub_path": "filament/Creality/Creality Hyper PLA Lightweight @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "Creality Hyper PLA Luminous @Creality CR-10 Smart",
+			"sub_path": "filament/Creality/Creality Hyper PLA Luminous @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "Creality Hyper PLA Stardust @Creality CR-10 Smart",
+			"sub_path": "filament/Creality/Creality Hyper PLA Stardust @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "Creality Hyper Rainbow PLA @Creality CR-10 Smart",
+			"sub_path": "filament/Creality/Creality Hyper Rainbow PLA @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "Creality Soleyin PLA Matte @Creality CR-10 Smart",
+			"sub_path": "filament/Creality/Creality Soleyin PLA Matte @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "Creality Soleyin Ultra PLA @Creality CR-10 Smart",
+			"sub_path": "filament/Creality/Creality Soleyin Ultra PLA @Creality CR-10 Smart.json"
 		},
 		{
 			"name": "OVERTURE Air PLA @Creality CR-10 Smart",
@@ -5269,6 +5401,66 @@
 			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Tri-Color @Creality CR-10 Smart.json"
 		},
 		{
+			"name": "YOOPAI Dual Color Silk PLA @Creality CR-10 Smart",
+			"sub_path": "filament/YOOPAI/YOOPAI Dual Color Silk PLA @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "YOOPAI PLA+ @Creality CR-10 Smart",
+			"sub_path": "filament/YOOPAI/YOOPAI PLA+ @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "YOOPAI PLA+ Matte @Creality CR-10 Smart",
+			"sub_path": "filament/YOOPAI/YOOPAI PLA+ Matte @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "YOOPAI Silk PLA @Creality CR-10 Smart",
+			"sub_path": "filament/YOOPAI/YOOPAI Silk PLA @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "YOOPAI Silk Rainbow PLA @Creality CR-10 Smart",
+			"sub_path": "filament/YOOPAI/YOOPAI Silk Rainbow PLA @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "YOOPAI Silk Tri-Color PLA @Creality CR-10 Smart",
+			"sub_path": "filament/YOOPAI/YOOPAI Silk Tri-Color PLA @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "Creality CR-PLA @Creality Ender-3 Pro",
+			"sub_path": "filament/Creality/Creality CR-PLA @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "Creality CR-PLA Carbon @Creality Ender-3 Pro",
+			"sub_path": "filament/Creality/Creality CR-PLA Carbon @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "Creality CR-PLA Matte @Creality Ender-3 Pro",
+			"sub_path": "filament/Creality/Creality CR-PLA Matte @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "Creality CR-Silk @Creality Ender-3 Pro",
+			"sub_path": "filament/Creality/Creality CR-Silk @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "Creality CR-Wood @Creality Ender-3 Pro",
+			"sub_path": "filament/Creality/Creality CR-Wood @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "Creality Ender-PLA @Creality Ender-3 Pro",
+			"sub_path": "filament/Creality/Creality Ender-PLA @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "Creality Ender-PLA+ @Creality Ender-3 Pro",
+			"sub_path": "filament/Creality/Creality Ender-PLA+ @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "Creality Hyper Rainbow PLA @Creality Ender-3 Pro",
+			"sub_path": "filament/Creality/Creality Hyper Rainbow PLA @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "Creality Soleyin PLA Matte @Creality Ender-3 Pro",
+			"sub_path": "filament/Creality/Creality Soleyin PLA Matte @Creality Ender-3 Pro.json"
+		},
+		{
 			"name": "Generic PLA @Creality Ender-3V3-all",
 			"sub_path": "filament/Generic PLA @Creality Ender-3V3-all.json"
 		},
@@ -5441,6 +5633,54 @@
 			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Tri-Color @Creality Ender-3 Pro.json"
 		},
 		{
+			"name": "YOOPAI Dual Color Silk PLA @Creality Ender-3 Pro",
+			"sub_path": "filament/YOOPAI/YOOPAI Dual Color Silk PLA @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "YOOPAI PLA+ @Creality Ender-3 Pro",
+			"sub_path": "filament/YOOPAI/YOOPAI PLA+ @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "YOOPAI PLA+ Matte @Creality Ender-3 Pro",
+			"sub_path": "filament/YOOPAI/YOOPAI PLA+ Matte @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "YOOPAI Silk PLA @Creality Ender-3 Pro",
+			"sub_path": "filament/YOOPAI/YOOPAI Silk PLA @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "YOOPAI Silk Rainbow PLA @Creality Ender-3 Pro",
+			"sub_path": "filament/YOOPAI/YOOPAI Silk Rainbow PLA @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "YOOPAI Silk Tri-Color PLA @Creality Ender-3 Pro",
+			"sub_path": "filament/YOOPAI/YOOPAI Silk Tri-Color PLA @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "Creality Ender Fast PLA @Creality Ender-3 Pro",
+			"sub_path": "filament/Creality/Creality Ender Fast PLA @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "Creality Hyper PLA @Creality Ender-3 Pro",
+			"sub_path": "filament/Creality/Creality Hyper PLA @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "Creality Hyper PLA Lightweight @Creality Ender-3 Pro",
+			"sub_path": "filament/Creality/Creality Hyper PLA Lightweight @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "Creality Hyper PLA Luminous @Creality Ender-3 Pro",
+			"sub_path": "filament/Creality/Creality Hyper PLA Luminous @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "Creality Hyper PLA Stardust @Creality Ender-3 Pro",
+			"sub_path": "filament/Creality/Creality Hyper PLA Stardust @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "Creality Soleyin Ultra PLA @Creality Ender-3 Pro",
+			"sub_path": "filament/Creality/Creality Soleyin Ultra PLA @Creality Ender-3 Pro.json"
+		},
+		{
 			"name": "OVERTURE High Speed PLA @Creality Ender-3 Pro",
 			"sub_path": "filament/OVERTURE/OVERTURE High Speed PLA @Creality Ender-3 Pro.json"
 		},
@@ -5487,6 +5727,22 @@
 		{
 			"name": "Generic PLA-CF @Creality K2-all",
 			"sub_path": "filament/Generic PLA-CF @Creality K2-all.json"
+		},
+		{
+			"name": "Creality CR-TPU @Creality CR-10 Smart",
+			"sub_path": "filament/Creality/Creality CR-TPU @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "Creality CR-TPU @Creality Ender-3 Pro",
+			"sub_path": "filament/Creality/Creality CR-TPU @Creality Ender-3 Pro.json"
+		},
+		{
+			"name": "Creality HP-TPU @Creality CR-10 Smart",
+			"sub_path": "filament/Creality/Creality HP-TPU @Creality CR-10 Smart.json"
+		},
+		{
+			"name": "Creality HP-TPU @Creality Ender-3 Pro",
+			"sub_path": "filament/Creality/Creality HP-TPU @Creality Ender-3 Pro.json"
 		},
 		{
 			"name": "Generic TPU @Creality Ender-3V3-all",

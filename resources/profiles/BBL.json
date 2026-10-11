@@ -1,7 +1,7 @@
 {
 	"name": "Bambulab",
 	"url": "http://www.bambulab.com/Parameters/vendor/BBL.json",
-	"version": "02.08.90.12",
+	"version": "02.08.90.13",
 	"force_update": "0",
 	"description": "the initial version of BBL configurations",
 	"machine_model_list": [
@@ -8064,6 +8064,10 @@
 			"sub_path": "filament/Generic ABS @BBL X1E 0.2 nozzle.json"
 		},
 		{
+			"name": "Creality Hyper ABS @BBL A1",
+			"sub_path": "filament/Creality/Creality Hyper ABS @BBL A1.json"
+		},
+		{
 			"name": "OVERTURE ABS @BBL A1",
 			"sub_path": "filament/OVERTURE/OVERTURE ABS @BBL A1.json"
 		},
@@ -8094,6 +8098,10 @@
 		{
 			"name": "SUNLU High Speed ABS @BBL A1",
 			"sub_path": "filament/SUNLU/SUNLU High Speed ABS @BBL A1.json"
+		},
+		{
+			"name": "Creality Hyper ABS @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper ABS @BBL A1 0.2 nozzle.json"
 		},
 		{
 			"name": "OVERTURE ABS @BBL A1 0.2 nozzle",
@@ -8152,6 +8160,10 @@
 			"sub_path": "filament/Generic ASA @BBL X1E 0.2 nozzle.json"
 		},
 		{
+			"name": "Creality HP-ASA @BBL A1",
+			"sub_path": "filament/Creality/Creality HP-ASA @BBL A1.json"
+		},
+		{
 			"name": "Fiberon ASA-CF08 @BBL A1",
 			"sub_path": "filament/Fiberon/Fiberon ASA-CF08 @BBL A1.json"
 		},
@@ -8174,6 +8186,10 @@
 		{
 			"name": "SUNLU ASA @BBL A1",
 			"sub_path": "filament/SUNLU/SUNLU ASA @BBL A1.json"
+		},
+		{
+			"name": "Creality HP-ASA @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality HP-ASA @BBL A1 0.2 nozzle.json"
 		},
 		{
 			"name": "Fiberon ASA-CF08 @BBL A1 0.2 nozzle",
@@ -8312,6 +8328,10 @@
 			"sub_path": "filament/Generic PC @BBL X1E 0.2 nozzle.json"
 		},
 		{
+			"name": "Creality Hyper PC @BBL A1",
+			"sub_path": "filament/Creality/Creality Hyper PC @BBL A1.json"
+		},
+		{
 			"name": "OVERTURE PC Professional @BBL A1",
 			"sub_path": "filament/OVERTURE/OVERTURE PC Professional @BBL A1.json"
 		},
@@ -8326,6 +8346,10 @@
 		{
 			"name": "SUNLU PC-ABS @BBL A1",
 			"sub_path": "filament/SUNLU/SUNLU PC-ABS @BBL A1.json"
+		},
+		{
+			"name": "Creality Hyper PC @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PC @BBL A1 0.2 nozzle.json"
 		},
 		{
 			"name": "OVERTURE PC Professional @BBL A1 0.2 nozzle",
@@ -8380,6 +8404,18 @@
 			"sub_path": "filament/Bambu PETG-CF @BBL A1M 0.4 nozzle.json"
 		},
 		{
+			"name": "Creality CR-PETG @BBL A1",
+			"sub_path": "filament/Creality/Creality CR-PETG @BBL A1.json"
+		},
+		{
+			"name": "Creality Hyper PETG @BBL A1",
+			"sub_path": "filament/Creality/Creality Hyper PETG @BBL A1.json"
+		},
+		{
+			"name": "Creality Soleyin Basic PETG @BBL A1",
+			"sub_path": "filament/Creality/Creality Soleyin Basic PETG @BBL A1.json"
+		},
+		{
 			"name": "OVERTURE High Speed PETG @BBL A1",
 			"sub_path": "filament/OVERTURE/OVERTURE High Speed PETG @BBL A1.json"
 		},
@@ -8428,6 +8464,34 @@
 			"sub_path": "filament/SUNLU/SUNLU PETG Transparent @BBL A1.json"
 		},
 		{
+			"name": "YOOPAI PETG @BBL A1",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG @BBL A1.json"
+		},
+		{
+			"name": "YOOPAI PETG HF @BBL A1",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG HF @BBL A1.json"
+		},
+		{
+			"name": "YOOPAI PETG Multicolor @BBL A1",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG Multicolor @BBL A1.json"
+		},
+		{
+			"name": "YOOPAI PETG Transparent @BBL A1",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG Transparent @BBL A1.json"
+		},
+		{
+			"name": "Creality CR-PETG @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality CR-PETG @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PETG @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PETG @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality Soleyin Basic PETG @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Soleyin Basic PETG @BBL A1 0.2 nozzle.json"
+		},
+		{
 			"name": "OVERTURE High Speed PETG @BBL A1 0.2 nozzle",
 			"sub_path": "filament/OVERTURE/OVERTURE High Speed PETG @BBL A1 0.2 nozzle.json"
 		},
@@ -8474,6 +8538,30 @@
 		{
 			"name": "SUNLU PETG Transparent @BBL A1 0.2 nozzle",
 			"sub_path": "filament/SUNLU/SUNLU PETG Transparent @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "YOOPAI PETG @BBL A1 0.2 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "YOOPAI PETG HF @BBL A1 0.2 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG HF @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "YOOPAI PETG Multicolor @BBL A1 0.2 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG Multicolor @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "YOOPAI PETG Transparent @BBL A1 0.2 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG Transparent @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PETG-CF @BBL A1",
+			"sub_path": "filament/Creality/Creality Hyper PETG-CF @BBL A1.json"
+		},
+		{
+			"name": "Creality Hyper PETG-CF @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PETG-CF @BBL A1 0.2 nozzle.json"
 		},
 		{
 			"name": "Fiberon PETG-rCF08 @BBL A1",
@@ -8526,6 +8614,34 @@
 		{
 			"name": "Bambu PLA Glow @BBL X1E 0.2 nozzle",
 			"sub_path": "filament/Bambu PLA Glow @BBL X1E 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality CR-PLA @BBL A1",
+			"sub_path": "filament/Creality/Creality CR-PLA @BBL A1.json"
+		},
+		{
+			"name": "Creality CR-PLA Carbon @BBL A1",
+			"sub_path": "filament/Creality/Creality CR-PLA Carbon @BBL A1.json"
+		},
+		{
+			"name": "Creality CR-PLA Matte @BBL A1",
+			"sub_path": "filament/Creality/Creality CR-PLA Matte @BBL A1.json"
+		},
+		{
+			"name": "Creality CR-Wood @BBL A1",
+			"sub_path": "filament/Creality/Creality CR-Wood @BBL A1.json"
+		},
+		{
+			"name": "Creality Ender-PLA @BBL A1",
+			"sub_path": "filament/Creality/Creality Ender-PLA @BBL A1.json"
+		},
+		{
+			"name": "Creality Ender-PLA+ @BBL A1",
+			"sub_path": "filament/Creality/Creality Ender-PLA+ @BBL A1.json"
+		},
+		{
+			"name": "Creality Soleyin PLA Matte @BBL A1",
+			"sub_path": "filament/Creality/Creality Soleyin PLA Matte @BBL A1.json"
 		},
 		{
 			"name": "OVERTURE Air PLA @BBL A1",
@@ -8610,6 +8726,42 @@
 		{
 			"name": "SUNLU PLA Twinkling @BBL A1",
 			"sub_path": "filament/SUNLU/SUNLU PLA Twinkling @BBL A1.json"
+		},
+		{
+			"name": "YOOPAI PLA+ @BBL A1",
+			"sub_path": "filament/YOOPAI/YOOPAI PLA+ @BBL A1.json"
+		},
+		{
+			"name": "YOOPAI PLA+ Matte @BBL A1",
+			"sub_path": "filament/YOOPAI/YOOPAI PLA+ Matte @BBL A1.json"
+		},
+		{
+			"name": "Creality CR-PLA @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality CR-PLA @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality CR-PLA Carbon @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality CR-PLA Carbon @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality CR-PLA Matte @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality CR-PLA Matte @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality CR-Wood @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality CR-Wood @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality Ender-PLA @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Ender-PLA @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality Ender-PLA+ @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Ender-PLA+ @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality Soleyin PLA Matte @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Soleyin PLA Matte @BBL A1 0.2 nozzle.json"
 		},
 		{
 			"name": "OVERTURE Air PLA @BBL A1 0.2 nozzle",
@@ -8700,6 +8852,38 @@
 			"sub_path": "filament/SUNLU/SUNLU PLA Wood @BBL A1 0.2 nozzle.json"
 		},
 		{
+			"name": "YOOPAI PLA+ @BBL A1 0.2 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI PLA+ @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "YOOPAI PLA+ Matte @BBL A1 0.2 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI PLA+ Matte @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality Ender Fast PLA @BBL A1",
+			"sub_path": "filament/Creality/Creality Ender Fast PLA @BBL A1.json"
+		},
+		{
+			"name": "Creality Hyper PLA @BBL A1",
+			"sub_path": "filament/Creality/Creality Hyper PLA @BBL A1.json"
+		},
+		{
+			"name": "Creality Hyper PLA Lightweight @BBL A1",
+			"sub_path": "filament/Creality/Creality Hyper PLA Lightweight @BBL A1.json"
+		},
+		{
+			"name": "Creality Hyper PLA Luminous @BBL A1",
+			"sub_path": "filament/Creality/Creality Hyper PLA Luminous @BBL A1.json"
+		},
+		{
+			"name": "Creality Hyper PLA Stardust @BBL A1",
+			"sub_path": "filament/Creality/Creality Hyper PLA Stardust @BBL A1.json"
+		},
+		{
+			"name": "Creality Soleyin Ultra PLA @BBL A1",
+			"sub_path": "filament/Creality/Creality Soleyin Ultra PLA @BBL A1.json"
+		},
+		{
 			"name": "OVERTURE High Speed PLA @BBL A1",
 			"sub_path": "filament/OVERTURE/OVERTURE High Speed PLA @BBL A1.json"
 		},
@@ -8734,6 +8918,30 @@
 		{
 			"name": "SUNLU PLA Meta @BBL A1",
 			"sub_path": "filament/SUNLU/SUNLU PLA Meta @BBL A1.json"
+		},
+		{
+			"name": "Creality Ender Fast PLA @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Ender Fast PLA @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PLA @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PLA @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PLA Lightweight @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PLA Lightweight @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PLA Luminous @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PLA Luminous @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PLA Stardust @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PLA Stardust @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality Soleyin Ultra PLA @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Soleyin Ultra PLA @BBL A1 0.2 nozzle.json"
 		},
 		{
 			"name": "OVERTURE High Speed PLA @BBL A1 0.2 nozzle",
@@ -8786,6 +8994,22 @@
 		{
 			"name": "Generic PLA High Speed @BBL X2D 0.2 nozzle",
 			"sub_path": "filament/Generic PLA High Speed @BBL X2D 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality CR-Silk @BBL A1",
+			"sub_path": "filament/Creality/Creality CR-Silk @BBL A1.json"
+		},
+		{
+			"name": "Creality CR-Silk @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality CR-Silk @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper Rainbow PLA @BBL A1",
+			"sub_path": "filament/Creality/Creality Hyper Rainbow PLA @BBL A1.json"
+		},
+		{
+			"name": "Creality Hyper Rainbow PLA @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper Rainbow PLA @BBL A1 0.2 nozzle.json"
 		},
 		{
 			"name": "OVERTURE Silk PLA @BBL A1",
@@ -8882,6 +9106,46 @@
 		{
 			"name": "SUNLU Silk PLA+ Tri-Color @BBL A1 0.2 nozzle",
 			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Tri-Color @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "YOOPAI Dual Color Silk PLA @BBL A1",
+			"sub_path": "filament/YOOPAI/YOOPAI Dual Color Silk PLA @BBL A1.json"
+		},
+		{
+			"name": "YOOPAI Dual Color Silk PLA @BBL A1 0.2 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI Dual Color Silk PLA @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "YOOPAI Silk PLA @BBL A1",
+			"sub_path": "filament/YOOPAI/YOOPAI Silk PLA @BBL A1.json"
+		},
+		{
+			"name": "YOOPAI Silk PLA @BBL A1 0.2 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI Silk PLA @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "YOOPAI Silk Rainbow PLA @BBL A1",
+			"sub_path": "filament/YOOPAI/YOOPAI Silk Rainbow PLA @BBL A1.json"
+		},
+		{
+			"name": "YOOPAI Silk Rainbow PLA @BBL A1 0.2 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI Silk Rainbow PLA @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "YOOPAI Silk Tri-Color PLA @BBL A1",
+			"sub_path": "filament/YOOPAI/YOOPAI Silk Tri-Color PLA @BBL A1.json"
+		},
+		{
+			"name": "YOOPAI Silk Tri-Color PLA @BBL A1 0.2 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI Silk Tri-Color PLA @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PLA-CF @BBL A1",
+			"sub_path": "filament/Creality/Creality Hyper PLA-CF @BBL A1.json"
+		},
+		{
+			"name": "Creality Hyper PLA-CF @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PLA-CF @BBL A1 0.2 nozzle.json"
 		},
 		{
 			"name": "QIDI PLA-CF @BBL A1",
@@ -9004,6 +9268,14 @@
 			"sub_path": "filament/SUNLU/SUNLU Easy PA (Easy Nylon - E-PA) @BBL A1 0.2 nozzle.json"
 		},
 		{
+			"name": "Creality PPA-CF (Hyper PPA-CF) @BBL A1",
+			"sub_path": "filament/Creality/Creality PPA-CF (Hyper PPA-CF) @BBL A1.json"
+		},
+		{
+			"name": "Creality PPA-CF (Hyper PPA-CF) @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality PPA-CF (Hyper PPA-CF) @BBL A1 0.2 nozzle.json"
+		},
+		{
 			"name": "Fiberon PA12-CF10 @BBL A1",
 			"sub_path": "filament/Fiberon/Fiberon PA12-CF10 @BBL A1.json"
 		},
@@ -9074,6 +9346,22 @@
 		{
 			"name": "SUNLU PA6-CF @BBL A1 0.2 nozzle",
 			"sub_path": "filament/SUNLU/SUNLU PA6-CF @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality CR-TPU @BBL A1",
+			"sub_path": "filament/Creality/Creality CR-TPU @BBL A1.json"
+		},
+		{
+			"name": "Creality CR-TPU @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality CR-TPU @BBL A1 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality HP-TPU @BBL A1",
+			"sub_path": "filament/Creality/Creality HP-TPU @BBL A1.json"
+		},
+		{
+			"name": "Creality HP-TPU @BBL A1 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality HP-TPU @BBL A1 0.2 nozzle.json"
 		},
 		{
 			"name": "OVERTURE High Speed TPU 95A @BBL A1",

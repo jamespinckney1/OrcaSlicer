@@ -14,8 +14,10 @@ Studio's. Re-run the script after merging upstream to recolor new icons; it is i
 ## Filament profiles
 
 `scripts/shop_profiles/gen_filaments.py` generates per-printer filament presets from manufacturer
-catalog data in `scripts/shop_profiles/data/*.json` (QIDI, Fiberon/Polymaker, SUNLU, Overture; the
-sibling `.md` files hold the research notes and caveats). Shop printers: Qidi X-Plus 4, Creality
+catalog data in `scripts/shop_profiles/data/*.json` (QIDI, Fiberon/Polymaker, SUNLU, Overture,
+Creality, YOOPAI; the sibling `.md` files hold the research notes and caveats). YOOPAI also resells
+Creality filament; only YOOPAI-branded products are in its file. The generator updates presets it
+generated earlier and never touches upstream ones. Shop printers: Qidi X-Plus 4, Creality
 Ender-3 Pro, Creality CR-10 Smart, Bambu Lab A1. Each preset inherits the vendor bundle's existing
 printer-specific generic for its material and overrides manufacturer temperatures, bed, density,
 fan and notes. After editing data, run the generator then, per touched vendor:
@@ -43,6 +45,11 @@ layer temperature from the band for the first layer speed. Bands that sit entire
 product's rated range are treated as copy errors and ignored. OrcaSlicer has no in-print
 temperature-by-flow control, so printing much faster or slower than the printer's default process
 means adjusting temperature along the bands listed in each preset's notes.
+
+Data fields beyond the manufacturer's numbers: `bed_temp_recommended_c` overrides the top of the
+bed range when the manufacturer names a starting value (a wide 60-100 C range would otherwise put
+PETG on a 100 C bed); `shop_overrides` holds tuning measured on shop printers, per printer and
+nozzle, with a note that lands in the preset.
 
 Machine-specific tweaks: the Ender-3 Pro presets assume the Creality Sprite Extruder (direct
 drive, 0.8 mm retraction) and a CR Touch (`M420 S1` after homing); the Plus 4 presets note the

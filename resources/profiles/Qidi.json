@@ -1,6 +1,6 @@
 {
 	"name": "Qidi",
-	"version": "02.04.90.17",
+	"version": "02.04.90.18",
 	"force_update": "0",
 	"description": "Qidi configurations",
 	"machine_model_list": [
@@ -7085,6 +7085,10 @@
 			"sub_path": "filament/Qidi TPU 95A-HF @Qidi X-Plus 4 0.8 nozzle.json"
 		},
 		{
+			"name": "Creality Hyper ABS @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper ABS @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
 			"name": "QIDI Odorless-ABS Rapido @Qidi X-Plus 4 0.2 nozzle",
 			"sub_path": "filament/QIDI/QIDI Odorless-ABS Rapido @Qidi X-Plus 4 0.2 nozzle.json"
 		},
@@ -7103,6 +7107,10 @@
 		{
 			"name": "SUNLU High Speed ABS @Qidi X-Plus 4 0.2 nozzle",
 			"sub_path": "filament/SUNLU/SUNLU High Speed ABS @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper ABS @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper ABS @Qidi X-Plus 4 0.4 nozzle.json"
 		},
 		{
 			"name": "QIDI Odorless-ABS Rapido @Qidi X-Plus 4 0.4 nozzle",
@@ -7125,6 +7133,10 @@
 			"sub_path": "filament/SUNLU/SUNLU High Speed ABS @Qidi X-Plus 4 0.4 nozzle.json"
 		},
 		{
+			"name": "Creality Hyper ABS @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper ABS @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
 			"name": "QIDI Odorless-ABS Rapido @Qidi X-Plus 4 0.6 nozzle",
 			"sub_path": "filament/QIDI/QIDI Odorless-ABS Rapido @Qidi X-Plus 4 0.6 nozzle.json"
 		},
@@ -7143,6 +7155,10 @@
 		{
 			"name": "SUNLU High Speed ABS @Qidi X-Plus 4 0.6 nozzle",
 			"sub_path": "filament/SUNLU/SUNLU High Speed ABS @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper ABS @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper ABS @Qidi X-Plus 4 0.8 nozzle.json"
 		},
 		{
 			"name": "QIDI Odorless-ABS Rapido @Qidi X-Plus 4 0.8 nozzle",
@@ -7177,6 +7193,10 @@
 			"sub_path": "filament/SUNLU/SUNLU ABS-GF @Qidi X-Plus 4 0.8 nozzle.json"
 		},
 		{
+			"name": "Creality HP-ASA @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality HP-ASA @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
 			"name": "Fiberon ASA-CF08 @Qidi X-Plus 4 0.2 nozzle",
 			"sub_path": "filament/Fiberon/Fiberon ASA-CF08 @Qidi X-Plus 4 0.2 nozzle.json"
 		},
@@ -7197,6 +7217,10 @@
 			"sub_path": "filament/SUNLU/SUNLU ASA @Qidi X-Plus 4 0.2 nozzle.json"
 		},
 		{
+			"name": "Creality HP-ASA @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Creality/Creality HP-ASA @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
 			"name": "Fiberon ASA-CF08 @Qidi X-Plus 4 0.4 nozzle",
 			"sub_path": "filament/Fiberon/Fiberon ASA-CF08 @Qidi X-Plus 4 0.4 nozzle.json"
 		},
@@ -7211,6 +7235,10 @@
 		{
 			"name": "SUNLU ASA @Qidi X-Plus 4 0.4 nozzle",
 			"sub_path": "filament/SUNLU/SUNLU ASA @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Creality HP-ASA @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Creality/Creality HP-ASA @Qidi X-Plus 4 0.6 nozzle.json"
 		},
 		{
 			"name": "Fiberon ASA-CF08 @Qidi X-Plus 4 0.6 nozzle",
@@ -7231,6 +7259,10 @@
 		{
 			"name": "SUNLU ASA @Qidi X-Plus 4 0.6 nozzle",
 			"sub_path": "filament/SUNLU/SUNLU ASA @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Creality HP-ASA @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Creality/Creality HP-ASA @Qidi X-Plus 4 0.8 nozzle.json"
 		},
 		{
 			"name": "Fiberon ASA-CF08 @Qidi X-Plus 4 0.8 nozzle",
@@ -7301,6 +7333,10 @@
 			"sub_path": "filament/SUNLU/SUNLU Easy PA (Easy Nylon - E-PA) @Qidi X-Plus 4 0.8 nozzle.json"
 		},
 		{
+			"name": "Creality PPA-CF (Hyper PPA-CF) @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Creality/Creality PPA-CF (Hyper PPA-CF) @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
 			"name": "Fiberon PA12-CF10 @Qidi X-Plus 4 0.4 nozzle",
 			"sub_path": "filament/Fiberon/Fiberon PA12-CF10 @Qidi X-Plus 4 0.4 nozzle.json"
 		},
@@ -7333,6 +7369,10 @@
 			"sub_path": "filament/SUNLU/SUNLU PA6-CF @Qidi X-Plus 4 0.4 nozzle.json"
 		},
 		{
+			"name": "Creality PPA-CF (Hyper PPA-CF) @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Creality/Creality PPA-CF (Hyper PPA-CF) @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
 			"name": "Fiberon PA12-CF10 @Qidi X-Plus 4 0.6 nozzle",
 			"sub_path": "filament/Fiberon/Fiberon PA12-CF10 @Qidi X-Plus 4 0.6 nozzle.json"
 		},
@@ -7363,6 +7403,10 @@
 		{
 			"name": "SUNLU PA6-CF @Qidi X-Plus 4 0.6 nozzle",
 			"sub_path": "filament/SUNLU/SUNLU PA6-CF @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Creality PPA-CF (Hyper PPA-CF) @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Creality/Creality PPA-CF (Hyper PPA-CF) @Qidi X-Plus 4 0.8 nozzle.json"
 		},
 		{
 			"name": "Fiberon PA12-CF10 @Qidi X-Plus 4 0.8 nozzle",
@@ -7505,6 +7549,10 @@
 			"sub_path": "filament/QIDI/QIDI PPS-GF20 @Qidi X-Plus 4 0.8 nozzle.json"
 		},
 		{
+			"name": "Creality Hyper PC @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PC @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
 			"name": "OVERTURE PC Professional @Qidi X-Plus 4 0.2 nozzle",
 			"sub_path": "filament/OVERTURE/OVERTURE PC Professional @Qidi X-Plus 4 0.2 nozzle.json"
 		},
@@ -7521,6 +7569,10 @@
 			"sub_path": "filament/SUNLU/SUNLU PC-ABS @Qidi X-Plus 4 0.2 nozzle.json"
 		},
 		{
+			"name": "Creality Hyper PC @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PC @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
 			"name": "OVERTURE PC Professional @Qidi X-Plus 4 0.4 nozzle",
 			"sub_path": "filament/OVERTURE/OVERTURE PC Professional @Qidi X-Plus 4 0.4 nozzle.json"
 		},
@@ -7531,6 +7583,10 @@
 		{
 			"name": "SUNLU PC-ABS @Qidi X-Plus 4 0.4 nozzle",
 			"sub_path": "filament/SUNLU/SUNLU PC-ABS @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PC @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PC @Qidi X-Plus 4 0.6 nozzle.json"
 		},
 		{
 			"name": "OVERTURE PC Professional @Qidi X-Plus 4 0.6 nozzle",
@@ -7545,6 +7601,10 @@
 			"sub_path": "filament/SUNLU/SUNLU PC-ABS @Qidi X-Plus 4 0.6 nozzle.json"
 		},
 		{
+			"name": "Creality Hyper PC @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PC @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
 			"name": "OVERTURE PC Professional @Qidi X-Plus 4 0.8 nozzle",
 			"sub_path": "filament/OVERTURE/OVERTURE PC Professional @Qidi X-Plus 4 0.8 nozzle.json"
 		},
@@ -7555,6 +7615,18 @@
 		{
 			"name": "SUNLU PC-ABS @Qidi X-Plus 4 0.8 nozzle",
 			"sub_path": "filament/SUNLU/SUNLU PC-ABS @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Creality CR-PETG @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality CR-PETG @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PETG @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PETG @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality Soleyin Basic PETG @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Soleyin Basic PETG @Qidi X-Plus 4 0.2 nozzle.json"
 		},
 		{
 			"name": "Fiberon PETG-ESD @Qidi X-Plus 4 0.2 nozzle",
@@ -7597,6 +7669,34 @@
 			"sub_path": "filament/SUNLU/SUNLU PETG Transparent @Qidi X-Plus 4 0.2 nozzle.json"
 		},
 		{
+			"name": "YOOPAI PETG @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "YOOPAI PETG HF @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG HF @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "YOOPAI PETG Multicolor @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG Multicolor @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "YOOPAI PETG Transparent @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG Transparent @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality CR-PETG @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Creality/Creality CR-PETG @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PETG @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PETG @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Creality Soleyin Basic PETG @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Creality/Creality Soleyin Basic PETG @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
 			"name": "Fiberon PETG-ESD @Qidi X-Plus 4 0.4 nozzle",
 			"sub_path": "filament/Fiberon/Fiberon PETG-ESD @Qidi X-Plus 4 0.4 nozzle.json"
 		},
@@ -7631,6 +7731,34 @@
 		{
 			"name": "SUNLU PETG Transparent @Qidi X-Plus 4 0.4 nozzle",
 			"sub_path": "filament/SUNLU/SUNLU PETG Transparent @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "YOOPAI PETG @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "YOOPAI PETG HF @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG HF @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "YOOPAI PETG Multicolor @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG Multicolor @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "YOOPAI PETG Transparent @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG Transparent @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Creality CR-PETG @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Creality/Creality CR-PETG @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PETG @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PETG @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Creality Soleyin Basic PETG @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Creality/Creality Soleyin Basic PETG @Qidi X-Plus 4 0.6 nozzle.json"
 		},
 		{
 			"name": "Fiberon PETG-ESD @Qidi X-Plus 4 0.6 nozzle",
@@ -7669,6 +7797,34 @@
 			"sub_path": "filament/SUNLU/SUNLU PETG Transparent @Qidi X-Plus 4 0.6 nozzle.json"
 		},
 		{
+			"name": "YOOPAI PETG @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "YOOPAI PETG HF @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG HF @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "YOOPAI PETG Multicolor @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG Multicolor @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "YOOPAI PETG Transparent @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG Transparent @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Creality CR-PETG @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Creality/Creality CR-PETG @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PETG @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PETG @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Creality Soleyin Basic PETG @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Creality/Creality Soleyin Basic PETG @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
 			"name": "Fiberon PETG-ESD @Qidi X-Plus 4 0.8 nozzle",
 			"sub_path": "filament/Fiberon/Fiberon PETG-ESD @Qidi X-Plus 4 0.8 nozzle.json"
 		},
@@ -7705,12 +7861,36 @@
 			"sub_path": "filament/SUNLU/SUNLU PETG Transparent @Qidi X-Plus 4 0.8 nozzle.json"
 		},
 		{
+			"name": "YOOPAI PETG @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "YOOPAI PETG HF @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG HF @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "YOOPAI PETG Multicolor @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG Multicolor @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "YOOPAI PETG Transparent @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI PETG Transparent @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PETG-CF @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PETG-CF @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
 			"name": "Fiberon PETG-rCF08 @Qidi X-Plus 4 0.4 nozzle",
 			"sub_path": "filament/Fiberon/Fiberon PETG-rCF08 @Qidi X-Plus 4 0.4 nozzle.json"
 		},
 		{
 			"name": "SUNLU PETG-CF @Qidi X-Plus 4 0.4 nozzle",
 			"sub_path": "filament/SUNLU/SUNLU PETG-CF @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PETG-CF @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PETG-CF @Qidi X-Plus 4 0.6 nozzle.json"
 		},
 		{
 			"name": "Fiberon PETG-rCF08 @Qidi X-Plus 4 0.6 nozzle",
@@ -7721,12 +7901,48 @@
 			"sub_path": "filament/SUNLU/SUNLU PETG-CF @Qidi X-Plus 4 0.6 nozzle.json"
 		},
 		{
+			"name": "Creality Hyper PETG-CF @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PETG-CF @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
 			"name": "Fiberon PETG-rCF08 @Qidi X-Plus 4 0.8 nozzle",
 			"sub_path": "filament/Fiberon/Fiberon PETG-rCF08 @Qidi X-Plus 4 0.8 nozzle.json"
 		},
 		{
 			"name": "SUNLU PETG-CF @Qidi X-Plus 4 0.8 nozzle",
 			"sub_path": "filament/SUNLU/SUNLU PETG-CF @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Creality CR-PLA @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality CR-PLA @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality CR-PLA Carbon @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality CR-PLA Carbon @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality CR-PLA Matte @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality CR-PLA Matte @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality CR-Silk @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality CR-Silk @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality CR-Wood @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality CR-Wood @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality Ender-PLA @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Ender-PLA @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper Rainbow PLA @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper Rainbow PLA @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality Soleyin PLA Matte @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Soleyin PLA Matte @Qidi X-Plus 4 0.2 nozzle.json"
 		},
 		{
 			"name": "Generic PLA High Speed @Qidi X-Plus 4 0.2 nozzle",
@@ -7861,6 +8077,46 @@
 			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Tri-Color @Qidi X-Plus 4 0.2 nozzle.json"
 		},
 		{
+			"name": "YOOPAI Dual Color Silk PLA @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI Dual Color Silk PLA @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "YOOPAI Silk PLA @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI Silk PLA @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "YOOPAI Silk Rainbow PLA @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI Silk Rainbow PLA @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "YOOPAI Silk Tri-Color PLA @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI Silk Tri-Color PLA @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality CR-PLA @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Creality/Creality CR-PLA @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Creality CR-PLA Carbon @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Creality/Creality CR-PLA Carbon @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Creality CR-PLA Matte @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Creality/Creality CR-PLA Matte @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Creality CR-Wood @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Creality/Creality CR-Wood @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Creality Ender-PLA @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Creality/Creality Ender-PLA @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Creality Soleyin PLA Matte @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Creality/Creality Soleyin PLA Matte @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
 			"name": "Generic PLA High Speed @Qidi X-Plus 4 0.4 nozzle",
 			"sub_path": "filament/Generic PLA High Speed @Qidi X-Plus 4 0.4 nozzle.json"
 		},
@@ -7939,6 +8195,38 @@
 		{
 			"name": "SUNLU PLA Wood @Qidi X-Plus 4 0.4 nozzle",
 			"sub_path": "filament/SUNLU/SUNLU PLA Wood @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Creality CR-PLA @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Creality/Creality CR-PLA @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Creality CR-PLA Carbon @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Creality/Creality CR-PLA Carbon @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Creality CR-PLA Matte @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Creality/Creality CR-PLA Matte @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Creality CR-Silk @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Creality/Creality CR-Silk @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Creality CR-Wood @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Creality/Creality CR-Wood @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Creality Ender-PLA @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Creality/Creality Ender-PLA @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper Rainbow PLA @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper Rainbow PLA @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Creality Soleyin PLA Matte @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Creality/Creality Soleyin PLA Matte @Qidi X-Plus 4 0.6 nozzle.json"
 		},
 		{
 			"name": "Generic PLA High Speed @Qidi X-Plus 4 0.6 nozzle",
@@ -8063,6 +8351,54 @@
 		{
 			"name": "SUNLU Silk PLA+ Tri-Color @Qidi X-Plus 4 0.6 nozzle",
 			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Tri-Color @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "YOOPAI Dual Color Silk PLA @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI Dual Color Silk PLA @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "YOOPAI Silk PLA @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI Silk PLA @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "YOOPAI Silk Rainbow PLA @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI Silk Rainbow PLA @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "YOOPAI Silk Tri-Color PLA @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI Silk Tri-Color PLA @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Creality CR-PLA @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Creality/Creality CR-PLA @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Creality CR-PLA Carbon @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Creality/Creality CR-PLA Carbon @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Creality CR-PLA Matte @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Creality/Creality CR-PLA Matte @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Creality CR-Silk @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Creality/Creality CR-Silk @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Creality CR-Wood @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Creality/Creality CR-Wood @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Creality Ender-PLA @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Creality/Creality Ender-PLA @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper Rainbow PLA @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper Rainbow PLA @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Creality Soleyin PLA Matte @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Creality/Creality Soleyin PLA Matte @Qidi X-Plus 4 0.8 nozzle.json"
 		},
 		{
 			"name": "Generic PLA High Speed @Qidi X-Plus 4 0.8 nozzle",
@@ -8193,6 +8529,30 @@
 			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Tri-Color @Qidi X-Plus 4 0.8 nozzle.json"
 		},
 		{
+			"name": "YOOPAI Dual Color Silk PLA @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI Dual Color Silk PLA @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "YOOPAI Silk PLA @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI Silk PLA @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "YOOPAI Silk Rainbow PLA @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI Silk Rainbow PLA @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "YOOPAI Silk Tri-Color PLA @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI Silk Tri-Color PLA @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Creality CR-Silk @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Creality/Creality CR-Silk @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper Rainbow PLA @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper Rainbow PLA @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
 			"name": "OVERTURE Silk PLA @Qidi X-Plus 4 0.4 nozzle",
 			"sub_path": "filament/OVERTURE/OVERTURE Silk PLA @Qidi X-Plus 4 0.4 nozzle.json"
 		},
@@ -8237,6 +8597,26 @@
 			"sub_path": "filament/SUNLU/SUNLU Silk PLA+ Tri-Color @Qidi X-Plus 4 0.4 nozzle.json"
 		},
 		{
+			"name": "YOOPAI Dual Color Silk PLA @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI Dual Color Silk PLA @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "YOOPAI Silk PLA @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI Silk PLA @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "YOOPAI Silk Rainbow PLA @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI Silk Rainbow PLA @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "YOOPAI Silk Tri-Color PLA @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI Silk Tri-Color PLA @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Creality Ender-PLA+ @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Ender-PLA+ @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
 			"name": "OVERTURE PLA Professional @Qidi X-Plus 4 0.2 nozzle",
 			"sub_path": "filament/OVERTURE/OVERTURE PLA Professional @Qidi X-Plus 4 0.2 nozzle.json"
 		},
@@ -8255,6 +8635,18 @@
 		{
 			"name": "SUNLU PLA+ @Qidi X-Plus 4 0.2 nozzle",
 			"sub_path": "filament/SUNLU/SUNLU PLA+ @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "YOOPAI PLA+ @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI PLA+ @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "YOOPAI PLA+ Matte @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI PLA+ Matte @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality Ender-PLA+ @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Creality/Creality Ender-PLA+ @Qidi X-Plus 4 0.4 nozzle.json"
 		},
 		{
 			"name": "OVERTURE PLA Professional @Qidi X-Plus 4 0.4 nozzle",
@@ -8277,6 +8669,18 @@
 			"sub_path": "filament/SUNLU/SUNLU PLA+ @Qidi X-Plus 4 0.4 nozzle.json"
 		},
 		{
+			"name": "YOOPAI PLA+ @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI PLA+ @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "YOOPAI PLA+ Matte @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI PLA+ Matte @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Creality Ender-PLA+ @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Creality/Creality Ender-PLA+ @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
 			"name": "OVERTURE PLA Professional @Qidi X-Plus 4 0.6 nozzle",
 			"sub_path": "filament/OVERTURE/OVERTURE PLA Professional @Qidi X-Plus 4 0.6 nozzle.json"
 		},
@@ -8295,6 +8699,18 @@
 		{
 			"name": "SUNLU PLA+ @Qidi X-Plus 4 0.6 nozzle",
 			"sub_path": "filament/SUNLU/SUNLU PLA+ @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "YOOPAI PLA+ @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI PLA+ @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "YOOPAI PLA+ Matte @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI PLA+ Matte @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Creality Ender-PLA+ @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Creality/Creality Ender-PLA+ @Qidi X-Plus 4 0.8 nozzle.json"
 		},
 		{
 			"name": "OVERTURE PLA Professional @Qidi X-Plus 4 0.8 nozzle",
@@ -8317,16 +8733,44 @@
 			"sub_path": "filament/SUNLU/SUNLU PLA+ @Qidi X-Plus 4 0.8 nozzle.json"
 		},
 		{
+			"name": "YOOPAI PLA+ @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI PLA+ @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "YOOPAI PLA+ Matte @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/YOOPAI/YOOPAI PLA+ Matte @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PLA-CF @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PLA-CF @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
 			"name": "SUNLU PLA-CF @Qidi X-Plus 4 0.4 nozzle",
 			"sub_path": "filament/SUNLU/SUNLU PLA-CF @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PLA-CF @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PLA-CF @Qidi X-Plus 4 0.6 nozzle.json"
 		},
 		{
 			"name": "SUNLU PLA-CF @Qidi X-Plus 4 0.6 nozzle",
 			"sub_path": "filament/SUNLU/SUNLU PLA-CF @Qidi X-Plus 4 0.6 nozzle.json"
 		},
 		{
+			"name": "Creality Hyper PLA-CF @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PLA-CF @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
 			"name": "SUNLU PLA-CF @Qidi X-Plus 4 0.8 nozzle",
 			"sub_path": "filament/SUNLU/SUNLU PLA-CF @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Creality CR-TPU @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Creality/Creality CR-TPU @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Creality HP-TPU @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Creality/Creality HP-TPU @Qidi X-Plus 4 0.4 nozzle.json"
 		},
 		{
 			"name": "OVERTURE High Speed TPU 95A @Qidi X-Plus 4 0.4 nozzle",
@@ -8357,6 +8801,30 @@
 			"sub_path": "filament/SUNLU/SUNLU TPU 95A @Qidi X-Plus 4 0.4 nozzle.json"
 		},
 		{
+			"name": "Creality Ender Fast PLA @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Ender Fast PLA @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PLA @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PLA @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PLA Lightweight @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PLA Lightweight @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PLA Luminous @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PLA Luminous @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PLA Stardust @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PLA Stardust @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality Soleyin Ultra PLA @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Soleyin Ultra PLA @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
 			"name": "OVERTURE High Speed PLA @Qidi X-Plus 4 0.2 nozzle",
 			"sub_path": "filament/OVERTURE/OVERTURE High Speed PLA @Qidi X-Plus 4 0.2 nozzle.json"
 		},
@@ -8385,8 +8853,36 @@
 			"sub_path": "filament/SUNLU/SUNLU PLA Meta @Qidi X-Plus 4 0.2 nozzle.json"
 		},
 		{
+			"name": "Creality Hyper PLA-CF @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PLA-CF @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
 			"name": "SUNLU PLA-CF @Qidi X-Plus 4 0.2 nozzle",
 			"sub_path": "filament/SUNLU/SUNLU PLA-CF @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "Creality Ender Fast PLA @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Creality/Creality Ender Fast PLA @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PLA @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PLA @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PLA Lightweight @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PLA Lightweight @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PLA Luminous @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PLA Luminous @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PLA Stardust @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PLA Stardust @Qidi X-Plus 4 0.4 nozzle.json"
+		},
+		{
+			"name": "Creality Soleyin Ultra PLA @Qidi X-Plus 4 0.4 nozzle",
+			"sub_path": "filament/Creality/Creality Soleyin Ultra PLA @Qidi X-Plus 4 0.4 nozzle.json"
 		},
 		{
 			"name": "OVERTURE High Speed PLA @Qidi X-Plus 4 0.4 nozzle",
@@ -8417,6 +8913,30 @@
 			"sub_path": "filament/SUNLU/SUNLU PLA Meta @Qidi X-Plus 4 0.4 nozzle.json"
 		},
 		{
+			"name": "Creality Ender Fast PLA @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Creality/Creality Ender Fast PLA @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PLA @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PLA @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PLA Lightweight @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PLA Lightweight @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PLA Luminous @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PLA Luminous @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PLA Stardust @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PLA Stardust @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Creality Soleyin Ultra PLA @Qidi X-Plus 4 0.6 nozzle",
+			"sub_path": "filament/Creality/Creality Soleyin Ultra PLA @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
 			"name": "OVERTURE High Speed PLA @Qidi X-Plus 4 0.6 nozzle",
 			"sub_path": "filament/OVERTURE/OVERTURE High Speed PLA @Qidi X-Plus 4 0.6 nozzle.json"
 		},
@@ -8443,6 +8963,30 @@
 		{
 			"name": "SUNLU PLA Meta @Qidi X-Plus 4 0.6 nozzle",
 			"sub_path": "filament/SUNLU/SUNLU PLA Meta @Qidi X-Plus 4 0.6 nozzle.json"
+		},
+		{
+			"name": "Creality Ender Fast PLA @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Creality/Creality Ender Fast PLA @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PLA @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PLA @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PLA Lightweight @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PLA Lightweight @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PLA Luminous @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PLA Luminous @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Creality Hyper PLA Stardust @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PLA Stardust @Qidi X-Plus 4 0.8 nozzle.json"
+		},
+		{
+			"name": "Creality Soleyin Ultra PLA @Qidi X-Plus 4 0.8 nozzle",
+			"sub_path": "filament/Creality/Creality Soleyin Ultra PLA @Qidi X-Plus 4 0.8 nozzle.json"
 		},
 		{
 			"name": "OVERTURE High Speed PLA @Qidi X-Plus 4 0.8 nozzle",
