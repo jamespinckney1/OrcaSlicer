@@ -3,6 +3,7 @@
 #include "FailureCheckDialogs.hpp"
 #include "GUI_App.hpp"
 #include "I18N.hpp"
+#include "ShopNotify.hpp"
 #include "libslic3r/Utils.hpp"
 #include "slic3r/Utils/Http.hpp"
 
@@ -457,6 +458,27 @@ void FailureCheckMonitor::post_event(const FailureCheckEvent& ev)
     });
 }
 
+void FailureCheckMonitor::notify_hold(const FailureCheckEvent& ev)
+{
+    ShopNotify::Message msg;
+    msg.title    = (boost::format(_u8L("Print held: %1%")) % ev.job_name).str();
+    msg.body     = (boost::format(_u8L("Checkpoint \"%1%\" (%2% of %3%) failed on %4%")) % ev.label % ev.index % ev.total % ev.host).str();
+    if (!ev.result.reasons.empty())
+        msg.body += ": " + ev.result.reasons.front();
+    msg.body += "\n" + _u8L("The printer is paused and beeping; the hotend turns off after 15 minutes.");
+    msg.tags            = "warning";
+    msg.priority        = "high";
+    msg.attachment_path = ev.photo_path;
+    // ShopNotify reads the topic from app_config, which belongs to the UI thread.
+    auto stop = m_stop;
+    if (stop->load() || wxTheApp == nullptr)
+        return;
+    wxGetApp().CallAfter([msg, stop]() {
+        if (!stop->load())
+            ShopNotify::send(msg);
+    });
+}
+
 void FailureCheckMonitor::handle_checkpoint(Job& job, int index, double z)
 {
     job.handled.push_back(index);
@@ -535,6 +557,7 @@ void FailureCheckMonitor::handle_checkpoint(Job& job, int index, double z)
         set_status(job.host, (boost::format(_u8L("Failure check: \"%1%\" FAILED, printer paused")) % label).str());
         ev.mode = FailureCheckEvent::Mode::Hold;
         post_event(ev);
+        notify_hold(ev);
         break;
     case FailureCheck::Verdict::Unsure:
         // No popup: the check exists so nobody has to watch. An uncertain reading lets the print go on

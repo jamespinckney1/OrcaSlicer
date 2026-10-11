@@ -1,5 +1,6 @@
 #include "Preferences.hpp"
 #include "ShopNaming.hpp"
+#include "ShopNotify.hpp"
 #include "CloudProvider.hpp"
 #include "OptionsGroup.hpp"
 #include "GUI_App.hpp"
@@ -8,6 +9,8 @@
 #include "Plater.hpp"
 #include "GLCanvas3D.hpp" // ORCA: for live preview refresh when toggling "Dim lower layers"
 #include "MsgDialog.hpp"
+#include "GUI.hpp"
+#include "format.hpp"
 #include "I18N.hpp"
 #include "libslic3r/AppConfig.hpp"
 #include "libslic3r/Format/DRC.hpp"
@@ -15,6 +18,7 @@
 #include <wx/arrstr.h>
 #include "slic3r/GUI/Widgets/Label.hpp"
 #include <wx/event.h>
+#include <wx/weakref.h>
 #include <wx/dcclient.h>
 #include "slic3r/GUI/Widgets/StateColor.hpp"
 #include <cmath>
@@ -34,6 +38,7 @@
 #include "slic3r/GUI/Widgets/SpinInput.hpp"
 #include "slic3r/GUI/Widgets/CheckBox.hpp"
 #include "libslic3r/Format/bbs_3mf.hpp"
+#include <boost/algorithm/string/trim.hpp>
 #include <boost/lexical_cast.hpp>
 #include "slic3r/GUI/Event.hpp"
 #include <boost/log/trivial.hpp>
@@ -1249,6 +1254,70 @@ wxBoxSizer* PreferencesDialog::create_item_button(wxString title, wxString title
     return m_sizer;
 }
 
+// Print-shop: ntfy topic and server for failure-check notifications, with a test button that sends
+// to what is typed (saving it first), so the setting can be checked before a print depends on it.
+wxBoxSizer* PreferencesDialog::create_item_shop_notify()
+{
+    auto* column = new wxBoxSizer(wxVERTICAL);
+    auto  add_input = [&](const wxString& title, const wxString& tip, const char* param, const wxString& hint) {
+        wxBoxSizer* row   = create_item_label(title, tip);
+        auto*       input = new ::TextInput(m_parent, wxEmptyString, wxEmptyString, wxEmptyString, wxDefaultPosition,
+                                            wxSize(FromDIP(240), -1), wxTE_PROCESS_ENTER);
+        StateColor input_bg(std::pair<wxColour, int>(wxColour("#F0F0F1"), StateColor::Disabled), std::pair<wxColour, int>(*wxWHITE, StateColor::Enabled));
+        input->SetBackgroundColor(input_bg);
+        input->GetTextCtrl()->SetValue(from_u8(app_config->get(param)));
+        input->GetTextCtrl()->SetHint(hint);
+        input->SetToolTip(tip);
+        auto save = [this, param, input]() {
+            app_config->set(param, boost::algorithm::trim_copy(into_u8(input->GetTextCtrl()->GetValue())));
+        };
+        input->GetTextCtrl()->Bind(wxEVT_TEXT_ENTER, [this, save](wxCommandEvent& e) { save(); app_config->save(); e.Skip(); });
+        input->GetTextCtrl()->Bind(wxEVT_KILL_FOCUS, [save](wxFocusEvent& e) { save(); e.Skip(); });
+        row->Add(input, 0, wxALIGN_CENTER_VERTICAL);
+        column->Add(row);
+        return std::make_pair(row, input);
+    };
+    auto topic = add_input(_L("ntfy topic"),
+        _L("When the print failure check holds a print, send a notification with the checkpoint photo to this ntfy topic. "
+           "Install the ntfy app on your phone and subscribe to the same topic. Anyone who knows the topic can read it, so "
+           "pick something hard to guess. Leave empty to send nothing."),
+        ShopNotify::kTopicKey, _L("empty = off"));
+    auto server = add_input(_L("ntfy server"), _L("Leave empty for ntfy.sh, or enter your own ntfy server."),
+        ShopNotify::kServerKey, ShopNotify::kDefaultServer);
+
+    auto* test = new Button(m_parent, _L("Send test notification"));
+    test->SetStyle(ButtonStyle::Regular, ButtonType::Parameter);
+    test->Bind(wxEVT_BUTTON, [this, topic_input = topic.second, server_input = server.second](wxCommandEvent&) {
+        const std::string t = boost::algorithm::trim_copy(into_u8(topic_input->GetTextCtrl()->GetValue()));
+        const std::string s = boost::algorithm::trim_copy(into_u8(server_input->GetTextCtrl()->GetValue()));
+        if (!ShopNotify::valid_topic(t)) {
+            MessageDialog(this, _L("Enter a topic of up to 64 letters, digits, - or _ first."), _L("Phone notifications"), wxOK | wxICON_WARNING).ShowModal();
+            return;
+        }
+        app_config->set(ShopNotify::kTopicKey, t);
+        app_config->set(ShopNotify::kServerKey, s);
+        app_config->save();
+        ShopNotify::Message msg;
+        msg.title = _u8L("Test notification");
+        msg.body  = _u8L("Phone notifications from the print failure check are working.");
+        msg.tags  = "white_check_mark";
+        msg.attachment_path = ShopNotify::latest_checkpoint_photo();
+        const wxString      url = from_u8(ShopNotify::topic_url(s, t));
+        wxWeakRef<wxWindow> self(this);
+        ShopNotify::send_to(s, t, msg, [url, self](const std::string& error) {
+            wxGetApp().CallAfter([url, error, self]() {
+                wxWindow* parent = self ? self.get() : static_cast<wxWindow*>(wxGetApp().mainframe);
+                if (error.empty())
+                    MessageDialog(parent, format_wxstr(_L("Sent to %1%."), url), _L("Phone notifications"), wxOK | wxICON_INFORMATION).ShowModal();
+                else
+                    MessageDialog(parent, format_wxstr(_L("Could not send to %1%:\n%2%"), url, from_u8(error)), _L("Phone notifications"), wxOK | wxICON_WARNING).ShowModal();
+            });
+        });
+    });
+    topic.first->Add(test, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(8));
+    return column;
+}
+
 wxBoxSizer* PreferencesDialog::create_item_downloads(wxString title, wxString tooltip)
 {
     wxString download_path = wxString::FromUTF8(app_config->get("download_path"));
@@ -1776,6 +1845,10 @@ void PreferencesDialog::create_items()
            "If disabled, only the filename is stored, which keeps projects portable and avoids embedding absolute paths."),
         "export_sources_full_pathnames");
     g_sizer->Add(item_full_source_paths);
+
+    // Print-shop: phone notifications when the print failure check holds a print.
+    g_sizer->Add(create_item_title(_L("Phone notifications")), 1, wxEXPAND);
+    g_sizer->Add(create_item_shop_notify());
 
     //// GENERAL > Preset
     g_sizer->Add(create_item_title(_L("Preset")), 1, wxEXPAND);

@@ -193,6 +193,15 @@ purge lines count as expected material.
   resumes with no popup; the Device tab status line and the job folder record it. Without a camera
   calibration every checkpoint photo is shown for review and the print resumes after 25 s unless you
   press Keep paused.
+- **Phone notifications** (Preferences > General > Phone notifications, `ShopNotify.*`). With an
+  [ntfy](https://ntfy.sh) topic set (`shop_notify_topic`; empty = off, nothing is ever sent), a
+  failed check also sends a high-priority notification with the job name, the checkpoint, the first
+  reason and the checkpoint photo (`cpN.jpg`, uploaded as an attachment; if the server refuses the
+  attachment the text is sent alone). Resume print / Cancel print in that window send a short
+  follow-up. The server is `https://ntfy.sh` unless `shop_notify_server` names another one. Install
+  the ntfy app on the phone and subscribe to the same topic; anyone who knows the topic can read
+  it, so pick one that is hard to guess. "Send test notification" saves what is typed and sends one
+  message to it, with the latest checkpoint photo attached when there is one. Pass, uncertain and review checkpoints never notify.
 - **Camera calibration** (Device tab, printer idle, empty plate): the printer moves to 11 poses
   (`SHOP_CAMERA_POSE`); you click the plate corners at bed heights 10 and 170 mm and the nozzle tip
   at a 3 x 3 grid. The plate's exact size is solved for, so the printable area is only a first

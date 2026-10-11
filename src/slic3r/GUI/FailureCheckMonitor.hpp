@@ -78,6 +78,7 @@ private:
     void load_jobs();
     std::shared_ptr<const FailureCheck::GCodeModel> model_for(const Job& job);
     void post_event(const FailureCheckEvent& ev);
+    void notify_hold(const FailureCheckEvent& ev); // phone notification, when a topic is set
 
     mutable std::mutex                 m_mutex;
     std::condition_variable            m_cv;

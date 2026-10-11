@@ -6,6 +6,7 @@
 #include "I18N.hpp"
 #include "MainFrame.hpp"
 #include "MsgDialog.hpp"
+#include "ShopNotify.hpp"
 #include "format.hpp"
 #include "libslic3r/PresetBundle.hpp"
 #include "slic3r/Utils/Http.hpp"
@@ -168,11 +169,16 @@ public:
             shop_send_script(m_ev.api, "SHOP_CHECK_HOLD");
             set_mode(FailureCheckEvent::Mode::Hold, true);
         });
-        m_resume     = add(_L("Resume print"), [this]() { send_and_close("SHOP_CHECK_OK"); });
+        m_resume     = add(_L("Resume print"), [this]() {
+            notify_outcome(_u8L("Print resumed: %1%"), _u8L("Resumed from the slicer after checkpoint \"%1%\"."), "arrow_forward");
+            send_and_close("SHOP_CHECK_OK");
+        });
         m_cancel     = add(_L("Cancel print..."), [this]() {
             MessageDialog dlg(this, _L("Cancel the print on the printer?"), _L("Print failure check"), wxICON_WARNING | wxYES_NO);
-            if (dlg.ShowModal() == wxID_YES)
-                send_and_close("CANCEL_PRINT");
+            if (dlg.ShowModal() != wxID_YES)
+                return;
+            notify_outcome(_u8L("Print cancelled: %1%"), _u8L("Cancelled from the slicer after checkpoint \"%1%\"."), "x");
+            send_and_close("CANCEL_PRINT");
         });
         m_pause      = add(_L("Pause the print"), [this]() { send_and_close("PAUSE"); });
         m_close      = add(_L("Close"), [this]() { Destroy(); });
@@ -231,6 +237,18 @@ private:
     }
 
     void update_countdown() { m_countdown_label->SetLabel(format_wxstr(_L("The print resumes in %1% s."), m_seconds)); }
+
+    // Follows up the phone notification sent when the check held the print (not a user's Keep paused).
+    void notify_outcome(const std::string& title, const std::string& body, const char* tags)
+    {
+        if (m_ev.mode != FailureCheckEvent::Mode::Hold)
+            return;
+        ShopNotify::Message msg;
+        msg.title = (boost::format(title) % m_ev.job_name).str();
+        msg.body  = (boost::format(body) % m_ev.label).str();
+        msg.tags  = tags;
+        ShopNotify::send(msg);
+    }
 
     void send_and_close(const std::string& script)
     {
