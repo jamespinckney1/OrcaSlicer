@@ -66,6 +66,7 @@ private:
         double           baseline_z   = 0;
         int              total        = 0;
         int              passed       = 0;
+        FailureCheck::Alignment alignment; // per-part offsets measured on the first layer
     };
 
     FailureCheckMonitor() = default;

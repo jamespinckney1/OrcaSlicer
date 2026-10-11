@@ -240,7 +240,12 @@ void FailureCheckMonitor::save_jobs_locked() const
     for (const Job& j : m_jobs)
         arr.push_back({{"id", j.id}, {"host", j.host}, {"api", j.api}, {"job_name", j.job_name}, {"dir", j.dir}, {"gcode", j.gcode},
                        {"created", j.created}, {"started", j.started}, {"handled", j.handled}, {"has_baseline", j.has_baseline},
-                       {"baseline_z", j.baseline_z}, {"total", j.total}, {"passed", j.passed}});
+                       {"baseline_z", j.baseline_z}, {"total", j.total}, {"passed", j.passed}, {"alignment", [&]() {
+                           nlohmann::json a = nlohmann::json::array();
+                           for (const auto& an : j.alignment.anchors)
+                               a.push_back({an.x, an.y, an.dx, an.dy});
+                           return a;
+                       }()}});
     write_file(fc_dir() + "/jobs.json", arr.dump(2));
 }
 
@@ -268,6 +273,10 @@ void FailureCheckMonitor::load_jobs()
             j.baseline_z   = o.value("baseline_z", 0.0);
             j.total        = o.value("total", 0);
             j.passed       = o.value("passed", 0);
+            if (o.contains("alignment") && o["alignment"].is_array())
+                for (const auto& a : o["alignment"])
+                    if (a.is_array() && a.size() == 4)
+                        j.alignment.anchors.push_back({a[0].get<double>(), a[1].get<double>(), a[2].get<double>(), a[3].get<double>()});
             if (fs::exists(j.gcode))
                 m_jobs.push_back(j);
         } catch (...) {
@@ -500,7 +509,12 @@ void FailureCheckMonitor::handle_checkpoint(Job& job, int index, double z)
         post_event(ev);
         return;
     }
-    const FailureCheck::CheckResult res = FailureCheck::compare(*model, *cp, cam, base, job.baseline_z, cur, z);
+    // First-layer checks measure each part's offset (calibration error); later checks start from it.
+    const bool first_layer = cp->kind == FailureCheck::CheckpointKind::Early || cp->kind == FailureCheck::CheckpointKind::FirstLayer;
+    const FailureCheck::CheckResult res = FailureCheck::compare(*model, *cp, cam, base, job.baseline_z, cur, z,
+                                                                first_layer ? FailureCheck::Alignment() : job.alignment);
+    if (first_layer && res.alignment.valid())
+        job.alignment = res.alignment;
     {
         nlohmann::json rj = {{"checkpoint", index}, {"label", label}, {"z", z}, {"unexpected_mm2", res.unexpected_mm2},
                              {"missing_fraction", res.missing_fraction}, {"reasons", res.reasons},

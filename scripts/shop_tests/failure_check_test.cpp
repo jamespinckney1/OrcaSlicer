@@ -202,7 +202,7 @@ int main(int argc, char** argv)
                 m.segments.size(), m.bed_min_x, m.bed_max_x, m.bed_min_y, m.bed_max_y, m.layer_z.front(), m.layer_z.back());
     for (auto& cp : m.checkpoints)
         std::printf("    N=%d %-18s line=%zu done=%zu layer=%zu\n", cp.index, checkpoint_label(cp).c_str(), cp.line, cp.segments_done, cp.layer);
-    CHECK(m.checkpoints.size() == 7, "7 checkpoints planned (got %zu)", m.checkpoints.size());
+    CHECK(m.checkpoints.size() == 8, "8 checkpoints planned (got %zu)", m.checkpoints.size());
     CHECK(m.layer_first_segment.size() == 140, "140 layers (got %zu)", m.layer_first_segment.size());
     const std::string out = data + "/anttrap_cp.gcode";
     CHECK(write_with_checkpoints(g, out, m.checkpoints, 45, err), "write with checkpoints %s", err.c_str());
@@ -211,7 +211,10 @@ int main(int argc, char** argv)
     bool same = m2.checkpoints.size() == m.checkpoints.size();
     for (size_t i = 0; same && i < m.checkpoints.size(); ++i)
         same = m2.checkpoints[i].line == m.checkpoints[i].line && m2.checkpoints[i].segments_done == m.checkpoints[i].segments_done;
-    CHECK(same, "re-parsing the written file gives the same checkpoints");
+    for (size_t i = 0; same && i < m.checkpoints.size(); ++i)
+        same = m2.checkpoints[i].index == m.checkpoints[i].index && m2.checkpoints[i].kind == m.checkpoints[i].kind &&
+               m2.checkpoints[i].layer == m.checkpoints[i].layer && m2.checkpoints[i].percent == m.checkpoints[i].percent;
+    CHECK(same, "re-parsing the written file reads back the same checkpoints (index, kind, line, layer)");
     // write again (idempotent) and strip
     CHECK(write_with_checkpoints(out, out, m2.checkpoints, 45, err), "rewrite in place");
     const std::string stripped = data + "/anttrap_stripped.gcode";
@@ -221,8 +224,8 @@ int main(int argc, char** argv)
         while (true) { bool ga = bool(std::getline(a, la)), gb = bool(std::getline(b, lb)); if (!ga && !gb) break; if (ga != gb || la != lb) ++diffs; ++n; }
         CHECK(diffs == 0, "stripped copy equals the original (%zu lines, %zu differ)", n, diffs);
         std::ifstream c(out); size_t count = 0; std::string l;
-        while (std::getline(c, l)) if (l.rfind("SHOP_CHECKPOINT", 0) == 0) { ++count; if (count <= 7) std::printf("    %s\n", l.c_str()); }
-        CHECK(count == 7, "exactly 7 SHOP_CHECKPOINT lines after rewriting twice (got %zu)", count);
+        while (std::getline(c, l)) if (l.rfind("SHOP_CHECKPOINT", 0) == 0) { ++count; if (count <= 8) std::printf("    %s\n", l.c_str()); }
+        CHECK(count == 8, "exactly 8 SHOP_CHECKPOINT lines after rewriting twice (got %zu)", count);
     }
 
     }

@@ -97,6 +97,17 @@ void plan_checkpoints(GCodeModel& m)
         add(CheckpointKind::FirstLayer, 0, m.layer_line[1], m.layer_first_segment[1], 1);
         last_layer = 1;
     }
+    // About 1 mm up: catches parts that start above the first layer (a body floating over the bed).
+    if (layers >= 3) {
+        for (size_t idx = 2; idx < layers; ++idx)
+            if (m.layer_z[idx] >= m.layer_z[0] + 1.0) {
+                if (idx < size_t(std::lround(0.2 * double(layers)))) {
+                    add(CheckpointKind::EarlyLayers, 0, m.layer_line[idx], m.layer_first_segment[idx], idx);
+                    last_layer = idx;
+                }
+                break;
+            }
+    }
     for (int percent : {20, 40, 60, 80}) {
         const size_t idx = size_t(std::lround(percent / 100.0 * double(layers)));
         if (idx < 2 || idx >= layers || idx <= last_layer)
@@ -135,6 +146,7 @@ std::string checkpoint_label(const Checkpoint& cp)
     case CheckpointKind::Baseline: return "reference photo";
     case CheckpointKind::Early: return "early first layer";
     case CheckpointKind::FirstLayer: return "first layer done";
+    case CheckpointKind::EarlyLayers: return "early layers";
     case CheckpointKind::Progress: return std::to_string(cp.percent) + "%";
     }
     return "checkpoint";
@@ -166,6 +178,7 @@ bool parse_gcode(const std::string& path, GCodeModel& out, std::string& error)
     size_t line_no      = 0;
     double fallback_layer_z = -1;
     std::string line;
+    std::vector<Checkpoint> written;
 
     auto new_layer = [&](size_t at_line) {
         out.layer_first_segment.push_back(out.segments.size());
@@ -189,8 +202,27 @@ bool parse_gcode(const std::string& path, GCodeModel& out, std::string& error)
     while (std::getline(in, line)) {
         if (!line.empty() && line.back() == '\r')
             line.pop_back();
-        if (is_checkpoint_line(line))
-            continue; // not counted, so line numbers match a stripped copy
+        if (is_checkpoint_line(line)) {
+            // An uploaded job: remember the checkpoint as written (not counted, so line numbers match a
+            // stripped copy).
+            Checkpoint cp;
+            const std::string t   = ltrim(line);
+            const size_t      npos = t.find(" N=");
+            cp.index         = npos == std::string::npos ? -1 : std::atoi(t.c_str() + npos + 3);
+            cp.line          = line_no;
+            cp.segments_done = out.segments.size();
+            cp.layer         = out.layer_first_segment.size();
+            const size_t lab = t.find("shop failure check: ");
+            const std::string label = lab == std::string::npos ? std::string() : t.substr(lab + 20);
+            if (label == "reference photo") cp.kind = CheckpointKind::Baseline;
+            else if (label == "early first layer") { cp.kind = CheckpointKind::Early; cp.layer = 0; }
+            else if (label == "first layer done") cp.kind = CheckpointKind::FirstLayer;
+            else if (label == "early layers") cp.kind = CheckpointKind::EarlyLayers;
+            else { cp.kind = CheckpointKind::Progress; cp.percent = std::atoi(label.c_str()); }
+            if (cp.index >= 0)
+                written.push_back(cp);
+            continue;
+        }
         const std::string t = ltrim(line);
         if (!t.empty() && t[0] == ';') {
             const std::string c = t.substr(1);
@@ -305,7 +337,10 @@ bool parse_gcode(const std::string& path, GCodeModel& out, std::string& error)
         error = "no printed layers found in the G-code";
         return false;
     }
-    plan_checkpoints(out);
+    if (written.empty())
+        plan_checkpoints(out);
+    else
+        out.checkpoints = written;
     return true;
 }
 
@@ -763,7 +798,7 @@ double median(std::vector<float> v)
 } // namespace
 
 CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraModel& camera, const Image& baseline, double baseline_z,
-                    const Image& current, double current_z)
+                    const Image& current, double current_z, const Alignment& prior)
 {
     CheckResult res;
     if (!camera.valid || baseline.empty() || current.empty() || !model.has_bed()) {
@@ -793,6 +828,7 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
     // Sample both photos on a bed-plane grid (2 x 2 samples per cell).
     std::vector<float> base(size_t(W) * H * 3), cur(size_t(W) * H * 3);
     std::vector<uint8_t> valid(size_t(W) * H, 0);
+    std::vector<double>  tex_b1(size_t(W) * H, 0), tex_b2(size_t(W) * H, 0), tex_c1(size_t(W) * H, 0), tex_c2(size_t(W) * H, 0);
     double sum_b = 0, sum_c = 0;
     int    n_valid = 0;
     for (int gy = 0; gy < H; ++gy)
@@ -822,8 +858,28 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
                 }
             if (!ok)
                 continue;
+            // Texture: brightness samples on a 4 x 4 grid inside the cell, for both photos. The plate's
+            // glitter varies a lot from pixel to pixel; printed plastic is smooth even when it is a
+            // similar colour to the plate.
+            double tb1 = 0, tb2 = 0, tc1 = 0, tc2 = 0;
+            for (double ox : {-0.375, -0.125, 0.125, 0.375})
+                for (double oy : {-0.375, -0.125, 0.125, 0.375}) {
+                    double ub, vb, uc, vc;
+                    float  sb[3], sc[3];
+                    if (!camera.project(x + ox * cell, y + oy * cell, -baseline_z, ub, vb) ||
+                        !camera.project(x + ox * cell, y + oy * cell, -current_z, uc, vc) || !sample(baseline, ub, vb, sb) ||
+                        !sample(current, uc, vc, sc)) {
+                        ok = false;
+                        break;
+                    }
+                    const double lb = (sb[0] + sb[1] + sb[2]) / 3, lc = (sc[0] + sc[1] + sc[2]) / 3;
+                    tb1 += lb; tb2 += lb * lb; tc1 += lc; tc2 += lc * lc;
+                }
+            if (!ok)
+                continue;
             const size_t i = size_t(gy) * W + gx;
             valid[i]       = 1;
+            tex_b1[i] = tb1; tex_b2[i] = tb2; tex_c1[i] = tc1; tex_c2[i] = tc2;
             for (int c = 0; c < 3; ++c) {
                 base[i * 3 + c] = acc_b[c];
                 cur[i * 3 + c]  = acc_c[c];
@@ -845,6 +901,26 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
         if (valid[i])
             diff[i] = (std::abs(float(cur[i * 3] * gain) - base[i * 3]) + std::abs(float(cur[i * 3 + 1] * gain) - base[i * 3 + 1]) +
                        std::abs(float(cur[i * 3 + 2] * gain) - base[i * 3 + 2])) / 3.0f;
+    // Texture change: brightness spread over the 3 x 3 cell neighbourhood (6 mm), reference vs now.
+    for (int gy = 0; gy < H; ++gy)
+        for (int gx = 0; gx < W; ++gx) {
+            const size_t i = size_t(gy) * W + gx;
+            if (!valid[i])
+                continue;
+            double b1 = 0, b2 = 0, c1 = 0, c2 = 0, n = 0;
+            for (int dy = -1; dy <= 1; ++dy)
+                for (int dx = -1; dx <= 1; ++dx) {
+                    const int xx = gx + dx, yy = gy + dy;
+                    if (xx < 0 || yy < 0 || xx >= W || yy >= H || !valid[size_t(yy) * W + xx])
+                        continue;
+                    const size_t j = size_t(yy) * W + xx;
+                    b1 += tex_b1[j]; b2 += tex_b2[j]; c1 += tex_c1[j]; c2 += tex_c2[j];
+                    n += 16;
+                }
+            const double sb = std::sqrt(std::max(0.0, b2 / n - (b1 / n) * (b1 / n)));
+            const double sc = std::sqrt(std::max(0.0, c2 / n - (c1 / n) * (c1 / n))) * gain;
+            diff[i]         = std::max(diff[i], float(1.5 * std::abs(sc - sb)));
+        }
     std::vector<float> sm(diff.size(), 0), all;
     all.reserve(n_valid);
     for (int gy = 0; gy < H; ++gy)
@@ -905,12 +981,117 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
             for (size_t i = a; i < b; ++i)
                 rasterize(footprint, pm, model.segments[i], -current_z);
     }
-    const Grid allowed_wide = dilate(allowed, 4); // calibration is good to a few millimetres
-    const Grid core         = erode4(footprint);
-
     std::vector<uint8_t> changed(size_t(W) * H, 0);
     for (size_t i = 0; i < changed.size(); ++i)
         changed[i] = valid[i] && sm[i] > res.threshold;
+
+    // Line each part up with what changed. Parts are the connected groups of G-code material (a part and
+    // its supports and brim count as one); each gets the whole-cell offset with the most overlap,
+    // preferring small moves, within 8 cells (16 mm), or 3 cells of the nearest first-layer offset.
+    {
+        const Grid groups_mask = dilate(allowed, 2);
+        std::vector<int> label(size_t(W) * H, -1);
+        std::vector<std::vector<size_t>> groups;
+        for (size_t start = 0; start < label.size(); ++start) {
+            if (!groups_mask.v[start] || label[start] >= 0)
+                continue;
+            const int id = int(groups.size());
+            groups.emplace_back();
+            std::vector<size_t> stack{start};
+            label[start] = id;
+            while (!stack.empty()) {
+                const size_t i = stack.back();
+                stack.pop_back();
+                if (allowed.v[i])
+                    groups[id].push_back(i);
+                const int cx = int(i % W), cy = int(i / W);
+                for (int dy = -1; dy <= 1; ++dy)
+                    for (int dx = -1; dx <= 1; ++dx) {
+                        const int xx = cx + dx, yy = cy + dy;
+                        if (xx < 0 || yy < 0 || xx >= W || yy >= H)
+                            continue;
+                        const size_t j = size_t(yy) * W + xx;
+                        if (groups_mask.v[j] && label[j] < 0) {
+                            label[j] = id;
+                            stack.push_back(j);
+                        }
+                    }
+            }
+        }
+        Grid new_allowed = allowed, new_footprint = footprint;
+        std::fill(new_allowed.v.begin(), new_allowed.v.end(), 0);
+        std::fill(new_footprint.v.begin(), new_footprint.v.end(), 0);
+        for (size_t g = 0; g < groups.size(); ++g) {
+            const auto& cells_g = groups[g];
+            if (cells_g.empty())
+                continue;
+            double mx = 0, my = 0;
+            for (size_t i : cells_g) {
+                mx += res.grid_x0 + (double(i % W) + 0.5) * cell;
+                my += res.grid_y0 + (double(i / W) + 0.5) * cell;
+            }
+            mx /= double(cells_g.size());
+            my /= double(cells_g.size());
+            int cx0 = 0, cy0 = 0, win = 8;
+            if (prior.valid()) {
+                const Alignment::Anchor* nearest = nullptr;
+                double                   best_d  = 1e18;
+                for (const auto& an : prior.anchors) {
+                    const double d = std::hypot(an.x - mx, an.y - my);
+                    if (d < best_d) {
+                        best_d  = d;
+                        nearest = &an;
+                    }
+                }
+                cx0 = int(std::lround(nearest->dx / cell));
+                cy0 = int(std::lround(nearest->dy / cell));
+                win = 3;
+            }
+            auto overlap = [&](int sx, int sy) {
+                int n = 0;
+                for (size_t i : cells_g) {
+                    const int xx = int(i % W) + sx, yy = int(i / W) + sy;
+                    if (xx >= 0 && yy >= 0 && xx < W && yy < H && changed[size_t(yy) * W + xx])
+                        ++n;
+                }
+                return n;
+            };
+            int          bx = cx0, by = cy0;
+            const double base_score = overlap(cx0, cy0);
+            double       best       = base_score;
+            for (int sy = cy0 - win; sy <= cy0 + win; ++sy)
+                for (int sx = cx0 - win; sx <= cx0 + win; ++sx) {
+                    const double score = overlap(sx, sy) - 0.5 * (std::abs(sx - cx0) + std::abs(sy - cy0));
+                    if (score > best) {
+                        best = score;
+                        bx   = sx;
+                        by   = sy;
+                    }
+                }
+            if (best < base_score * 1.05 + 4) { // keep the starting offset unless moving clearly helps
+                bx = cx0;
+                by = cy0;
+            }
+            res.alignment.anchors.push_back({mx, my, bx * cell, by * cell});
+            for (size_t i : cells_g) {
+                const int xx = int(i % W) + bx, yy = int(i / W) + by;
+                if (xx >= 0 && yy >= 0 && xx < W && yy < H)
+                    new_allowed.at(xx, yy) = 1;
+            }
+            for (size_t i = 0; i < label.size(); ++i)
+                if (label[i] == int(g) && footprint.v[i]) {
+                    const int xx = int(i % W) + bx, yy = int(i / W) + by;
+                    if (xx >= 0 && yy >= 0 && xx < W && yy < H)
+                        new_footprint.at(xx, yy) = 1;
+                }
+        }
+        allowed   = new_allowed;
+        footprint = new_footprint;
+        res.expected = allowed.v;
+    }
+    const Grid allowed_wide = dilate(allowed, 4); // margin for what the offset does not absorb
+    const Grid allowed_far  = dilate(allowed_wide, 4); // 16 mm from any G-code material
+    const Grid core         = erode4(footprint);
     // Candidate cells: changed where the G-code has nothing. Only connected patches of 8+ cells (32 mm2)
     // count; spaghetti and blobs form patches, while the plate's glitter gives isolated specks.
     std::vector<uint8_t> candidate(size_t(W) * H, 0);
@@ -946,7 +1127,15 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
                         }
                     }
             }
-            if (comp.size() >= 8)
+            // A thin band hugging a part is leftover calibration error; spaghetti, blobs and parts that
+            // moved reach well away from where the G-code printed, or cover a large area.
+            bool reaches_out = false;
+            for (size_t i : comp)
+                if (!allowed_far.get(int(i % W), int(i / W))) {
+                    reaches_out = true;
+                    break;
+                }
+            if (comp.size() >= 8 && (reaches_out || comp.size() >= 100))
                 for (size_t i : comp)
                     unexpected_cell[i] = 1;
         }

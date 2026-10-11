@@ -159,8 +159,9 @@ purge lines count as expected material.
 
 - **Checkpoints.** On upload the slicer adds `SHOP_CHECKPOINT N=<n>` lines to the upload's own copy
   of the G-code (an exported file never carries them): a reference photo just before the first
-  layer, one a fifth of the way into the first layer, one after it, then at 20 / 40 / 60 / 80 % of
-  the layers.
+  layer, one a fifth of the way into the first layer, one after it, one about 1 mm up (catches a
+  body that starts above the bed), then at 20 / 40 / 60 / 80 % of the layers. A job that already
+  has checkpoint lines keeps them, so a slicer restarted mid-print reads the same numbering.
 - **Printer side** (`docs/shop/plus4/failure_check.cfg`): at a checkpoint the printer retracts,
   lifts 5 mm, parks at the purge chute with Qidi's own pause moves, and waits. `SHOP_CHECK_OK`
   resumes, `SHOP_CHECK_HOLD` stays paused and beeps (hotend off after 15 minutes; Resume reheats).
@@ -169,12 +170,18 @@ purge lines count as expected material.
   touchscreen works during a checkpoint or a hold.
 - **Comparison** (`FailureCheck.*`, no GUI): both photos are resampled onto a 2 mm bed grid using
   the camera calibration and the toolhead Z at each photo (the bed moves in Z, the camera does not).
-  Cells that changed where the G-code has no material (with an 8 mm margin) and that form patches
-  of at least 32 mm2 count as unexpected; 3 cm2 or more fails the check. On the first layer, an
-  expected area with no visible change fails the check only when the job's filament colour is set
-  and clearly differs from the plate; otherwise it is reported as uncertain.
+  A cell has changed when its colour or its texture changed: dark matte filament on the dark plate
+  barely changes colour, but it hides the plate's glitter. The calibration is only good to about a
+  centimetre and its error varies across the bed, so each separate part (with its supports and
+  brim) is first lined up with what changed, within 16 mm on the first layer; later checkpoints
+  start from those first-layer offsets and may move a part only 6 mm, so a real layer shift still
+  shows. Changed cells beyond an 8 mm margin that form patches of at least 32 mm2 and either reach
+  16 mm away from the G-code's material or cover 4 cm2 count as unexpected; 3 cm2 or more fails the
+  check. On the first layer, an expected area with no visible change fails the check only when the
+  job's filament colour is set and clearly differs from the plate; otherwise it is reported as
+  uncertain.
 - **Verdicts.** Pass: the print resumes silently. Fail: the printer holds and a window shows the
-  photo (red = unexplained material, orange = expected but not seen, green = latest layer) next to
+  photo (red = unexplained material, orange = expected but not seen, green = outline of the lined-up G-code) next to
   a top view of the G-code, with Resume / Cancel print. Uncertain: the print resumes and the same
   window asks you to look. Without a camera calibration every checkpoint photo is shown for review
   and the print resumes after 25 s unless you press Keep paused.

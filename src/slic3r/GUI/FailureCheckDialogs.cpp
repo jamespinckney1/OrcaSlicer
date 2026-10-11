@@ -80,25 +80,21 @@ void draw_overlay(wxImage& img, const FailureCheckEvent& ev)
                     else
                         blend(img, int(u) + dx, int(v) + dy, 250, 160, 20, 0.45);
         }
-    if (!ev.model)
+    // Outline of where the (aligned) G-code put material.
+    const int W = r.grid_w, H = r.grid_h;
+    if (r.expected.size() != size_t(W) * H)
         return;
-    const auto&  m    = *ev.model;
-    const size_t done = std::min(ev.segments_done, m.segments.size());
-    size_t       from = 0;
-    for (size_t L = 0; L < m.layer_first_segment.size(); ++L)
-        if (m.layer_first_segment[L] < done)
-            from = m.layer_first_segment[L];
-    for (size_t i = from; i < done; ++i) {
-        const auto&  s     = m.segments[i];
-        const double len   = std::hypot(s.x1 - s.x0, s.y1 - s.y0);
-        const int    steps = std::max(1, int(len / 2.0));
-        for (int k = 0; k <= steps; ++k) {
-            const double t = double(k) / steps;
-            double       u, v;
-            if (cam.project(s.x0 + (s.x1 - s.x0) * t, s.y0 + (s.y1 - s.y0) * t, s.z - ev.z, u, v))
-                blend(img, int(u), int(v), 60, 230, 90, 0.8);
+    for (int gy = 1; gy + 1 < H; ++gy)
+        for (int gx = 1; gx + 1 < W; ++gx) {
+            const size_t i = size_t(gy) * W + gx;
+            if (!r.expected[i] || (r.expected[i - 1] && r.expected[i + 1] && r.expected[i - W] && r.expected[i + W]))
+                continue;
+            double u, v;
+            if (cam.project(r.grid_x0 + (gx + 0.5) * r.cell_mm, r.grid_y0 + (gy + 0.5) * r.cell_mm, -ev.z, u, v))
+                for (int dy = 0; dy <= 1; ++dy)
+                    for (int dx = 0; dx <= 1; ++dx)
+                        blend(img, int(u) + dx, int(v) + dy, 60, 230, 90, 0.9);
         }
-    }
 }
 
 wxImage scaled_to(const wxImage& img, int max_w, int max_h)
@@ -151,7 +147,7 @@ public:
             for (const std::string& r : ev.result.reasons)
                 text += wxString::FromUTF8("• ") + from_u8(r) + "\n";
             text += _L("Red: material the G-code does not explain. Orange: expected material the camera does not see. "
-                       "Green: the most recent layer.");
+                       "Green: outline of the printed material, lined up with the photo.");
         }
         m_text = new wxStaticText(this, wxID_ANY, text);
         m_text->Wrap(FromDIP(880));

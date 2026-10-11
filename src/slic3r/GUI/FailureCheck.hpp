@@ -27,7 +27,7 @@ struct Segment
     float w; // extrusion width
 };
 
-enum class CheckpointKind { Baseline, Early, FirstLayer, Progress };
+enum class CheckpointKind { Baseline, Early, FirstLayer, EarlyLayers, Progress };
 
 struct Checkpoint
 {
@@ -58,7 +58,8 @@ struct GCodeModel
     const Checkpoint* checkpoint(int index) const;
 };
 
-// Parses extrusions and layer changes and plans the checkpoints. Existing SHOP_CHECKPOINT lines are ignored.
+// Parses extrusions and layer changes. A file that already has SHOP_CHECKPOINT lines (an uploaded job)
+// keeps exactly those checkpoints; otherwise they are planned. Line numbers never count SHOP_CHECKPOINT lines.
 bool parse_gcode(const std::string& path, GCodeModel& out, std::string& error);
 // Copies in_path to out_path (which may be the same file) with the model's checkpoints inserted and any
 // older SHOP_CHECKPOINT lines removed. An empty checkpoint list just strips them.
@@ -117,6 +118,22 @@ enum CellState : uint8_t {
     CellMissing,        // the G-code put material here but nothing changed
 };
 
+// Calibration is good to roughly a centimetre, and its error varies across the bed, so each comparison
+// first finds, for every separate part on the bed, the bed X/Y offset that best lines that part up with
+// what changed. On the first layer (where a layer shift is impossible) it searches up to 16 mm; later
+// checkpoints pass the first layer's offsets as `prior`, and each part may only move a few millimetres
+// from the offset of the nearest first-layer part, so a real layer shift is not explained away.
+struct Alignment
+{
+    struct Anchor
+    {
+        double x, y;   // part centre (mm)
+        double dx, dy; // offset (mm)
+    };
+    std::vector<Anchor> anchors;
+    bool valid() const { return !anchors.empty(); }
+};
+
 struct CheckResult
 {
     Verdict                  verdict          = Verdict::Unsure;
@@ -127,18 +144,21 @@ struct CheckResult
     int                      bed_cells        = 0;
     double                   threshold        = 0;
     std::vector<std::string> reasons; // English, one per finding
+    // Per-part offsets that line the G-code up with the photo (absorbing calibration error).
+    Alignment                alignment;
 
     // Bed-plane grid used for the comparison, for overlays (row 0 = front).
     double               cell_mm = 2.0;
     double               grid_x0 = 0, grid_y0 = 0;
     int                  grid_w = 0, grid_h = 0;
-    std::vector<uint8_t> cells; // CellState
+    std::vector<uint8_t> cells;    // CellState
+    std::vector<uint8_t> expected; // 1 where the aligned G-code put material (for the overlay)
 };
 
 // Compares the photo at a checkpoint with the reference photo taken before the first layer.
 // baseline_z / current_z are the toolhead Z positions when each photo was taken.
 CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraModel& camera, const Image& baseline, double baseline_z,
-                    const Image& current, double current_z);
+                    const Image& current, double current_z, const Alignment& prior = Alignment());
 
 // Top-down picture of what the G-code has printed by `segments_done` (1 pixel per `mm_per_px`, back at
 // the top); the most recent layer is highlighted. Used when the camera is not calibrated.
