@@ -524,7 +524,9 @@ void PrinterWebView::on_rebuild_full_mesh()
             self->m_shop_bar->Layout();
         });
     };
-    Http::post(base + "/printer/gcode/script?script=" + Http::url_encode(script))
+    Http::post(base + "/printer/gcode/script")
+        .header("Content-Type", "application/json")
+        .set_post_body(nlohmann::json{{"script", script}}.dump())
         .timeout_connect(5)
         .timeout_max(1800)
         .on_complete([finish, self](std::string body, unsigned status) {

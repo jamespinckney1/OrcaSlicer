@@ -521,7 +521,9 @@ private:
         std::thread([self, api, snap, script, i]() {
             bool        moved = false;
             std::string error, jpeg, pos_body;
-            Http::post(api + "/printer/gcode/script?script=" + Http::url_encode(script))
+            Http::post(api + "/printer/gcode/script")
+        .header("Content-Type", "application/json")
+        .set_post_body(nlohmann::json{{"script", script}}.dump())
                 .timeout_connect(5)
                 .timeout_max(300)
                 .on_complete([&](std::string, unsigned status) { moved = status == 200; })

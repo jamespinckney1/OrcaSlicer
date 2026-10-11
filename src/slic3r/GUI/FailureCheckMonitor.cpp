@@ -150,7 +150,9 @@ bool save_shop_camera(const std::string& printer_host, const FailureCheck::Camer
 void shop_send_script(const std::string& api_root, const std::string& script)
 {
     BOOST_LOG_TRIVIAL(info) << "Shop failure check: sending " << script << " to " << api_root;
-    Http::post(api_root + "/printer/gcode/script?script=" + Http::url_encode(script))
+    Http::post(api_root + "/printer/gcode/script")
+        .header("Content-Type", "application/json")
+        .set_post_body(nlohmann::json{{"script", script}}.dump())
         .timeout_connect(5)
         .timeout_max(600)
         .on_error([script](std::string body, std::string error, unsigned status) {
