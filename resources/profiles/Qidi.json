@@ -1,6 +1,6 @@
 {
 	"name": "Qidi",
-	"version": "02.04.90.16",
+	"version": "02.04.90.17",
 	"force_update": "0",
 	"description": "Qidi configurations",
 	"machine_model_list": [
@@ -953,6 +953,10 @@
 		{
 			"name": "0.56mm Standard @Qidi XSmart3 0.8 nozzle",
 			"sub_path": "process/0.56mm Standard @Qidi XSmart3 0.8 nozzle.json"
+		},
+		{
+			"name": "0.20mm PETG Standard @Qidi XPlus4",
+			"sub_path": "process/0.20mm PETG Standard @Qidi XPlus4.json"
 		}
 	],
 	"filament_list": [

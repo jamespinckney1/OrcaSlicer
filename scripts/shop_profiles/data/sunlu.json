@@ -1084,6 +1084,23 @@
           "temp_min_c": 260,
           "temp_max_c": 270
         }
+      ],
+      "shop_overrides": [
+        {
+          "printers": [
+            "plus4"
+          ],
+          "nozzles": [
+            "0.4"
+          ],
+          "settings": {
+            "nozzle_temperature": 240,
+            "fan_max_speed": 60,
+            "filament_retraction_length": 1,
+            "filament_retraction_speed": 40
+          },
+          "note": "2026-10-11, Plus 4 with Conch hotend: sparse infill strung and left clumps the nozzle knocked loose at 245 C, 40% fan, 0.8 mm retraction. Use 240 C (bottom of SUNLU's 100-300 mm/s band), fan up to 60%, retraction 1.0 mm at 40 mm/s, and pair with the process '0.20mm PETG Standard @Qidi XPlus4' (gyroid infill, 150 mm/s, 5000 mm/s2). Dry before use."
+        }
       ]
     },
     {
