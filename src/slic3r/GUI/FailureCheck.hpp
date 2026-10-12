@@ -172,6 +172,8 @@ struct CheckResult
     int                      bed_cells        = 0;
     double                   threshold        = 0;
     bool                     light_filament   = false; // darkened patches were taken as shadows
+    double                   first_layer_holes = 0;    // worst part's share of first-layer cells with no material
+    double                   first_layer_patch_mm2 = 0; // largest patch of them well inside a part (mm2)
     std::vector<std::string> reasons; // English, one per finding
     // Per-part offsets that line the G-code up with the photo (absorbing calibration error).
     Alignment                alignment;

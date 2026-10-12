@@ -17,6 +17,7 @@
 #include <vector>
 
 using namespace Slic3r::GUI::FailureCheck;
+static constexpr double kPatchOk = 20.0;
 
 static int failures = 0;
 #define CHECK(cond, ...) do { if (!(cond)) { ++failures; std::printf("  FAIL: " __VA_ARGS__); std::printf("\n"); } else { std::printf("  ok: " __VA_ARGS__); std::printf("\n"); } } while (0)
@@ -299,6 +300,19 @@ int main(int argc, char** argv)
         sm.filament_colours = {"#26A69A"};
         r = compare(sm, cp, cal, base, Z0, empty, 5.2); report("B3 first layer missing, default colour", r);
         CHECK(r.verdict == Verdict::Unsure, "B3 is unsure (default colour says nothing)");
+        // A torn first layer: the part's G-code is solid, but a 12 x 10 mm patch of it is bare plate.
+        {
+            Box l{130, 144, 130, 170, 0.2, {}}, r{156, 170, 130, 170, 0.2, {}}, f{144, 156, 130, 145, 0.2, {}}, b{144, 156, 155, 170, 0.2, {}};
+            for (Box* q : {&l, &r, &f, &b}) std::memcpy(q->col, white, 3);
+            GCodeModel wm = sm;
+            wm.filament_colours = {"#F5F5F0"};
+            for (Segment& sg : wm.segments) sg.w = 1.0f; // lines 1 mm apart: a solid first layer, as real ones are
+            Checkpoint fl = cp; fl.kind = CheckpointKind::FirstLayer;
+            auto rt = compare(wm, fl, cal, base, Z0, render(truth, 5.2, {l, r, f, b}), 5.2); report("J torn first layer (white)", rt);
+            CHECK(rt.verdict == Verdict::Fail, "J fails (a dark patch inside the part's first layer: %.0f mm2)", rt.first_layer_patch_mm2);
+            rt = compare(wm, fl, cal, base, Z0, render(truth, 5.2, {part}), 5.2); report("J2 whole first layer (white)", rt);
+            CHECK(rt.verdict == Verdict::Pass && rt.first_layer_patch_mm2 < kPatchOk, "J2 passes (patch %.0f mm2)", rt.first_layer_patch_mm2);
+        }
         Box dark = part; std::memcpy(dark.col, plate, 3);
         sm.filament_colours = {"#3A3A3D"};
         const Image darkimg = render(truth, 5.2, {dark});

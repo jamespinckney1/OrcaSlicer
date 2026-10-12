@@ -760,6 +760,25 @@ void rasterize(Grid& g, const PlaneMapper& pm, const Segment& s, double h_offset
     }
 }
 
+// Adds a segment's extruded area (mm2) to the cells it crosses, so cov / cell^2 is how much of each cell
+// the G-code covers.
+void accumulate_coverage(std::vector<float>& cov, const Grid& g, const PlaneMapper& pm, const Segment& s, double h_offset)
+{
+    double ax, ay, bx, by;
+    if (!pm.map(s.x0, s.y0, s.z + h_offset, ax, ay) || !pm.map(s.x1, s.y1, s.z + h_offset, bx, by))
+        return;
+    const double len   = std::hypot(bx - ax, by - ay);
+    const int    steps = std::max(1, int(std::ceil(len / (0.25 * g.cell))));
+    const float  add   = float(len / steps * s.w);
+    for (int k = 0; k < steps; ++k) {
+        const double t  = (k + 0.5) / steps;
+        const int    cx = int(std::floor((ax + (bx - ax) * t - g.x0) / g.cell));
+        const int    cy = int(std::floor((ay + (by - ay) * t - g.y0) / g.cell));
+        if (cx >= 0 && cy >= 0 && cx < g.w && cy < g.h)
+            cov[size_t(cy) * g.w + cx] += add;
+    }
+}
+
 Grid dilate(const Grid& g, int r)
 {
     Grid out = g;
@@ -786,6 +805,12 @@ Grid erode4(const Grid& g)
                 out.at(x, y) = 0;
     return out;
 }
+
+// First-layer checks fail when a part's solid first layer is dark (bare or shadowed plate) in this share of
+// its cells, or in one patch of this many mm2 well inside the part (see compare()). On the shop's saved jobs a
+// good first layer reached 10% and 8 mm2; a peeled and folded one 392 mm2.
+constexpr double kFirstLayerHoles    = 0.25;
+constexpr double kFirstLayerPatchMm2 = 60.0;
 
 double median(std::vector<float> v)
 {
@@ -902,6 +927,7 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
     allowed.y0 = res.grid_y0;
     allowed.cell = cell;
     Grid footprint = allowed;
+    std::vector<float> coverage(size_t(W) * H, 0.f);
     const size_t done = std::min(cp.segments_done, model.segments.size());
     // Older layers are sampled every millimetre of height; the last few layers in full.
     const size_t recent_layer = model.layer_first_segment.empty() ? 0 : std::max<size_t>(cp.layer, 1) - 1;
@@ -919,9 +945,16 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
         for (size_t i = a; i < b; ++i)
             rasterize(allowed, pm, model.segments[i], -current_z);
         if (L == recent_layer || (cp.kind == CheckpointKind::Early && L == 0))
-            for (size_t i = a; i < b; ++i)
+            for (size_t i = a; i < b; ++i) {
                 rasterize(footprint, pm, model.segments[i], -current_z);
+                accumulate_coverage(coverage, footprint, pm, model.segments[i], -current_z);
+            }
     }
+    // Cells the latest layer fills (not sparse support base or an outline only): where a first-layer hole means
+    // something.
+    Grid solid = footprint;
+    for (size_t i = 0; i < solid.v.size(); ++i)
+        solid.v[i] = solid.v[i] && coverage[i] >= 0.6f * float(cell * cell);
     // Exposure drift: the camera re-exposes when bright parts fill the view, which shifts the whole
     // plate. Measure it only on plate well away (16 mm) from anything the G-code prints, as the median
     // brightness ratio, so neither the parts nor a failure can skew it.
@@ -1098,7 +1131,8 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
                     }
             }
         }
-        Grid new_allowed = allowed, new_footprint = footprint;
+        Grid new_allowed = allowed, new_footprint = footprint, new_solid = solid;
+        std::fill(new_solid.v.begin(), new_solid.v.end(), 0);
         std::fill(new_allowed.v.begin(), new_allowed.v.end(), 0);
         std::fill(new_footprint.v.begin(), new_footprint.v.end(), 0);
         for (size_t g = 0; g < groups.size(); ++g) {
@@ -1218,9 +1252,22 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
                 if (xx >= 0 && yy >= 0 && xx < W && yy < H)
                     new_footprint.at(xx, yy) = 1;
             }
+            std::vector<size_t> solid_g;
+            if (bs == 1.0) {
+                for (size_t i = 0; i < label.size(); ++i)
+                    if (label[i] == int(g) && solid.v[i])
+                        solid_g.push_back(i);
+            } else
+                solid_g = scaled(bs, solid.v);
+            for (size_t i : solid_g) {
+                const int xx = int(i % W) + bx, yy = int(i / W) + by;
+                if (xx >= 0 && yy >= 0 && xx < W && yy < H)
+                    new_solid.at(xx, yy) = 1;
+            }
         }
         allowed   = new_allowed;
         footprint = new_footprint;
+        solid     = new_solid;
         res.expected = allowed.v;
     }
     // Margin for what the offset does not absorb: 8 mm, plus the printed height, since a tall part
@@ -1353,9 +1400,147 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
         res.reasons.push_back(buf);
         fail = true;
     }
+    // Unchanged pixels only prove something when the filament should look different from the plate:
+    // compare the filament colour from the G-code with the plate where the part should be.
+    const std::string colour  = model.first_layer_colour();
+    bool              visible = false;
+    if (!colour.empty()) {
+        const long   rgb = std::strtol(colour.c_str() + 1, nullptr, 16);
+        const double fr = (rgb >> 16) & 0xFF, fg = (rgb >> 8) & 0xFF, fb = rgb & 0xFF;
+        double       pr = 0, pg = 0, pb = 0;
+        int          n  = 0;
+        for (int gy = 0; gy < H; ++gy)
+            for (int gx = 0; gx < W; ++gx) {
+                const size_t i = size_t(gy) * W + gx;
+                if (!valid[i] || !core.get(gx, gy))
+                    continue;
+                pr += base[i * 3]; pg += base[i * 3 + 1]; pb += base[i * 3 + 2];
+                ++n;
+            }
+        if (n > 0)
+            visible = std::sqrt((fr - pr / n) * (fr - pr / n) + (fg - pg / n) * (fg - pg / n) + (fb - pb / n) * (fb - pb / n)) >= 90.0;
+    }
+    const bool first_layer = cp.kind == CheckpointKind::Early || cp.kind == CheckpointKind::FirstLayer;
+    // First layer, part by part and cell by cell: a torn, lifted or dragged first layer leaves holes of a few
+    // millimetres that the 6 mm smoothing above fills in, and a healthy part next to it dilutes the plate-wide
+    // fraction. With a filament the camera can see, each part's own first layer must show material almost
+    // everywhere.
+    if (first_layer && visible) {
+        // The first layer is printed in one filament: is it much lighter than the plate?
+        bool first_light = false;
+        {
+            const long   rgb = std::strtol(colour.c_str() + 1, nullptr, 16);
+            const double fl  = 0.299 * ((rgb >> 16) & 0xFF) + 0.587 * ((rgb >> 8) & 0xFF) + 0.114 * (rgb & 0xFF);
+            std::vector<float> plate;
+            for (size_t i = 0; i < background.size(); ++i)
+                if (background[i])
+                    plate.push_back(float((base[i * 3] + base[i * 3 + 1] + base[i * 3 + 2]) / 3.0));
+            first_light = fl >= (plate.empty() ? 128.0 : median(plate)) + 60.0;
+        }
+        std::vector<uint8_t> seen(size_t(W) * H, 0), hole_cell(size_t(W) * H, 0);
+        for (size_t start = 0; start < seen.size(); ++start) {
+            if (seen[start] || !core.v[start] || !valid[start])
+                continue;
+            std::vector<size_t> stack{start}, part;
+            seen[start] = 1;
+            while (!stack.empty()) {
+                const size_t i = stack.back();
+                stack.pop_back();
+                part.push_back(i);
+                const int cx = int(i % W), cy = int(i / W);
+                const int nb[4][2] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+                for (const auto& d : nb) {
+                    const int xx = cx + d[0], yy = cy + d[1];
+                    if (xx < 0 || yy < 0 || xx >= W || yy >= H)
+                        continue;
+                    const size_t j = size_t(yy) * W + xx;
+                    if (!seen[j] && core.v[j] && valid[j]) {
+                        seen[j] = 1;
+                        stack.push_back(j);
+                    }
+                }
+            }
+            // Light filament: a hole is a cell clearly darker than the part itself now (bare plate, or plate in
+            // the shadow of a lifted flap). Comparing with the part, not with the reference photo, keeps a spot of
+            // plate that happened to glint in the reference from reading as "did not brighten".
+            auto lum_now = [&](size_t i) { return (cur[i * 3] + cur[i * 3 + 1] + cur[i * 3 + 2]) * cell_gain[i] / 3.0f; };
+            float part_lum = 0;
+            if (first_light) {
+                std::vector<float> l;
+                l.reserve(part.size());
+                for (size_t i : part)
+                    if (solid.v[i])
+                        l.push_back(lum_now(i));
+                if (l.empty())
+                    continue;
+                part_lum = float(median(l));
+            }
+            int n = 0;
+            for (size_t i : part)
+                n += solid.v[i] ? 1 : 0;
+            int holes = 0;
+            for (size_t i : part) {
+                if (!solid.v[i])
+                    continue; // sparse support base or outline: not a solid first layer
+                const bool hole = first_light ? lum_now(i) < 0.5f * part_lum
+                                              : diff[i] <= std::max(res.threshold, texture_k * ref_texture[i]);
+                if (hole) {
+                    ++holes;
+                    hole_cell[i] = 1;
+                    res.cells[i] = CellMissing; // drawn orange
+                }
+            }
+            if (n >= 40)
+                res.first_layer_holes = std::max(res.first_layer_holes, double(holes) / n);
+        }
+        // A peeled or torn patch is small in area (a lifted flap still covers most of it) but solid and well inside
+        // the part; holes along a part's edge are leftover calibration error. Largest cluster of hole cells at
+        // least two cells (4 mm) inside the part.
+        {
+            const Grid inner = erode4(erode4(core));
+            std::vector<uint8_t> done(size_t(W) * H, 0);
+            for (size_t start = 0; start < done.size(); ++start) {
+                if (done[start] || !hole_cell[start] || !inner.v[start])
+                    continue;
+                std::vector<size_t> stack{start};
+                done[start] = 1;
+                int n = 0;
+                while (!stack.empty()) {
+                    const size_t i = stack.back();
+                    stack.pop_back();
+                    ++n;
+                    const int cx = int(i % W), cy = int(i / W);
+                    for (int dy = -1; dy <= 1; ++dy)
+                        for (int dx = -1; dx <= 1; ++dx) {
+                            const int xx = cx + dx, yy = cy + dy;
+                            if (xx < 0 || yy < 0 || xx >= W || yy >= H)
+                                continue;
+                            const size_t j = size_t(yy) * W + xx;
+                            if (!done[j] && hole_cell[j] && inner.v[j]) {
+                                done[j] = 1;
+                                stack.push_back(j);
+                            }
+                        }
+                }
+                res.first_layer_patch_mm2 = std::max(res.first_layer_patch_mm2, n * cell * cell);
+            }
+        }
+        if (res.first_layer_holes >= kFirstLayerHoles) {
+            char buf[200];
+            std::snprintf(buf, sizeof(buf), "%.0f%% of a part's first layer shows holes or no material (lifting, tearing or not sticking)",
+                          res.first_layer_holes * 100.0);
+            res.reasons.push_back(buf);
+            fail = true;
+        } else if (res.first_layer_patch_mm2 >= kFirstLayerPatchMm2) {
+            char buf[200];
+            std::snprintf(buf, sizeof(buf), "a dark patch of about %.0f mm2 inside a part's first layer (torn, lifted or folded over)",
+                          res.first_layer_patch_mm2);
+            res.reasons.push_back(buf);
+            fail = true;
+        }
+    }
     if (fp_cells >= 30 && res.missing_fraction >= 0.6) {
         char buf[200];
-        const bool first_layer = cp.kind == CheckpointKind::Early || cp.kind == CheckpointKind::FirstLayer;
         if (first_layer)
             std::snprintf(buf, sizeof(buf), "%.0f%% of the first layer printed so far shows no new material (not sticking, or not extruding)",
                           res.missing_fraction * 100.0);
@@ -1363,26 +1548,6 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
             std::snprintf(buf, sizeof(buf), "%.0f%% of the latest layer is not where the G-code put it (the part may have come loose)",
                           res.missing_fraction * 100.0);
         res.reasons.push_back(buf);
-        // Unchanged pixels only prove something when the filament should look different from the plate:
-        // compare the filament colour from the G-code with the plate where the part should be.
-        bool visible = false;
-        const std::string colour = model.first_layer_colour();
-        if (!colour.empty()) {
-            const long rgb = std::strtol(colour.c_str() + 1, nullptr, 16);
-            const double fr = (rgb >> 16) & 0xFF, fg = (rgb >> 8) & 0xFF, fb = rgb & 0xFF;
-            double pr = 0, pg = 0, pb = 0;
-            int    n  = 0;
-            for (int gy = 0; gy < H; ++gy)
-                for (int gx = 0; gx < W; ++gx) {
-                    const size_t i = size_t(gy) * W + gx;
-                    if (!valid[i] || !core.get(gx, gy))
-                        continue;
-                    pr += base[i * 3]; pg += base[i * 3 + 1]; pb += base[i * 3 + 2];
-                    ++n;
-                }
-            if (n > 0)
-                visible = std::sqrt((fr - pr / n) * (fr - pr / n) + (fg - pg / n) * (fg - pg / n) + (fb - pb / n) * (fb - pb / n)) >= 90.0;
-        }
         if (visible) {
             fail = true;
         } else {

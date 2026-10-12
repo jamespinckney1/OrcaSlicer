@@ -222,6 +222,14 @@ purge lines count as expected material.
     count as unexpected material; a darker patch is a shadow. Dark or unset colours count both ways.
   - Missing material: when at least 60% of the latest layer shows no change, the check fails if the
     job's filament colour is set and clearly differs from the plate, and is uncertain otherwise.
+  - First layer, part by part (filament the camera can see): a peeled or folded first layer is still
+    mostly "there", so plate-wide coverage misses it. Each part's solid first-layer cells (the G-code
+    fills at least 60% of the cell; sparse support base and outlines are left out) are compared with the
+    part itself: with light filament a cell darker than half the part's median brightness is a hole
+    (bare plate, or plate in the shadow of a lifted flap; comparing with the part, not the reference,
+    ignores a spot that glinted in the reference). The check fails when 25% of a part's solid cells are
+    holes, or when holes form a patch of 60 mm2 at least 4 mm inside the part. On the saved jobs good
+    first layers reached 10% and 8 mm2; a peeled, folded one 392 mm2. Holes are drawn orange.
 - **Replaying a checkpoint.** `scripts/shop_tests/failure_check_replay.cpp` reruns one comparison from
   a job folder and draws what the check saw.
 - **Verdicts.** Pass: the print resumes silently. Fail: the printer holds and beeps, and a window shows
