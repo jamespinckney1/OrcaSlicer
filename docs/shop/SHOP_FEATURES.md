@@ -70,6 +70,18 @@ when saving a project; an earlier suffix is stripped so names do not stack. "Pro
 folder offered for projects that have no file yet. Code: `src/slic3r/GUI/ShopNaming.*`; app config
 keys `shop_project_autoname`, `shop_project_dir`.
 
+## Saved presets are recognised (no false "unsaved changes")
+
+A project saved against a system preset with changes opens as "system preset (modified)", and Orca asks to
+save those changes on every project switch, even when the user has already saved exactly those settings
+as their own preset (e.g. `0.20mm Standard @Qidi XPlus4 -standard`). `GUI_App::shop_adopt_matching_saved_presets`
+selects the user's saved preset instead whenever a modified preset's settings equal it (ignoring only the
+options that name or place a preset: inherits, compatible_*, *_settings_id, ...): right after a project
+loads (before its initial presets are recorded, so the project is not marked changed) and before every
+unsaved-changes prompt. Names ending in "Copy" lose to the user's own names; then the most recently saved
+wins. Saving over one of the user's own presets says "Saving updates your preset ..." in normal text
+instead of the orange "already exists" warning (overwriting always worked).
+
 ## Shop machine switcher (sidebar, "Machine" row)
 
 Save the current printer + process + filament selection under a machine name; picking the name

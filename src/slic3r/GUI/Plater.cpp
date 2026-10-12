@@ -16171,6 +16171,10 @@ void Plater::load_project(wxString const& filename2,
 
     bool loaded_published   = false;
     std::vector<size_t> res = load_files(input_paths, strategy, false, &loaded_published);
+    // Print shop: settings the user has already saved as their own preset open as that preset, not as
+    // unsaved changes (before the project's initial presets are recorded, so it does not dirty the project).
+    if (strategy & LoadStrategy::LoadConfig)
+        wxGetApp().shop_adopt_matching_saved_presets();
 
     reset_project_dirty_initial_presets();
     update_project_dirty_from_presets();

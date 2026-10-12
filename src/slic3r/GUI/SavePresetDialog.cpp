@@ -1,5 +1,7 @@
 #include "SavePresetDialog.hpp"
 
+#include <wx/settings.h>
+
 #include <cassert>
 #include <boost/algorithm/string/predicate.hpp>
 #include <cstddef>
@@ -229,11 +231,18 @@ void SavePresetDialog::Item::update()
     }
 
     if (m_valid_type == Valid && existing && m_preset_name != m_presets->get_selected_preset_name()) {
-        if (existing->is_compatible)
-            info_line = from_u8((boost::format(_u8L("Preset \"%1%\" already exists.")) % m_preset_name).str());
-        else
-            info_line = from_u8((boost::format(_u8L("Preset \"%1%\" already exists and is incompatible with the current printer.")) % m_preset_name).str());
-        info_line += "\n" + _L("Please note that saving will overwrite the current preset.");
+        // Print shop: saving over one of the user's own presets is how a naming convention ("... -standard") is
+        // carried forward, so say what will happen rather than warn.
+        if (existing->is_user())
+            info_line = from_u8((boost::format(_u8L("Saving updates your preset \"%1%\" with these settings.")) % m_preset_name).str()) +
+                        (existing->is_compatible ? wxString() : "\n" + _L("It is currently marked incompatible with this printer."));
+        else {
+            if (existing->is_compatible)
+                info_line = from_u8((boost::format(_u8L("Preset \"%1%\" already exists.")) % m_preset_name).str());
+            else
+                info_line = from_u8((boost::format(_u8L("Preset \"%1%\" already exists and is incompatible with the current printer.")) % m_preset_name).str());
+            info_line += "\n" + _L("Please note that saving will overwrite the current preset.");
+        }
         m_valid_type = Warning;
     }
 
@@ -272,6 +281,9 @@ void SavePresetDialog::Item::update()
         m_radio_group->SetSelection(m_save_to_project ? 1 : 0);
     }
 
+    // Print shop: updating one of the user's own presets is not a warning.
+    const bool updates_own = m_valid_type == Warning && existing && existing->is_user();
+    m_valid_label->SetForegroundColour(updates_own ? wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT) : wxColor(255, 111, 0));
     m_valid_label->SetLabel(info_line);
     m_valid_label->Show(!info_line.IsEmpty());
 

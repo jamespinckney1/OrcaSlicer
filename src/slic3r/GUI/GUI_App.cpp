@@ -29,6 +29,7 @@
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/assert/source_location.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <atomic>
 #include <boost/asio/ip/basic_endpoint.hpp>
@@ -8806,8 +8807,59 @@ std::vector<std::pair<unsigned int, std::string>> GUI_App::get_selected_presets(
 // This is called when:
 // - Exporting config_bundle
 // - Taking snapshot
+// Print shop: a project saved against a system preset with changes, which the user later saved as their own
+// preset (e.g. "... -standard"), opens as "system preset (modified)" and is reported as unsaved changes on
+// every project switch although nothing would be lost. Any modified preset whose settings are exactly those
+// of one of the user's saved presets is that preset: select it without asking. Names ending in "Copy" lose
+// to the user's own names, then the most recently saved wins.
+int GUI_App::shop_adopt_matching_saved_presets()
+{
+    // Options that name or place a preset rather than describe the print.
+    static const std::set<std::string> identity{"inherits", "compatible_printers", "compatible_printers_condition", "compatible_prints",
+                                                "compatible_prints_condition", "print_settings_id", "printer_settings_id",
+                                                "filament_settings_id", "different_settings_to_system", "default_print_profile",
+                                                "default_filament_profile"};
+    if (preset_bundle == nullptr)
+        return 0;
+    int                     switched = 0;
+    const PrinterTechnology pt       = preset_bundle->printers.get_edited_preset().printer_technology();
+    for (Tab* tab : tabs_list) {
+        if (!tab->supports_printer_technology(pt) || !tab->current_preset_is_dirty())
+            continue;
+        PresetCollection* presets   = tab->get_presets();
+        const Preset&     edited    = presets->get_edited_preset();
+        const Preset*     best      = nullptr;
+        bool              best_copy = true;
+        std::time_t       best_time = 0;
+        for (const Preset& p : *presets) {
+            if (!p.is_user() || !p.is_visible || !p.is_compatible || p.name == presets->get_selected_preset_name())
+                continue;
+            if (!PresetCollection::dirty_options_without_option_list(&edited, &p, identity, true).empty())
+                continue;
+            boost::system::error_code ec;
+            const std::time_t t    = p.file.empty() ? 0 : boost::filesystem::last_write_time(p.file, ec);
+            const bool        copy = boost::algorithm::iends_with(p.name, "copy");
+            if (best == nullptr || (best_copy && !copy) || (best_copy == copy && t > best_time)) {
+                best      = &p;
+                best_copy = copy;
+                best_time = t;
+            }
+        }
+        if (best == nullptr)
+            continue;
+        const std::string name = best->name;
+        BOOST_LOG_TRIVIAL(info) << "Shop: \"" << presets->get_selected_preset_name() << "\" (modified) equals the saved preset \"" << name
+                                << "\"; selecting it";
+        presets->discard_current_changes();
+        tab->select_preset(name, false, "", false, true);
+        ++switched;
+    }
+    return switched;
+}
+
 bool GUI_App::check_and_save_current_preset_changes(const wxString& caption, const wxString& header, bool remember_choice/* = true*/, bool dont_save_insted_of_discard/* = false*/)
 {
+    shop_adopt_matching_saved_presets();
     if (has_current_preset_changes()) {
         int act_buttons = ActionButtons::SAVE;
         if (dont_save_insted_of_discard)
@@ -8860,6 +8912,7 @@ void GUI_App::apply_keeped_preset_modifications()
 // Note: no_nullptr postponed_apply_of_keeped_changes indicates that thie function is called after ConfigWizard is closed
 bool GUI_App::check_and_keep_current_preset_changes(const wxString& caption, const wxString& header, int action_buttons, bool* postponed_apply_of_keeped_changes/* = nullptr*/)
 {
+    shop_adopt_matching_saved_presets();
     if (has_current_preset_changes()) {
         bool is_called_from_configwizard = postponed_apply_of_keeped_changes != nullptr;
 
