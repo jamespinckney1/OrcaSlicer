@@ -808,70 +808,90 @@ private:
     // Empty-plate photos from an earlier session (the slicer may have restarted while the dots printed).
     void load_empty_photos()
     {
-        std::ifstream f(m_dir + "/empty.json");
-        if (!f)
+        std::string when;
+        if (!load_saved_shots("empty", m_empty, when))
             return;
-        const auto j = nlohmann::json::parse(std::string((std::istreambuf_iterator<char>(f)), {}), nullptr, false);
-        if (j.is_discarded() || !j.contains("z") || !j["z"].is_array() || j["z"].size() != kHeights.size())
-            return;
-        std::vector<Shot> shots;
-        for (size_t i = 0; i < kHeights.size(); ++i) {
-            Shot          sh;
-            std::ifstream img(m_dir + "/empty_" + std::to_string(i) + ".jpg", std::ios::binary);
-            sh.jpeg = std::string((std::istreambuf_iterator<char>(img)), {});
-            sh.z    = j["z"][i].get<double>();
-            if (!shop_decode_image(sh.jpeg, sh.img))
-                return;
-            shots.push_back(std::move(sh));
-        }
-        m_empty = std::move(shots);
-        m_status->SetLabel(format_wxstr(_L("Using the empty-plate photos taken %1%."), from_u8(j.value("when", std::string()))));
+        m_status->SetLabel(format_wxstr(_L("Using the empty-plate photos taken %1%."), from_u8(when)));
         m_panel->set_image(to_wx(m_empty.front().img));
     }
 
+    // Photos saved in the test-print folder by an earlier step: "empty" or "dots", with their bed heights.
+    bool load_saved_shots(const std::string& kind, std::vector<Shot>& out, std::string& when)
+    {
+        std::ifstream f(m_dir + "/" + kind + ".json");
+        if (!f)
+            return false;
+        const auto j = nlohmann::json::parse(std::string((std::istreambuf_iterator<char>(f)), {}), nullptr, false);
+        if (j.is_discarded() || !j.contains("z") || !j["z"].is_array() || j["z"].size() != kHeights.size())
+            return false;
+        std::vector<Shot> shots;
+        for (size_t i = 0; i < kHeights.size(); ++i) {
+            Shot          sh;
+            std::ifstream img(m_dir + "/" + kind + "_" + std::to_string(i) + ".jpg", std::ios::binary);
+            sh.jpeg = std::string((std::istreambuf_iterator<char>(img)), {});
+            sh.z    = j["z"][i].get<double>();
+            if (!shop_decode_image(sh.jpeg, sh.img))
+                return false;
+            shots.push_back(std::move(sh));
+        }
+        out  = std::move(shots);
+        when = j.value("when", std::string());
+        return true;
+    }
+
+    void save_shots(const std::string& kind, const std::vector<Shot>& shots)
+    {
+        boost::system::error_code ec;
+        boost::filesystem::create_directories(m_dir, ec);
+        nlohmann::json zs = nlohmann::json::array();
+        for (size_t i = 0; i < shots.size(); ++i) {
+            std::ofstream(m_dir + "/" + kind + "_" + std::to_string(i) + ".jpg", std::ios::binary) << shots[i].jpeg;
+            zs.push_back(shots[i].z);
+        }
+        const std::time_t t = std::time(nullptr);
+        char              when[32];
+        std::strftime(when, sizeof(when), "%Y-%m-%d %H:%M", std::localtime(&t));
+        std::ofstream(m_dir + "/" + kind + ".json") << nlohmann::json{{"z", zs}, {"when", when}, {"time", (long long) t}}.dump(2);
+    }
+
     // Moves the bed to each height (toolhead parked) and photographs it; after == true measures the dots.
+    // The photos are taken and saved first, so nothing about the G-code can cost a reprint.
     void photograph(bool after)
     {
-        std::string api;
-        if (!camera_printer_ready(this, m_print_host, GetTitle(), api))
-            return;
         if (after && !load_shop_camera(m_host, m_old)) {
             MessageDialog(this, _L("This printer has no camera calibration yet. Run the click calibration once first; the test print "
                                    "then makes it exact."), GetTitle(), wxICON_INFORMATION | wxOK).ShowModal();
             return;
         }
+        // Dots already photographed after the empty plate (e.g. the G-code could not be fetched last time)?
+        if (after) {
+            std::vector<Shot> saved;
+            std::string       when;
+            if (load_saved_shots("dots", saved, when) && saved_time("dots") >= saved_time("empty")) {
+                MessageDialog dlg(this, format_wxstr(_L("Use the photos of the dots taken %1%? (No takes new ones.)"), from_u8(when)),
+                                  GetTitle(), wxICON_QUESTION | wxYES_NO);
+                if (dlg.ShowModal() == wxID_YES) {
+                    m_busy = true;
+                    update();
+                    fetch_gcode_and_measure(saved);
+                    return;
+                }
+            }
+        }
+        std::string api;
+        if (!camera_printer_ready(this, m_print_host, GetTitle(), api))
+            return;
         m_api    = api;
         m_busy   = true;
         m_solved = false;
         m_step->SetLabel(after ? _L("Photographing the dots...") : _L("Photographing the empty plate..."));
         m_status->SetLabel(_L("The bed moves to four heights; this takes a minute or two."));
         update();
-        const std::string                  snap = shop_snapshot_url(m_print_host);
-        wxWeakRef<CameraTestPrintDialog>   self(this);
+        const std::string                snap = shop_snapshot_url(m_print_host);
+        wxWeakRef<CameraTestPrintDialog> self(this);
         std::thread([self, api, snap, after]() {
             std::vector<Shot> shots;
-            std::string       error, gcode, filename;
-            if (after) {
-                // The G-code of the last print: where the dots really are.
-                std::string body;
-                Http::get(api + "/printer/objects/query?print_stats=filename").timeout_connect(4).timeout_max(8)
-                    .on_complete([&](std::string b, unsigned) { body = std::move(b); }).on_error([](std::string, std::string, unsigned) {}).perform_sync();
-                const auto j = nlohmann::json::parse(body, nullptr, false);
-                if (!j.is_discarded())
-                    try { filename = j["result"]["status"]["print_stats"]["filename"].get<std::string>(); } catch (...) {}
-                if (filename.empty())
-                    error = "the printer does not say which file it printed last";
-                else {
-                    std::string path, part;
-                    std::istringstream parts(filename);
-                    while (std::getline(parts, part, '/'))
-                        path += (path.empty() ? "" : "/") + Http::url_encode(part);
-                    Http::get(api + "/server/files/gcodes/" + path).timeout_connect(5).timeout_max(120)
-                        .on_complete([&](std::string b, unsigned status) { if (status == 200) gcode = std::move(b); })
-                        .on_error([&](std::string, std::string err, unsigned status) { error = "downloading " + filename + ": " + err + " " + std::to_string(status); })
-                        .perform_sync();
-                }
-            }
+            std::string       error;
             for (size_t i = 0; error.empty() && i < kHeights.size(); ++i) {
                 bool moved = false;
                 Http::post(api + "/printer/gcode/script")
@@ -901,45 +921,111 @@ private:
                 }
                 shots.push_back(std::move(sh));
             }
-            wxGetApp().CallAfter([self, shots, error, gcode, filename, after]() {
+            wxGetApp().CallAfter([self, shots, error, after]() {
                 if (self)
-                    self->on_photographed(after, shots, error, gcode, filename);
+                    self->on_photographed(after, shots, error);
             });
         }).detach();
     }
 
-    void on_photographed(bool after, const std::vector<Shot>& shots, const std::string& error, const std::string& gcode,
-                         const std::string& filename)
+    long long saved_time(const std::string& kind)
     {
-        m_busy = false;
+        std::ifstream f(m_dir + "/" + kind + ".json");
+        if (!f)
+            return 0;
+        const auto j = nlohmann::json::parse(std::string((std::istreambuf_iterator<char>(f)), {}), nullptr, false);
+        if (!j.is_discarded() && j.contains("time"))
+            return j["time"].get<long long>();
+        boost::system::error_code ec; // files saved before "time" was recorded
+        return (long long) boost::filesystem::last_write_time(m_dir + "/" + kind + ".json", ec);
+    }
+
+    void on_photographed(bool after, const std::vector<Shot>& shots, const std::string& error)
+    {
         if (!error.empty() || shots.size() != kHeights.size()) {
+            m_busy = false;
             m_step->SetLabel(_L("Could not finish the photos"));
             m_status->SetLabel(from_u8(error));
             update();
             return;
         }
-        boost::system::error_code ec;
-        boost::filesystem::create_directories(m_dir, ec);
+        save_shots(after ? "dots" : "empty", shots);
         if (!after) {
+            m_busy  = false;
             m_empty = shots;
-            nlohmann::json zs = nlohmann::json::array();
-            for (size_t i = 0; i < shots.size(); ++i) {
-                std::ofstream(m_dir + "/empty_" + std::to_string(i) + ".jpg", std::ios::binary) << shots[i].jpeg;
-                zs.push_back(shots[i].z);
-            }
-            const std::time_t t = std::time(nullptr);
-            char              when[32];
-            std::strftime(when, sizeof(when), "%Y-%m-%d %H:%M", std::localtime(&t));
-            std::ofstream(m_dir + "/empty.json") << nlohmann::json{{"z", zs}, {"when", when}}.dump(2);
             m_panel->set_image(to_wx(shots.front().img));
             m_status->SetLabel(_L("Empty plate photographed. Now put the dots on the plate and print them."));
             update();
             return;
         }
-        for (size_t i = 0; i < shots.size(); ++i)
-            std::ofstream(m_dir + "/dots_" + std::to_string(i) + ".jpg", std::ios::binary) << shots[i].jpeg;
+        fetch_gcode_and_measure(shots);
+    }
+
+    // The G-code of the last print says where the dots are: print_stats names it while the file is current,
+    // and the job history after Qidi's end G-code has cleared that.
+    void fetch_gcode_and_measure(const std::vector<Shot>& shots)
+    {
+        m_step->SetLabel(_L("Fetching the printed G-code..."));
+        const std::string api_known = m_api;
+        const std::string host      = m_print_host;
+        const std::string saved     = m_dir + "/print.gcode";
+        wxWeakRef<CameraTestPrintDialog> self(this);
+        std::thread([self, api_known, host, saved, shots]() {
+            const std::string api = api_known.empty() ? shop_resolve_api(host) : api_known;
+            std::string       filename, gcode, error;
+            auto get = [](const std::string& url, long max_s) {
+                std::string out;
+                Http::get(url).timeout_connect(4).timeout_max(max_s)
+                    .on_complete([&](std::string b, unsigned status) { if (status == 200) out = std::move(b); })
+                    .on_error([](std::string, std::string, unsigned) {}).perform_sync();
+                return out;
+            };
+            if (!api.empty()) {
+                auto j = nlohmann::json::parse(get(api + "/printer/objects/query?print_stats=filename", 8), nullptr, false);
+                if (!j.is_discarded())
+                    try { filename = j["result"]["status"]["print_stats"]["filename"].get<std::string>(); } catch (...) {}
+                if (filename.empty()) {
+                    j = nlohmann::json::parse(get(api + "/server/history/list?limit=10&order=desc", 8), nullptr, false);
+                    if (!j.is_discarded())
+                        try {
+                            for (const auto& job : j["result"]["jobs"])
+                                if (job.value("status", std::string()) == "completed") {
+                                    filename = job.value("filename", std::string());
+                                    break;
+                                }
+                        } catch (...) {}
+                }
+                if (!filename.empty()) {
+                    std::string path, part;
+                    std::istringstream parts(filename);
+                    while (std::getline(parts, part, '/'))
+                        path += (path.empty() ? "" : "/") + Http::url_encode(part);
+                    gcode = get(api + "/server/files/gcodes/" + path, 120);
+                }
+            }
+            if (!gcode.empty())
+                std::ofstream(saved, std::ios::binary) << gcode;
+            else if (std::ifstream(saved).good())
+                error.clear(); // keep the G-code saved last time
+            else
+                error = filename.empty() ? "the printer does not say which file it printed last" : "could not download " + filename;
+            wxGetApp().CallAfter([self, shots, error, filename]() {
+                if (self)
+                    self->measure(shots, error, filename);
+            });
+        }).detach();
+    }
+
+    void measure(const std::vector<Shot>& shots, const std::string& error, const std::string& filename)
+    {
+        m_busy = false;
+        if (!error.empty()) {
+            m_step->SetLabel(_L("The photos of the dots are saved, but the G-code is missing"));
+            m_status->SetLabel(from_u8(error) + " - " + _L("measure again later; the saved photos are used."));
+            update();
+            return;
+        }
         const std::string gpath = m_dir + "/print.gcode";
-        std::ofstream(gpath, std::ios::binary) << gcode;
         FailureCheck::GCodeModel model;
         std::string              err;
         std::vector<FailureCheck::PrintedDot> dots;

@@ -234,12 +234,16 @@ purge lines count as expected material.
 - **Calibration with a test print** (Device tab, "Calibrate with a test print..."; modeless, needs a click
   calibration to start from): photographs the empty plate at bed heights 10 / 60 / 120 / 170 mm, puts
   17 dots (12 mm, 0.4 mm tall) spread over the bed into a new project to print with a light filament,
-  and when that print completes photographs the dots at the same heights. The dots' exact centres come
-  from the printed G-code (downloaded from Moonraker; first-layer islands 8-20 mm across, so purge
-  lines and skirts are left out); each is found in the photos near where the current calibration puts
+  and when that print completes photographs the dots at the same heights (saved at once, so a later
+  problem never costs a reprint; Measure offers to reuse them). The dots' exact centres come from the
+  printed G-code (downloaded from Moonraker, named by `print_stats` or, once Qidi's end G-code has
+  cleared that, the job history; first-layer islands 8-20 mm across, so purge lines and skirts are
+  left out); each is found in the photos near where the current calibration puts
   it (a changed patch of about the expected size, thin lines removed), giving ~60 exact points at four
   heights. Saved only when it beats the current calibration on the same points; the replaced one is
-  kept in `shop/camera/testprint/<host>/`. On rendered scenes: worst error 1.7 px vs 11.5 px from clicks.
+  kept in `shop/camera/testprint/<host>/`. On rendered scenes: worst error 1.7 px vs 11.5 px from clicks;
+  on the Plus 4 (2026-10-12): 58 dot positions, 0.63 px average vs 12.6 px for the click calibration,
+  after which every saved job lines up with no offset or scale.
 - **Files.** Watched jobs: `shop/failure_check/jobs.json` (a restarted slicer resumes watching).
   Per job: `shop/failure_check/jobs/<time>_<name>/` with the G-code copy, every checkpoint photo
   (`cpN.jpg`) and its result (`cpN.json`); the last 15 jobs are kept.
