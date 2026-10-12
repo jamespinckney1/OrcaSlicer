@@ -88,6 +88,10 @@ applies all three (and the physical printer/host if one was saved). Stored in
 * Controls: the "Box" button on the Machine row opens `QidiBoxDialog` with Load
   (`EXTRUDER_LOAD SLOT=slotN`), Unload (`EXTRUDER_UNLOAD`), Eject (`MULTI_COLOR_BOX_UNLOAD`) and
   Read RFID (`MULTI_COLOR_READ_RFID`) per slot, sent through the connected device.
+* Filament changes unload hot (Plus 4 change G-code): after the cut the printer waits for the old
+  filament's print temperature + 30 C (at least its top temperature, at most 10 C above it) before
+  `UNLOAD_T`, and stays at least that hot while the next filament loads and purges the old one
+  out; then it returns to print temperature. Matte PETG jammed when unloaded at print temperature.
 
 Setup: add the Plus 4 as a physical printer with host type Moonraker, connect it on the Device
 tab, then use the sidebar filament sync.
