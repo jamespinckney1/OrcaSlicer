@@ -378,8 +378,11 @@ def build_preset(product, printer_key, printer, noz, parent, triple=None, parent
     if product.get("density_g_cm3"):
         preset["filament_density"] = [str(product["density_g_cm3"])]
     # Speed: filament presets carry speed as max volumetric speed. On the 0.4 mm profiles the
-    # manufacturer's rating sets it, up to the highest value upstream already runs on this printer
-    # for this material; on other nozzle sizes it can only lower the printer profile's value.
+    # manufacturer's rating can raise it, up to the highest value upstream already runs on this printer
+    # for this material. It never lowers the printer profile's value: brands quote print speeds as
+    # recommendations (often for slower printers), not flow limits, and the printer profile's value is
+    # what the printer has been tuned at. (Lowering made e.g. OVERTURE PETG 4.5 mm3/s on the Plus 4 from a
+    # 50 mm/s listing.)
     mvs_note = None
     final_mvs = parent_mvs
     if product.get("print_speed_max_mm_s"):
@@ -387,8 +390,11 @@ def build_preset(product, printer_key, printer, noz, parent, triple=None, parent
         shared_04 = noz in (None, "0.4")
         if parent_mvs is not None:
             cap = max(parent_mvs, upstream_cap or 0) if shared_04 else parent_mvs
-            target = min(derived, cap)
-            if abs(target - parent_mvs) >= 0.05:
+            target = max(min(derived, cap), parent_mvs)
+            if derived < parent_mvs - 0.05:
+                mvs_note = (f"Max volumetric speed kept at the printer profile's {parent_mvs:g} mm3/s; the manufacturer's "
+                            f"{product['print_speed_max_mm_s']} mm/s ({derived:.1f} mm3/s) is a print-speed recommendation, not a limit.")
+            elif abs(target - parent_mvs) >= 0.05:
                 final_mvs = round(target, 1)
                 preset["filament_max_volumetric_speed"] = [f"{final_mvs:g}"]
                 verb = "raised" if final_mvs > parent_mvs else "lowered"
@@ -482,6 +488,10 @@ def main():
         for name in list(b.paths):
             d = b.get(name)
             if not d or d.get("instantiation") != "true" or printer["ref_printer"] not in (d.get("compatible_printers") or []):
+                continue
+            # Only upstream presets set the cap: counting ones this script generated would let each run
+            # raise the next (an 18 mm3/s Plus 4 tuning lifted every Ender-3 PLA to 18).
+            if GENERATED_MARK in json.dumps(d.get("filament_notes", "")):
                 continue
             ftype, mv = b.resolve(name, "filament_type"), b.resolve(name, "filament_max_volumetric_speed")
             try:

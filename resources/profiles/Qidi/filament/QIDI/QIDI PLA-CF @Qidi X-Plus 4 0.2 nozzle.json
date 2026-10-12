@@ -1,7 +1,7 @@
 {
     "type": "filament",
     "name": "QIDI PLA-CF @Qidi X-Plus 4 0.2 nozzle",
-    "inherits": "Generic PLA @Qidi X-Plus 4 0.2 nozzle",
+    "inherits": "QIDI PLA-CF @Qidi X-Plus 4 0.2 nozzle",
     "from": "system",
     "setting_id": "Lgl1vXUOnL3aPDJV",
     "filament_id": "OFhWrAuP",
