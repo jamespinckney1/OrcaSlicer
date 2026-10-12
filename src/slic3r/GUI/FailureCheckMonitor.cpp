@@ -244,7 +244,7 @@ void FailureCheckMonitor::save_jobs_locked() const
                        {"baseline_z", j.baseline_z}, {"total", j.total}, {"passed", j.passed}, {"alignment", [&]() {
                            nlohmann::json a = nlohmann::json::array();
                            for (const auto& an : j.alignment.anchors)
-                               a.push_back({an.x, an.y, an.dx, an.dy});
+                               a.push_back({an.x, an.y, an.dx, an.dy, an.s});
                            return a;
                        }()}});
     write_file(fc_dir() + "/jobs.json", arr.dump(2));
@@ -276,8 +276,9 @@ void FailureCheckMonitor::load_jobs()
             j.passed       = o.value("passed", 0);
             if (o.contains("alignment") && o["alignment"].is_array())
                 for (const auto& a : o["alignment"])
-                    if (a.is_array() && a.size() == 4)
-                        j.alignment.anchors.push_back({a[0].get<double>(), a[1].get<double>(), a[2].get<double>(), a[3].get<double>()});
+                    if (a.is_array() && (a.size() == 4 || a.size() == 5))
+                        j.alignment.anchors.push_back({a[0].get<double>(), a[1].get<double>(), a[2].get<double>(), a[3].get<double>(),
+                                                       a.size() == 5 ? a[4].get<double>() : 1.0});
             if (fs::exists(j.gcode))
                 m_jobs.push_back(j);
         } catch (...) {

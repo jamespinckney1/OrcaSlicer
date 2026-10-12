@@ -1066,7 +1066,8 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
 
     // Line each part up with what changed. Parts are the connected groups of G-code material (a part and
     // its supports and brim count as one); each gets the whole-cell offset with the most overlap,
-    // preferring small moves, within 8 cells (16 mm), or 3 cells of the nearest first-layer offset.
+    // preferring small moves, within 8 cells (16 mm), or 3 cells of the nearest first-layer offset,
+    // and on the first layer possibly a scale (below).
     {
         const Grid groups_mask = dilate(allowed, 2);
         std::vector<int> label(size_t(W) * H, -1);
@@ -1111,7 +1112,8 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
             }
             mx /= double(cells_g.size());
             my /= double(cells_g.size());
-            int cx0 = 0, cy0 = 0, win = 8;
+            int    cx0 = 0, cy0 = 0, win = 8;
+            double scale0 = 1.0;
             if (prior.valid()) {
                 const Alignment::Anchor* nearest = nullptr;
                 double                   best_d  = 1e18;
@@ -1122,47 +1124,100 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
                         nearest = &an;
                     }
                 }
-                cx0 = int(std::lround(nearest->dx / cell));
-                cy0 = int(std::lround(nearest->dy / cell));
-                win = 3;
+                cx0    = int(std::lround(nearest->dx / cell));
+                cy0    = int(std::lround(nearest->dy / cell));
+                scale0 = nearest->s;
+                win    = 3;
             }
-            auto overlap = [&](int sx, int sy) {
-                int n = 0;
-                for (size_t i : cells_g) {
-                    const int xx = int(i % W) + sx, yy = int(i / W) + sy;
-                    if (xx >= 0 && yy >= 0 && xx < W && yy < H && changed[size_t(yy) * W + xx])
-                        ++n;
-                }
-                return n;
-            };
-            int          bx = cx0, by = cy0;
-            const double base_score = overlap(cx0, cy0);
-            double       best       = base_score;
-            for (int sy = cy0 - win; sy <= cy0 + win; ++sy)
-                for (int sx = cx0 - win; sx <= cx0 + win; ++sx) {
-                    const double score = overlap(sx, sy) - 0.5 * (std::abs(sx - cx0) + std::abs(sy - cy0));
-                    if (score > best) {
-                        best = score;
-                        bx   = sx;
-                        by   = sy;
-                    }
-                }
-            if (best < base_score * 1.05 + 4) { // keep the starting offset unless moving clearly helps
-                bx = cx0;
-                by = cy0;
-            }
-            res.alignment.anchors.push_back({mx, my, bx * cell, by * cell});
+            // The calibration's error also varies across a part, so a big part can look up to ~10% larger or
+            // smaller than projected, which no shift absorbs. On the first layer each part of 40 mm or more
+            // may also be scaled about its bounding-box centre (the walls come first, so that is the part's
+            // centre); later checkpoints keep the first layer's scale.
+            int gx0 = W, gy0 = H, gx1 = -1, gy1 = -1;
             for (size_t i : cells_g) {
+                gx0 = std::min(gx0, int(i % W)); gx1 = std::max(gx1, int(i % W));
+                gy0 = std::min(gy0, int(i / W)); gy1 = std::max(gy1, int(i / W));
+            }
+            const double pcx = 0.5 * (gx0 + gx1), pcy = 0.5 * (gy0 + gy1);
+            auto scaled = [&](double sc, const std::vector<uint8_t>& src) {
+                std::vector<size_t> out;
+                const int x0 = std::max(0, int(std::floor(pcx + (gx0 - pcx) * sc)) - 1), x1 = std::min(W - 1, int(std::ceil(pcx + (gx1 - pcx) * sc)) + 1);
+                const int y0 = std::max(0, int(std::floor(pcy + (gy0 - pcy) * sc)) - 1), y1 = std::min(H - 1, int(std::ceil(pcy + (gy1 - pcy) * sc)) + 1);
+                for (int ty = y0; ty <= y1; ++ty)
+                    for (int tx = x0; tx <= x1; ++tx) {
+                        const int sx = int(std::lround(pcx + (tx - pcx) / sc)), sy = int(std::lround(pcy + (ty - pcy) / sc));
+                        if (sx >= 0 && sy >= 0 && sx < W && sy < H && label[size_t(sy) * W + sx] == int(g) && src[size_t(sy) * W + sx])
+                            out.push_back(size_t(ty) * W + tx);
+                    }
+                return out;
+            };
+            std::vector<double> scales{scale0};
+            if (!prior.valid() && std::max(gx1 - gx0, gy1 - gy0) * cell >= 40.0)
+                scales = {1.0, 0.96, 1.04, 0.92, 1.08, 0.88, 1.12};
+            int    bx = cx0, by = cy0;
+            double bs = scales.front(), best_fit = -1e18, fit_unscaled = -1e18;
+            std::vector<size_t> best_cells;
+            for (const double sc : scales) {
+                const std::vector<size_t> cells_s = sc == 1.0 ? cells_g : scaled(sc, allowed.v);
+                auto overlap = [&](int sx, int sy) {
+                    int n = 0;
+                    for (size_t i : cells_s) {
+                        const int xx = int(i % W) + sx, yy = int(i / W) + sy;
+                        if (xx >= 0 && yy >= 0 && xx < W && yy < H && changed[size_t(yy) * W + xx])
+                            ++n;
+                    }
+                    return n;
+                };
+                int          sbx = cx0, sby = cy0;
+                const double base_score = overlap(cx0, cy0);
+                double       best       = base_score;
+                for (int sy = cy0 - win; sy <= cy0 + win; ++sy)
+                    for (int sx = cx0 - win; sx <= cx0 + win; ++sx) {
+                        const double score = overlap(sx, sy) - 0.5 * (std::abs(sx - cx0) + std::abs(sy - cy0));
+                        if (score > best) {
+                            best = score;
+                            sbx  = sx;
+                            sby  = sy;
+                        }
+                    }
+                if (best < base_score * 1.05 + 4) { // keep the starting offset unless moving clearly helps
+                    sbx = cx0;
+                    sby = cy0;
+                }
+                // Across scales the sizes differ: score matched cells against expected cells left unmatched.
+                const int    matched = overlap(sbx, sby);
+                const double fit     = 1.5 * matched - 0.5 * double(cells_s.size());
+                if (sc == scales.front())
+                    fit_unscaled = fit;
+                // Another scale only when the part is clearly visible at it (a missing part matches nothing at
+                // any scale, and the smallest would win just by being small) and it fits clearly better.
+                if (sc == scales.front() || (matched >= 0.6 * double(cells_s.size()) &&
+                                             fit > std::max(best_fit, fit_unscaled + std::max(6.0, 0.03 * cells_g.size())))) {
+                    best_fit   = fit;
+                    bx         = sbx;
+                    by         = sby;
+                    bs         = sc;
+                    best_cells = cells_s;
+                }
+            }
+            res.alignment.anchors.push_back({mx, my, bx * cell, by * cell, bs});
+            for (size_t i : best_cells) {
                 const int xx = int(i % W) + bx, yy = int(i / W) + by;
                 if (xx >= 0 && yy >= 0 && xx < W && yy < H)
                     new_allowed.at(xx, yy) = 1;
             }
-            for (size_t i = 0; i < label.size(); ++i)
-                if (label[i] == int(g) && footprint.v[i]) {
-                    const int xx = int(i % W) + bx, yy = int(i / W) + by;
-                    if (xx >= 0 && yy >= 0 && xx < W && yy < H)
-                        new_footprint.at(xx, yy) = 1;
-                }
+            std::vector<size_t> fp_cells_g;
+            if (bs == 1.0) {
+                for (size_t i = 0; i < label.size(); ++i)
+                    if (label[i] == int(g) && footprint.v[i])
+                        fp_cells_g.push_back(i);
+            } else
+                fp_cells_g = scaled(bs, footprint.v);
+            for (size_t i : fp_cells_g) {
+                const int xx = int(i % W) + bx, yy = int(i / W) + by;
+                if (xx >= 0 && yy >= 0 && xx < W && yy < H)
+                    new_footprint.at(xx, yy) = 1;
+            }
         }
         allowed   = new_allowed;
         footprint = new_footprint;

@@ -127,8 +127,9 @@ struct Alignment
 {
     struct Anchor
     {
-        double x, y;   // part centre (mm)
-        double dx, dy; // offset (mm)
+        double x, y;    // part centre (mm)
+        double dx, dy;  // offset (mm)
+        double s = 1.0; // scale about the part's bounding-box centre
     };
     std::vector<Anchor> anchors;
     bool valid() const { return !anchors.empty(); }

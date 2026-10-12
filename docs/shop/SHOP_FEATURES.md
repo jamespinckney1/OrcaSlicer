@@ -186,7 +186,10 @@ purge lines count as expected material.
     photo's glitter is strong.
   - Alignment: the calibration is only good to about a centimetre and its error varies across the bed,
     so each separate part (with its supports and brim) is lined up with what changed, within 16 mm on
-    the first layer; later checkpoints start from those offsets and may move a part only 6 mm.
+    the first layer; later checkpoints start from those offsets and may move a part only 6 mm. The
+    error also varies across a big part, which can then look up to ~10% larger or smaller than
+    projected, so on the first layer a part of 40 mm or more may also be scaled (88-112%) about its
+    centre, when it is clearly visible and the scale clearly fits better; later checkpoints keep it.
   - Unexpected material: solid patches (most of each cell's neighbours changed) beyond a margin of
     8 mm plus the printed height (tall parts cast shadows and reflect light), counted only where at
     least 32 mm2 lies a further 16 mm out; 3 cm2 or more fails the check.

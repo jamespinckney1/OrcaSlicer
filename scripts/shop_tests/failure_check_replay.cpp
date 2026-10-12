@@ -77,7 +77,7 @@ int main(int argc, char** argv)
                 r.unexpected_mm2, r.missing_fraction, r.footprint_cells, r.valid_cells, r.bed_cells, r.threshold,
                 m.first_layer_colour().c_str(), r.light_filament ? " (light: darker patches are shadows)" : "");
     for (const auto& a : r.alignment.anchors)
-        std::printf("   part at (%.0f,%.0f) offset (%.0f,%.0f)\n", a.x, a.y, a.dx, a.dy);
+        std::printf("   part at (%.0f,%.0f) offset (%.0f,%.0f) scale %.2f\n", a.x, a.y, a.dx, a.dy, a.s);
     for (const auto& s : r.reasons)
         std::printf("   - %s\n", s.c_str());
     Image img = cur;
