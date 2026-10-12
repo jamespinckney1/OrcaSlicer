@@ -143,6 +143,7 @@ struct CheckResult
     int                      valid_cells      = 0;
     int                      bed_cells        = 0;
     double                   threshold        = 0;
+    bool                     light_filament   = false; // darkened patches were taken as shadows
     std::vector<std::string> reasons; // English, one per finding
     // Per-part offsets that line the G-code up with the photo (absorbing calibration error).
     Alignment                alignment;

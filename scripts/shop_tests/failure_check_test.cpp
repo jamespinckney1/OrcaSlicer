@@ -334,6 +334,47 @@ int main(int argc, char** argv)
         CHECK(r.verdict == Verdict::Pass, "F passes despite exposure change");
     }
 
+    {
+        // White filament. A shadow on the plate (the gantry's or a part's, which moves as the bed drops)
+        // darkens it and hides the glitter: white filament cannot do that, so it is not a failure. White
+        // spaghetti still is.
+        Box part{130, 170, 130, 170, 12, {}}; std::memcpy(part.col, white, 3);
+        GCodeModel sm = make_model({part}, 12);
+        Checkpoint cp; cp.kind = CheckpointKind::Progress; cp.percent = 60; cp.layer = sm.layer_first_segment.size() - 1;
+        cp.segments_done = sm.segments.size();
+        const double Zc = 12 + 5;
+        auto shade = [&](Image img, double x0, double x1, double y0, double y1, double factor) {
+            for (int v = 0; v < img.h; ++v)
+                for (int u = 0; u < img.w; ++u) {
+                    const Eigen::Vector3d d = truth.ray(u + 0.5, v + 0.5);
+                    if (d.z() >= -1e-9)
+                        continue;
+                    const Eigen::Vector3d q = truth.C + ((-Zc - truth.C.z()) / d.z()) * d;
+                    if (q.x() < x0 || q.x() > x1 || q.y() < y0 || q.y() > y1)
+                        continue;
+                    for (int c = 0; c < 3; ++c) {
+                        uint8_t& px = img.rgb[(size_t(v) * img.w + u) * 3 + c];
+                        px = uint8_t(std::lround(px * factor));
+                    }
+                }
+            return img;
+        };
+        const Image shadow = shade(render(truth, Zc, {part}), 20, 70, 40, 110, 0.45);
+        write_ppm(data + "/syn_i.ppm", shadow);
+        GCodeModel unknown = sm;
+        auto r = compare(unknown, cp, cal, base, Z0, shadow, Zc); report("I0 shadow on the plate, colour unknown", r);
+        CHECK(r.unexpected_mm2 >= 100, "I0 the shadow reads as material when the filament colour is unknown");
+        sm.filament_colours = {"#F5F5F0"};
+        r = compare(sm, cp, cal, base, Z0, shadow, Zc); report("I shadow on the plate, white filament", r);
+        CHECK(r.verdict == Verdict::Pass && r.light_filament, "I passes (white filament cannot darken the plate)");
+        Box blob{50, 80, 60, 85, 3, {}}; std::memcpy(blob.col, white, 3);
+        r = compare(sm, cp, cal, base, Z0, render(truth, Zc, {part, blob}), Zc); report("H white spaghetti blob", r);
+        CHECK(r.verdict == Verdict::Fail, "H fails (white material where the G-code has none)");
+        r = compare(sm, cp, cal, base, Z0, shade(render(truth, Zc, {part, blob}), 20, 70, 40, 110, 0.45), Zc);
+        report("H2 white blob inside a shadow", r);
+        CHECK(r.verdict == Verdict::Fail, "H2 fails (a blob in a shadow is still brighter than the plate)");
+    }
+
     // ---------- 4. real camera noise ----------
     std::printf("4. Real snapshots a minute apart (same bed height): false-alarm check\n");
     Image a, b;

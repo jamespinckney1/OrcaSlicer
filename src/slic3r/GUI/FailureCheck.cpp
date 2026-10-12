@@ -1014,14 +1014,19 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
             diff[i]         = std::max(diff[i], float(texture_weight * std::abs(sc - sb)));
             ref_texture[i]  = float(sb);
         }
-    std::vector<float> sm(diff.size(), 0), all;
+    // Which way the brightness went (after the tone curve), smoothed like the difference below.
+    std::vector<float> dlum(diff.size(), 0);
+    for (size_t i = 0; i < dlum.size(); ++i)
+        if (valid[i])
+            dlum[i] = ((cur[i * 3] + cur[i * 3 + 1] + cur[i * 3 + 2]) * cell_gain[i] - (base[i * 3] + base[i * 3 + 1] + base[i * 3 + 2])) / 3.0f;
+    std::vector<float> sm(diff.size(), 0), sm_dlum(diff.size(), 0), all;
     all.reserve(n_valid);
     for (int gy = 0; gy < H; ++gy)
         for (int gx = 0; gx < W; ++gx) {
             const size_t i = size_t(gy) * W + gx;
             if (!valid[i])
                 continue;
-            float s = 0;
+            float s = 0, sl = 0;
             int   n = 0;
             for (int dy = -1; dy <= 1; ++dy)
                 for (int dx = -1; dx <= 1; ++dx) {
@@ -1029,9 +1034,11 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
                     if (xx < 0 || yy < 0 || xx >= W || yy >= H || !valid[size_t(yy) * W + xx])
                         continue;
                     s += diff[size_t(yy) * W + xx];
+                    sl += dlum[size_t(yy) * W + xx];
                     ++n;
                 }
-            sm[i] = s / n;
+            sm[i]      = s / n;
+            sm_dlum[i] = sl / n;
             if (background[i])
                 all.push_back(sm[i]); // noise level measured on the empty plate only
         }
@@ -1168,13 +1175,37 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
     const Grid allowed_wide = dilate(allowed, margin_cells);
     const Grid allowed_far  = dilate(allowed_wide, 4); // a further 16 mm
     const Grid core         = erode4(footprint);
+    // Shadows: as the bed drops, the gantry and the parts throw shadows that move across the plate, and a
+    // shadow also hides the plate's glitter, which reads like dark matte filament. When every filament of
+    // the job is much lighter than the plate, stray material can only make the plate brighter, so a patch
+    // that got darker is a shadow, not material. Dark or unknown filament keeps counting either way.
+    bool light_filament = !model.first_layer_colour().empty();
+    if (light_filament) {
+        std::vector<float> plate;
+        for (size_t i = 0; i < background.size(); ++i)
+            if (background[i])
+                plate.push_back(float((base[i * 3] + base[i * 3 + 1] + base[i * 3 + 2]) / 3.0));
+        const double plate_lum = plate.empty() ? 128.0 : median(plate);
+        for (const std::string& c : model.filament_colours) {
+            if (c.size() < 7 || c[0] != '#') {
+                light_filament = false;
+                break;
+            }
+            const long rgb = std::strtol(c.c_str() + 1, nullptr, 16);
+            if (0.299 * ((rgb >> 16) & 0xFF) + 0.587 * ((rgb >> 8) & 0xFF) + 0.114 * (rgb & 0xFF) < plate_lum + 60.0) {
+                light_filament = false;
+                break;
+            }
+        }
+    }
+    res.light_filament = light_filament;
     // Candidate cells: changed where the G-code has nothing. Only connected patches of 8+ cells (32 mm2)
     // count; spaghetti and blobs form patches, while the plate's glitter gives isolated specks.
     std::vector<uint8_t> candidate(size_t(W) * H, 0);
     for (int gy = 0; gy < H; ++gy)
         for (int gx = 0; gx < W; ++gx) {
             const size_t i = size_t(gy) * W + gx;
-            candidate[i]   = changed[i] && !allowed_wide.get(gx, gy);
+            candidate[i]   = changed[i] && !allowed_wide.get(gx, gy) && (!light_filament || sm_dlum[i] > 0);
         }
     // Keep only solid change: a cell needs at least 5 changed cells in its 3 x 3 neighbourhood. Glitter
     // that sparkles differently gives loose specks; spaghetti, blobs and parts give solid patches.

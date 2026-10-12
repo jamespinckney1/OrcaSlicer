@@ -72,10 +72,10 @@ int main(int argc, char** argv)
         return 1;
     }
     const CheckResult r = compare(m, *cp, cam, base, z0, cur, zc);
-    std::printf("cp%d %s: %s unexpected=%.0f mm2 missing=%.2f footprint=%d valid=%d/%d threshold=%.1f colour=%s\n", cp->index,
+    std::printf("cp%d %s: %s unexpected=%.0f mm2 missing=%.2f footprint=%d valid=%d/%d threshold=%.1f colour=%s%s\n", cp->index,
                 checkpoint_label(*cp).c_str(), r.verdict == Verdict::Pass ? "PASS" : r.verdict == Verdict::Fail ? "FAIL" : "UNSURE",
                 r.unexpected_mm2, r.missing_fraction, r.footprint_cells, r.valid_cells, r.bed_cells, r.threshold,
-                m.first_layer_colour().c_str());
+                m.first_layer_colour().c_str(), r.light_filament ? " (light: darker patches are shadows)" : "");
     for (const auto& a : r.alignment.anchors)
         std::printf("   part at (%.0f,%.0f) offset (%.0f,%.0f)\n", a.x, a.y, a.dx, a.dy);
     for (const auto& s : r.reasons)
