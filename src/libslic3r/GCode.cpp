@@ -2,6 +2,7 @@
 #include "BoundingBox.hpp"
 #include "Circle.hpp"
 #include "Config.hpp"
+#include "GCode/ShopHotUnload.hpp"
 #include "GCode/GCodeProcessor.hpp"
 #include "Flow.hpp"
 #include "GCode/ThumbnailData.hpp"
@@ -1380,6 +1381,13 @@ static std::vector<Vec2d> get_path_of_change_filament(const Print& print)
                 }
             }
             toolchange_gcode_str = gcodegen.placeholder_parser_process("change_filament_gcode", change_filament_gcode, new_filament_id, &config);
+            // Print shop: QIDI Box filament changes unload hot, whatever the printer profile says.
+            if (old_filament_id != -1) {
+                const FullPrintConfig& cfg    = gcodegen.config();
+                const size_t           old_fi = gcodegen.get_filament_config_index(old_filament_id);
+                toolchange_gcode_str = shop_hot_unload(toolchange_gcode_str, shop_unload_temperature(cfg.nozzle_temperature.get_at(old_fi),
+                                                                                                     cfg.nozzle_temperature_range_high.get_at(old_fi)));
+            }
 
             check_add_eol(toolchange_gcode_str);
 
@@ -10590,6 +10598,13 @@ std::string GCode::set_extruder(unsigned int new_filament_id, double print_z, bo
         dyn_config.set_key_value("toolchange_z", new ConfigOptionFloat(print_z));
 
         toolchange_gcode_parsed = placeholder_parser_process("change_filament_gcode", change_filament_gcode, new_filament_id, &dyn_config);
+        // Print shop: QIDI Box filament changes unload hot, whatever the printer profile says.
+        if (old_filament_id != -1) {
+            const size_t old_fi     = get_filament_config_index(old_filament_id);
+            toolchange_gcode_parsed = shop_hot_unload(toolchange_gcode_parsed,
+                                                      shop_unload_temperature(m_config.nozzle_temperature.get_at(old_fi),
+                                                                              m_config.nozzle_temperature_range_high.get_at(old_fi)));
+        }
         check_add_eol(toolchange_gcode_parsed);
         gcode += toolchange_gcode_parsed;
 

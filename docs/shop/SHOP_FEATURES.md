@@ -92,6 +92,9 @@ applies all three (and the physical printer/host if one was saved). Stored in
   filament's print temperature + 30 C (at least its top temperature, at most 10 C above it) before
   `UNLOAD_T`, and stays at least that hot while the next filament loads and purges the old one
   out; then it returns to print temperature. Matte PETG jammed when unloaded at print temperature.
+  The G-code export enforces the same rule (`GCode/ShopHotUnload.*`) on any change G-code that calls
+  `UNLOAD_T`, so it survives an overwritten printer profile, a user preset or a project's own
+  settings; on change G-code that already does it, it changes nothing.
 
 Setup: add the Plus 4 as a physical printer with host type Moonraker, connect it on the Device
 tab, then use the sidebar filament sync.
