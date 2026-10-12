@@ -36,4 +36,7 @@ void show_failure_check_event(const FailureCheckEvent& ev);
 // Guided camera calibration for a Moonraker printer. UI thread only.
 void show_camera_calibration(wxWindow* parent, const std::string& print_host);
 
+// Camera calibration from a test print of dots (modeless; one at a time). UI thread only.
+void show_camera_test_print_calibration(wxWindow* parent, const std::string& print_host);
+
 }} // namespace Slic3r::GUI

@@ -73,6 +73,7 @@ private:
     wxStaticText* m_shop_status{nullptr};
     wxButton*     m_btn_full_mesh{nullptr};
     wxButton*     m_btn_camera_cal{nullptr};
+    wxButton*     m_btn_camera_print{nullptr};
     wxStaticText* m_fc_status{nullptr};
     class wxTimer* m_fc_timer{nullptr};
     class wxCollapsiblePane* m_mesh_pane{nullptr};

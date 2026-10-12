@@ -392,10 +392,22 @@ void PrinterWebView::build_shop_bar(wxBoxSizer* sizer)
         }
         show_camera_calibration(this, root);
     });
+    m_btn_camera_print = new wxButton(m_shop_bar, wxID_ANY, _L("Calibrate with a test print..."));
+    m_btn_camera_print->SetToolTip(_L("Calibrates the camera from a quick print of small dots spread over the bed: no clicking, and "
+                                      "more exact than clicking (the G-code says where every dot is)."));
+    m_btn_camera_print->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
+        const std::string root = moonraker_base_url();
+        if (root.empty()) {
+            MessageDialog(this, _L("No printer page is loaded."), _L("Camera calibration"), wxICON_INFORMATION | wxOK).ShowModal();
+            return;
+        }
+        show_camera_test_print_calibration(this, root);
+    });
     m_fc_status = new wxStaticText(m_shop_bar, wxID_ANY, "");
     bar->Add(title, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, FromDIP(8));
     bar->Add(m_btn_full_mesh, 0, wxALIGN_CENTER_VERTICAL | wxTOP | wxBOTTOM, FromDIP(4));
     bar->Add(m_btn_camera_cal, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxTOP | wxBOTTOM, FromDIP(4));
+    bar->Add(m_btn_camera_print, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxTOP | wxBOTTOM, FromDIP(4));
     bar->Add(m_shop_status, 1, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(10));
     bar->Add(m_fc_status, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, FromDIP(10));
     // Failure-check status for this printer, refreshed every few seconds.

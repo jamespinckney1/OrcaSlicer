@@ -375,6 +375,78 @@ int main(int argc, char** argv)
         CHECK(r.verdict == Verdict::Fail, "H2 fails (a blob in a shadow is still brighter than the plate)");
     }
 
+    // ---------- 5. calibration from a test print ----------
+    std::printf("5. Camera calibration from a test print of dots\n");
+    {
+        std::vector<Box> dots;
+        for (double y : {25.0, 110.0, 195.0, 280.0})
+            for (double x : {25.0, 110.0, 195.0, 280.0}) {
+                Box b{x - 6, x + 6, y - 6, y + 6, 0.4, {}};
+                std::memcpy(b.col, white, 3);
+                dots.push_back(b);
+            }
+        Box centre{146.5, 158.5, 146.5, 158.5, 0.4, {}};
+        std::memcpy(centre.col, white, 3);
+        dots.push_back(centre);
+        GCodeModel dm = make_model(dots, 0.4);
+        // A purge line along the front edge, as start G-code prints one: not a dot.
+        for (int k = 0; k < 2; ++k)
+            dm.segments.insert(dm.segments.begin() + dm.layer_first_segment[0], {5.f, float(2 + k * 0.5), 150.f, float(2 + k * 0.5), 0.2f, 0.5f});
+        for (size_t L = 1; L < dm.layer_first_segment.size(); ++L)
+            dm.layer_first_segment[L] += 2;
+        const std::vector<PrintedDot> found = find_printed_dots(dm);
+        // In the photos, a skirt 3 mm outside the dots (a thin white ring), which must not pull their centres.
+        std::vector<Box> printed = dots;
+        for (const Box& e : {Box{16, 289, 16, 16.45, 0.2, {}}, Box{16, 289, 288.55, 289, 0.2, {}}, Box{16, 16.45, 16, 289, 0.2, {}},
+                             Box{288.55, 289, 16, 289, 0.2, {}}}) {
+            printed.push_back(e);
+            std::memcpy(printed.back().col, white, 3);
+        }
+        double worst_c = 0;
+        for (const Box& b : dots) {
+            double best = 1e9;
+            for (const PrintedDot& d : found)
+                best = std::min(best, std::hypot(d.x - 0.5 * (b.x0 + b.x1), d.y - 0.5 * (b.y0 + b.y1)));
+            worst_c = std::max(worst_c, best);
+        }
+        CHECK(found.size() == dots.size() && worst_c < 0.5, "found %zu of %zu dots in the G-code (worst centre %.2f mm), purge line left out",
+              found.size(), dots.size(), worst_c);
+        std::vector<Correspondence> dpts;
+        int located = 0, tried = 0;
+        for (double Z : {10.0, 60.0, 120.0, 170.0}) {
+            const Image before = render(truth, Z, {}), after = render(truth, Z, printed);
+            for (size_t k = 0; k < found.size(); ++k) {
+                const PrintedDot& d = found[k];
+                double u0, v0, u, v, radius, area;
+                if (!dot_search(cal, found, k, -Z + d.top, 40, u0, v0, radius, area))
+                    continue;
+                ++tried;
+                if (locate_dot(before, after, u0, v0, radius, area, u, v)) {
+                    double ut, vt;
+                    tm.project(d.x, d.y, -Z + d.top, ut, vt);
+                    if (std::getenv("FC_VERBOSE") && std::hypot(u - ut, v - vt) > 2)
+                        std::printf("    Z=%.0f dot (%.0f,%.0f): found (%.1f,%.1f) truth (%.1f,%.1f) predicted (%.1f,%.1f)\n", Z, d.x, d.y, u, v, ut, vt, u0, v0);
+                    dpts.push_back({d.x, d.y, -Z + d.top, u, v});
+                    ++located;
+                }
+            }
+        }
+        CHECK(located >= tried * 8 / 10, "located %d of %d dots in the photos", located, tried);
+        CameraModel dcal;
+        CHECK(calibrate_camera(dpts, 640, 480, dcal, err), "calibrate from %zu dot points: rms %.2f px (clicked: %.2f px on these points)",
+              dpts.size(), dcal.rms_px, reprojection_rms(cal, dpts));
+        double dworst = 0;
+        for (double Z : {5.0, 40.0, 120.0, 200.0})
+            for (double x = 10; x <= 295; x += 20)
+                for (double y = 10; y <= 295; y += 20) {
+                    double u0, v0, u1, v1;
+                    if (!tm.project(x, y, -Z, u0, v0) || u0 < 0 || v0 < 0 || u0 >= 640 || v0 >= 480) continue;
+                    if (!dcal.project(x, y, -Z, u1, v1)) { dworst = 1e9; continue; }
+                    dworst = std::max(dworst, std::hypot(u1 - u0, v1 - v0));
+                }
+        CHECK(dworst < worst * 0.5, "worst projection error over the visible bed: %.2f px from dots vs %.2f px from clicks", dworst, worst);
+    }
+
     // ---------- 4. real camera noise ----------
     std::printf("4. Real snapshots a minute apart (same bed height): false-alarm check\n");
     Image a, b;

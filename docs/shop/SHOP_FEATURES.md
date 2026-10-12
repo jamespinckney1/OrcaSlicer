@@ -227,6 +227,15 @@ purge lines count as expected material.
   (`SHOP_CAMERA_POSE`); you click the plate corners at bed heights 10 and 170 mm and the nozzle tip
   at a 3 x 3 grid. The plate's exact size is solved for, so the printable area is only a first
   guess. Saved per printer in `shop/camera/<host>.json`.
+- **Calibration with a test print** (Device tab, "Calibrate with a test print..."; modeless, needs a click
+  calibration to start from): photographs the empty plate at bed heights 10 / 60 / 120 / 170 mm, puts
+  17 dots (12 mm, 0.4 mm tall) spread over the bed into a new project to print with a light filament,
+  and when that print completes photographs the dots at the same heights. The dots' exact centres come
+  from the printed G-code (downloaded from Moonraker; first-layer islands 8-20 mm across, so purge
+  lines and skirts are left out); each is found in the photos near where the current calibration puts
+  it (a changed patch of about the expected size, thin lines removed), giving ~60 exact points at four
+  heights. Saved only when it beats the current calibration on the same points; the replaced one is
+  kept in `shop/camera/testprint/<host>/`. On rendered scenes: worst error 1.7 px vs 11.5 px from clicks.
 - **Files.** Watched jobs: `shop/failure_check/jobs.json` (a restarted slicer resumes watching).
   Per job: `shop/failure_check/jobs/<time>_<name>/` with the G-code copy, every checkpoint photo
   (`cpN.jpg`) and its result (`cpN.json`); the last 15 jobs are kept.

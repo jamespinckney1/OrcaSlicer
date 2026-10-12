@@ -1398,6 +1398,203 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
     return res;
 }
 
+std::vector<PrintedDot> find_printed_dots(const GCodeModel& model)
+{
+    std::vector<PrintedDot> dots;
+    if (model.layer_first_segment.empty() || !model.has_bed())
+        return dots;
+    // Rasterise the first layer on a 0.5 mm grid, then take its islands.
+    constexpr double res = 0.5;
+    const int        W = int(std::ceil((model.bed_max_x - model.bed_min_x) / res)) + 1, H = int(std::ceil((model.bed_max_y - model.bed_min_y) / res)) + 1;
+    std::vector<uint8_t> grid(size_t(W) * H, 0);
+    const size_t s0 = model.layer_first_segment[0];
+    const size_t s1 = model.layer_first_segment.size() > 1 ? model.layer_first_segment[1] : model.segments.size();
+    for (size_t k = s0; k < s1; ++k) {
+        const Segment& sg  = model.segments[k];
+        const double   len = std::hypot(sg.x1 - sg.x0, sg.y1 - sg.y0);
+        const int      n   = std::max(1, int(len / (res * 0.5)));
+        const int      rr  = std::max(1, int(std::ceil(sg.w * 0.5 / res))); // full width, so neighbouring lines join
+        for (int t = 0; t <= n; ++t) {
+            const double x = sg.x0 + (sg.x1 - sg.x0) * t / n, y = sg.y0 + (sg.y1 - sg.y0) * t / n;
+            const int    cx = int((x - model.bed_min_x) / res), cy = int((y - model.bed_min_y) / res);
+            for (int dy = -rr; dy <= rr; ++dy)
+                for (int dx = -rr; dx <= rr; ++dx)
+                    if (cx + dx >= 0 && cy + dy >= 0 && cx + dx < W && cy + dy < H)
+                        grid[size_t(cy + dy) * W + cx + dx] = 1;
+        }
+    }
+    std::vector<uint8_t> seen(grid.size(), 0);
+    for (size_t start = 0; start < grid.size(); ++start) {
+        if (!grid[start] || seen[start])
+            continue;
+        std::vector<size_t> stack{start};
+        seen[start]  = 1;
+        double sx = 0, sy = 0;
+        size_t n  = 0;
+        int    x0 = W, x1 = -1, y0 = H, y1 = -1;
+        while (!stack.empty()) {
+            const size_t i = stack.back();
+            stack.pop_back();
+            const int x = int(i % W), y = int(i / W);
+            sx += x; sy += y; ++n;
+            x0 = std::min(x0, x); x1 = std::max(x1, x); y0 = std::min(y0, y); y1 = std::max(y1, y);
+            for (int dy = -1; dy <= 1; ++dy)
+                for (int dx = -1; dx <= 1; ++dx) {
+                    const int xx = x + dx, yy = y + dy;
+                    if (xx < 0 || yy < 0 || xx >= W || yy >= H)
+                        continue;
+                    const size_t j = size_t(yy) * W + xx;
+                    if (grid[j] && !seen[j]) {
+                        seen[j] = 1;
+                        stack.push_back(j);
+                    }
+                }
+        }
+        const double w = (x1 - x0 + 1) * res, h = (y1 - y0 + 1) * res, area = n * res * res;
+        const double d = std::max(w, h);
+        // A dot: 8-20 mm, about as wide as long, and mostly filled (a disc fills pi/4 of its box).
+        if (d < 8 || d > 20 || std::min(w, h) < 0.8 * d || area < 0.6 * d * d)
+            continue;
+        PrintedDot dot;
+        dot.x    = model.bed_min_x + (sx / n + 0.5) * res;
+        dot.y    = model.bed_min_y + (sy / n + 0.5) * res;
+        dot.size = d;
+        for (const Segment& sg : model.segments) // top: the highest extrusion over the dot
+            if (std::hypot(0.5 * (sg.x0 + sg.x1) - dot.x, 0.5 * (sg.y0 + sg.y1) - dot.y) < 0.5 * d)
+                dot.top = std::max(dot.top, double(sg.z));
+        dots.push_back(dot);
+    }
+    return dots;
+}
+
+bool locate_dot(const Image& before, const Image& after, double u0, double v0, double radius_px, double expected_area_px, double& u,
+                double& v)
+{
+    if (before.empty() || after.empty() || before.w != after.w || before.h != after.h)
+        return false;
+    const int x0 = std::max(0, int(u0 - radius_px)), x1 = std::min(after.w - 1, int(u0 + radius_px));
+    const int y0 = std::max(0, int(v0 - radius_px)), y1 = std::min(after.h - 1, int(v0 + radius_px));
+    if (x1 <= x0 || y1 <= y0)
+        return false;
+    const int          W = x1 - x0 + 1, H = y1 - y0 + 1;
+    std::vector<float> d(size_t(W) * H);
+    for (int y = 0; y < H; ++y)
+        for (int x = 0; x < W; ++x) {
+            const size_t i = (size_t(y0 + y) * after.w + (x0 + x)) * 3;
+            d[size_t(y) * W + x] = (std::abs(int(after.rgb[i]) - before.rgb[i]) + std::abs(int(after.rgb[i + 1]) - before.rgb[i + 1]) +
+                                    std::abs(int(after.rgb[i + 2]) - before.rgb[i + 2])) / 3.0f;
+        }
+    // Threshold well above the window's own noise (the plate's glitter sparkles differently every photo).
+    std::vector<float> tmp = d;
+    const double       med = median(tmp);
+    for (float& x : tmp)
+        x = float(std::abs(x - med));
+    const double thr = std::max(25.0, med + 6.0 * 1.4826 * median(tmp));
+    // Where a dot is big in the photo, keep only pixels whose whole 3 x 3 neighbourhood changed: a skirt or
+    // purge line next to it is a pixel or two wide and would otherwise join it and pull its centre. (A far dot
+    // is only a few pixels tall and would vanish.)
+    const bool erode = expected_area_px >= 80;
+    if (erode) {
+    std::vector<float> solid(d.size(), 0.f);
+    for (int y = 1; y + 1 < H; ++y)
+        for (int x = 1; x + 1 < W; ++x) {
+            bool all = true;
+            for (int dy = -1; dy <= 1 && all; ++dy)
+                for (int dx = -1; dx <= 1 && all; ++dx)
+                    all = d[size_t(y + dy) * W + x + dx] > thr;
+            if (all)
+                solid[size_t(y) * W + x] = d[size_t(y) * W + x];
+        }
+    d.swap(solid);
+    }
+    // Eroding shrinks a dot by about its perimeter.
+    const double area_lo = (erode ? 0.15 : 0.33) * expected_area_px, area_hi = 3.0 * expected_area_px;
+    std::vector<uint8_t> seen(d.size(), 0);
+    double best_score = -1;
+    for (size_t start = 0; start < d.size(); ++start) {
+        if (d[start] <= thr || seen[start])
+            continue;
+        std::vector<size_t> stack{start};
+        seen[start] = 1;
+        double wsum = 0, su = 0, sv = 0;
+        size_t n    = 0;
+        while (!stack.empty()) {
+            const size_t i = stack.back();
+            stack.pop_back();
+            const int x = int(i % W), y = int(i / W);
+            const double wgt = d[i] - thr;
+            wsum += wgt; su += wgt * x; sv += wgt * y; ++n;
+            for (int dy = -1; dy <= 1; ++dy)
+                for (int dx = -1; dx <= 1; ++dx) {
+                    const int xx = x + dx, yy = y + dy;
+                    if (xx < 0 || yy < 0 || xx >= W || yy >= H)
+                        continue;
+                    const size_t j = size_t(yy) * W + xx;
+                    if (d[j] > thr && !seen[j]) {
+                        seen[j] = 1;
+                        stack.push_back(j);
+                    }
+                }
+        }
+        if (n < std::max(4.0, area_lo) || n > area_hi || wsum <= 0)
+            continue;
+        const double cu = x0 + su / wsum + 0.5, cv = y0 + sv / wsum + 0.5;
+        const double dist = std::hypot(cu - u0, cv - v0);
+        if (dist > radius_px)
+            continue;
+        // Prefer big patches near the prediction: a dot over a few sparkling specks.
+        const double score = double(n) / (1.0 + dist / 10.0);
+        if (score > best_score) {
+            best_score = score;
+            u          = cu;
+            v          = cv;
+        }
+    }
+    return best_score > 0;
+}
+
+bool dot_search(const CameraModel& cam, const std::vector<PrintedDot>& dots, size_t i, double h, double max_radius_px, double& u0,
+                double& v0, double& radius_px, double& area_px)
+{
+    const PrintedDot& d = dots[i];
+    if (!cam.project(d.x, d.y, h, u0, v0) || u0 < 0 || v0 < 0 || u0 >= cam.width || v0 >= cam.height)
+        return false;
+    // Area of the projected disc (shoelace over 24 rim points).
+    double area = 0, pu = 0, pv = 0;
+    for (int k = 0; k <= 24; ++k) {
+        const double a = 2 * M_PI * k / 24;
+        double       ru, rv;
+        if (!cam.project(d.x + 0.5 * d.size * std::cos(a), d.y + 0.5 * d.size * std::sin(a), h, ru, rv))
+            return false;
+        if (k > 0)
+            area += pu * rv - ru * pv;
+        pu = ru;
+        pv = rv;
+    }
+    area_px   = 0.5 * std::abs(area);
+    radius_px = max_radius_px;
+    for (size_t j = 0; j < dots.size(); ++j) {
+        double uj, vj;
+        if (j != i && cam.project(dots[j].x, dots[j].y, h, uj, vj))
+            radius_px = std::min(radius_px, 0.5 * std::hypot(uj - u0, vj - v0));
+    }
+    return true;
+}
+
+double reprojection_rms(const CameraModel& cam, const std::vector<Correspondence>& pts)
+{
+    double sum = 0;
+    int    n   = 0;
+    for (const auto& p : pts) {
+        double u, v;
+        if (!cam.project(p.x, p.y, p.h, u, v))
+            continue;
+        sum += (u - p.u) * (u - p.u) + (v - p.v) * (v - p.v);
+        ++n;
+    }
+    return n > 0 ? std::sqrt(sum / n) : -1.0;
+}
+
 Image render_expected_topdown(const GCodeModel& model, size_t segments_done, double mm_per_px)
 {
     Image img;

@@ -108,6 +108,33 @@ struct Correspondence
 // heights. Grouped points get their x/y re-estimated, so the plate's exact size need not be known.
 bool calibrate_camera(std::vector<Correspondence> pts, int width, int height, CameraModel& out, std::string& error);
 
+// ---- calibration from a test print ----
+// A test print of small dots spread over the bed; the G-code says exactly where each one is, so photos of
+// the plate before and after it at several bed heights give exact correspondences, with no clicking.
+
+struct PrintedDot
+{
+    double x = 0, y = 0; // centre (mm), by area
+    double top  = 0;     // height of the dot's top surface (mm)
+    double size = 0;     // larger side of its bounding box (mm)
+};
+// First-layer islands of the G-code that look like dots (round, 8-20 mm across): purge lines, skirts and
+// anything else are left out.
+std::vector<PrintedDot> find_printed_dots(const GCodeModel& model);
+
+// Centre of the material that appeared between two photos near (u0, v0): the changed patch nearest to it
+// within radius_px whose area is within a factor of 3 of expected_area_px, weighted by how much each pixel
+// changed. False when nothing dot-like changed there.
+bool locate_dot(const Image& before, const Image& after, double u0, double v0, double radius_px, double expected_area_px, double& u,
+                double& v);
+// Expected image area (px) of a printed dot, and the window for locate_dot: half the distance to the nearest
+// other dot's predicted position, at most max_radius_px. False when the dot does not project into the image.
+bool dot_search(const CameraModel& cam, const std::vector<PrintedDot>& dots, size_t i, double h, double max_radius_px, double& u0,
+                double& v0, double& radius_px, double& area_px);
+
+// Reprojection error (px, RMS) of a camera on correspondences, or -1 when none projects.
+double reprojection_rms(const CameraModel& cam, const std::vector<Correspondence>& pts);
+
 enum class Verdict { Pass, Fail, Unsure };
 
 enum CellState : uint8_t {
