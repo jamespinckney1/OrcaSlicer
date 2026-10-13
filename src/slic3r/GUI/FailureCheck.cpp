@@ -134,8 +134,9 @@ std::string GCodeModel::first_layer_colour() const
     std::string c = filament_colours[size_t(first_tool)];
     for (char& ch : c)
         ch = char(std::toupper(static_cast<unsigned char>(ch)));
-    // Orca's default first filament colour: most likely never set, so it says nothing about the spool.
-    if (c.size() < 7 || c[0] != '#' || c.compare(0, 7, "#26A69A") == 0)
+    // Orca's default first filament colour: most likely never set, so it says nothing about the spool. A clear
+    // filament ("#RRGGBB00", fully transparent) does not look like its RGB either.
+    if (c.size() < 7 || c[0] != '#' || c.compare(0, 7, "#26A69A") == 0 || (c.size() >= 9 && c.compare(7, 2, "00") == 0))
         return {};
     return c.substr(0, 7);
 }
@@ -497,6 +498,12 @@ std::string CameraModel::to_json() const
     j["park_x"] = park_x;
     j["park_y"] = park_y;
     j["when"]   = when;
+    if (!frame_lines.empty()) {
+        nlohmann::json fl = nlohmann::json::array();
+        for (const auto& l : frame_lines)
+            fl.push_back({l[0], l[1], l[2], l[3]});
+        j["frame_lines"] = fl;
+    }
     return j.dump(2);
 }
 
@@ -519,6 +526,10 @@ bool CameraModel::from_json(const std::string& text, CameraModel& out)
         c.park_x = j.value("park_x", 95.0);
         c.park_y = j.value("park_y", 324.0);
         c.when   = j.value("when", std::string());
+        if (j.contains("frame_lines") && j["frame_lines"].is_array())
+            for (const auto& l : j["frame_lines"])
+                if (l.is_array() && l.size() == 4)
+                    c.frame_lines.push_back({l[0].get<double>(), l[1].get<double>(), l[2].get<double>(), l[3].get<double>()});
         c.valid  = true;
         out      = c;
         return true;
@@ -850,6 +861,34 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
                     head_pts.push_back({u, v});
             }
     const auto head = convex_hull(head_pts);
+    // The plate is glossy enough to mirror the lit toolhead: its reflection lies where the head's mirror image
+    // below the plate is seen, which moves forward as the bed drops (a 70 x 40 mm smear in front of the park
+    // position at 27 mm). Each photo has its own, at its own bed height.
+    auto head_reflection = [&](double bed_z) {
+        std::vector<std::array<double, 2>> pts;
+        for (double dx : {-40.0, 40.0})
+            for (double dy : {-46.0, 22.0})
+                for (double hh : {-2.0, 20.0}) { // the lit shroud around the nozzle; the housing above barely shows
+                    double u, v;
+                    if (camera.project(camera.park_x + dx, camera.park_y + dy, -2.0 * bed_z - hh, u, v))
+                        pts.push_back({u, v});
+                }
+        return convex_hull(pts);
+    };
+    const auto reflection_base = head_reflection(baseline_z), reflection_cur = head_reflection(current_z);
+    // Rod reflections: near a rod's image line, below its top, and within reach of the plate edge (the
+    // reflection starts at the edge and reaches further in as the bed drops).
+    auto on_rod_line = [&](double u, double v) {
+        for (const auto& l : camera.frame_lines) {
+            if (v < l[1])
+                continue;
+            const double du = l[2] - l[0], dv = l[3] - l[1], len = std::hypot(du, dv);
+            if (len > 0 && std::abs(du * (l[1] - v) - (l[0] - u) * dv) / len < 8.0)
+                return true;
+        }
+        return false;
+    };
+    const double rod_reach = 10.0 + 1.2 * std::max(baseline_z, current_z);
     // Sample both photos on a bed-plane grid (2 x 2 samples per cell).
     std::vector<float> base(size_t(W) * H * 3), cur(size_t(W) * H * 3);
     std::vector<uint8_t> valid(size_t(W) * H, 0);
@@ -865,13 +904,17 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
                 continue;
             float acc_b[3] = {0, 0, 0}, acc_c[3] = {0, 0, 0};
             bool  ok = true;
+            const double edge_dist = std::min({x - model.bed_min_x, model.bed_max_x - x, y - model.bed_min_y, model.bed_max_y - y});
+            const bool   rod_zone  = !camera.frame_lines.empty() && edge_dist < rod_reach;
             for (double ox : {-0.25, 0.25})
                 for (double oy : {-0.25, 0.25}) {
                     double ub, vb, uc, vc;
                     float  sb[3], sc[3];
                     if (!camera.project(x + ox * cell, y + oy * cell, -baseline_z, ub, vb) ||
                         !camera.project(x + ox * cell, y + oy * cell, -current_z, uc, vc) || inside_convex(head, ub, vb) ||
-                        inside_convex(head, uc, vc) || !sample(baseline, ub, vb, sb) || !sample(current, uc, vc, sc)) {
+                        inside_convex(head, uc, vc) || inside_convex(reflection_base, ub, vb) || inside_convex(reflection_cur, uc, vc) ||
+                        (rod_zone && (on_rod_line(ub, vb) || on_rod_line(uc, vc))) || !sample(baseline, ub, vb, sb) ||
+                        !sample(current, uc, vc, sc)) {
                         ok = false;
                         break;
                     }

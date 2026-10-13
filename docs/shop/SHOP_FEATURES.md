@@ -226,6 +226,12 @@ purge lines count as expected material.
   - Unexpected material: solid patches (most of each cell's neighbours changed) beyond a margin of
     8 mm plus the printed height (tall parts cast shadows and reflect light), counted only where at
     least 32 mm2 lies a further 16 mm out; 3 cm2 or more fails the check.
+  - Reflections: the plate mirrors the lit toolhead parked at the back and the vertical guide rods
+    beside it, and the reflections move as the bed drops. The mirror image of the toolhead's lower 20 mm
+    (the shroud) is masked in each photo at its own bed height. A vertical rod's reflection continues
+    the rod's own image line, which is fixed because the camera and rods are fixed to the frame, so plate
+    samples within 8 px of the rod lines in the calibration (`frame_lines`, image segments top first;
+    kept when recalibrating) are ignored within 10 mm + 1.2 x bed height of the plate edge.
   - Shadows: as the bed drops, the gantry's and the parts' shadows move across the plate and hide its
     glitter, which reads like dark filament. When every filament of the job is much lighter than the
     plate (60 levels brighter than its median in the reference photo), only patches that got brighter

@@ -690,6 +690,9 @@ private:
         char              buf[32];
         std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M", std::localtime(&t));
         m_result.when = buf;
+        FailureCheck::CameraModel previous;
+        if (load_shop_camera(m_host, previous))
+            m_result.frame_lines = previous.frame_lines; // rods beside the plate do not move with a recalibration
         if (save_shop_camera(m_host, m_result)) {
             MessageDialog(this, _L("Camera calibration saved. Failure checks on this printer now compare photos automatically."),
                           _L("Camera calibration"), wxICON_INFORMATION | wxOK).ShowModal();
@@ -1163,6 +1166,7 @@ private:
         char              buf[32];
         std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M", std::localtime(&t));
         m_result.when = std::string(buf) + " (test print)";
+        m_result.frame_lines = m_old.frame_lines; // rods beside the plate do not move with a recalibration
         // Keep the calibration it replaces next to it.
         std::strftime(buf, sizeof(buf), "%Y%m%d-%H%M%S", std::localtime(&t));
         std::ofstream(m_dir + "/replaced_" + buf + ".json") << m_old.to_json();

@@ -13,6 +13,7 @@
 // a point at height z on the part is at h = z - toolhead_z, because the bed moves in Z and the camera
 // is fixed to the frame (Qidi Plus 4 and other CoreXY printers with a Z bed).
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -88,6 +89,10 @@ struct CameraModel
     double      park_x = 95;  // toolhead position while parked at a checkpoint
     double      park_y = 324;
     std::string when;
+    // Image segments (u1, v1, u2, v2), top first, of vertical rods fixed in the frame beside the plate. The plate
+    // mirrors them, and a vertical rod's reflection continues its own image line, so plate samples near the
+    // line below its top, within reach of the plate's edge, are ignored.
+    std::vector<std::array<double, 4>> frame_lines;
 
     // To observed (distorted) pixels; false when the point is behind the camera.
     bool        project(double x, double y, double h, double& u, double& v) const;
