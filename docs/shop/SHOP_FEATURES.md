@@ -115,10 +115,10 @@ applies all three (and the physical printer/host if one was saved). Stored in
   The G-code export enforces the same rule (`GCode/ShopHotUnload.*`) on any change G-code that calls
   `UNLOAD_T`, so it survives an overwritten printer profile, a user preset or a project's own
   settings; on change G-code that already does it, it changes nothing.
-* Unloads outside the change G-code (touchscreen, end G-code, the Box dialog) go through the printer's
-  `EXTRUDER_UNLOAD`; `docs/shop/plus4/hot_unload.cfg` wraps it to heat first by the same rule, from the
-  slot's filament as the Box reports it (PETG-Tough 240-275 C: 275 C), then restores the nozzle target.
-  Appended to the printer's `gcode_macro.cfg` like `failure_check.cfg`.
+* Unloads outside the change G-code (touchscreen, end G-code, the Box dialog) are not heated.
+  `docs/shop/plus4/hot_unload.cfg` tried a printer macro that renamed `EXTRUDER_UNLOAD`; it is retired
+  and must not be installed: the Box module registers that command late on some restarts, and Klipper
+  then halts ("Existing command 'EXTRUDER_UNLOAD' not found in gcode_macro rename").
 
 * Box slots for classic uploads (`ShopBoxMapping.*`): the printer loads each tool from the slot its
   `value_t<n>` saved variable names. Box sync copies only types and colours ("not including AMS slot
