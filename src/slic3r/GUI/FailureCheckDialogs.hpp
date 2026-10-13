@@ -20,6 +20,7 @@ struct FailureCheckEvent
     };
     Mode        mode = Mode::Review;
     std::string host, api, job_name, label;
+    std::string review_reason; // Review: why the photo could not be compared (shown in the title)
     int         index = 0, total = 0;
     std::string photo_path;
     double      z = 0;

@@ -459,6 +459,51 @@ void FailureCheckMonitor::post_event(const FailureCheckEvent& ev)
     });
 }
 
+// True while the checkpoint still holds the printer at the park position (from the camera calibration).
+static bool still_parked(const std::string& api)
+{
+    std::string body;
+    if (!http_get(api + "/printer/objects/query?toolhead=position&" + Http::url_encode("gcode_macro SHOP_CHECKPOINT") + "=waiting", body, 5))
+        return true; // cannot tell: keep today's behaviour
+    const auto j = nlohmann::json::parse(body, nullptr, false);
+    try {
+        const auto& st  = j.at("result").at("status");
+        const auto& pos = st.at("toolhead").at("position");
+        const double px = 95, py = 324; // SHOP_CHECKPOINT parks at X95 Y324
+        return st.at("gcode_macro SHOP_CHECKPOINT").value("waiting", 0) == 1 &&
+               std::hypot(pos[0].get<double>() - px, pos[1].get<double>() - py) < 5.0;
+    } catch (...) {
+        return true;
+    }
+}
+
+// The reference photo (cp0) of the most recent earlier job that has one: the empty plate as it was before
+// that print, normally the same plate and side (the camera calibration's photos may show another, whose
+// printed markings then read as material). `z` is that job's toolhead Z at the reference, which equals its
+// first-layer checkpoints' (cp1.json).
+static bool previous_reference(const std::string& this_dir, FailureCheck::Image& img, double& z)
+{
+    boost::system::error_code ec;
+    std::vector<fs::path>     dirs;
+    for (fs::directory_iterator it(fc_dir() + "/jobs", ec), end; !ec && it != end; it.increment(ec))
+        if (fs::is_directory(it->path()) && fs::path(this_dir).filename() != it->path().filename())
+            dirs.push_back(it->path());
+    std::sort(dirs.rbegin(), dirs.rend()); // newest first (folders start with the upload time)
+    for (const fs::path& d : dirs) {
+        if (d.filename().string() > fs::path(this_dir).filename().string())
+            continue; // a later job: not "before" this one
+        std::string bytes, text;
+        if (!read_file((d / "cp0.jpg").string(), bytes) || !read_file((d / "cp1.json").string(), text))
+            continue;
+        const auto j = nlohmann::json::parse(text, nullptr, false);
+        if (j.is_discarded() || !j.contains("z") || !j["z"].is_number() || !shop_decode_image(bytes, img))
+            continue;
+        z = j["z"].get<double>();
+        return true;
+    }
+    return false;
+}
+
 void FailureCheckMonitor::notify_hold(const FailureCheckEvent& ev)
 {
     ShopNotify::Message msg;
@@ -490,10 +535,18 @@ void FailureCheckMonitor::handle_checkpoint(Job& job, int index, double z)
         return;
     }
     const std::string label = FailureCheck::checkpoint_label(*cp);
-    std::string       jpeg;
+    // A slicer that starts while the printer is already parked can see the checkpoint just before its 45 s
+    // timeout resumes the print, and photograph the toolhead back over the plate. Give the comparison a
+    // fresh minute first, and use the photo only if the toolhead was still parked when it was taken.
+    shop_send_script(job.api, "UPDATE_DELAYED_GCODE ID=_SHOP_CHECK_TIMEOUT DURATION=60");
+    std::string jpeg;
     if (!http_get(shop_snapshot_url(job.host), jpeg, 10)) {
         shop_send_script(job.api, "SHOP_CHECK_OK"); // fail open
         set_status(job.host, (boost::format(_u8L("Failure check: camera did not answer at \"%1%\"; print continues")) % label).str());
+        return;
+    }
+    if (!still_parked(job.api)) {
+        set_status(job.host, (boost::format(_u8L("Failure check: \"%1%\" missed (the print had already resumed)")) % label).str());
         return;
     }
     const std::string photo = job.dir + "/cp" + std::to_string(index) + ".jpg";
@@ -521,21 +574,36 @@ void FailureCheckMonitor::handle_checkpoint(Job& job, int index, double z)
 
     FailureCheck::CameraModel cam;
     FailureCheck::Image       base, cur;
-    std::string               base_bytes;
-    const bool comparable = load_shop_camera(job.host, cam) && job.has_baseline && read_file(job.dir + "/cp0.jpg", base_bytes) &&
-                            shop_decode_image(base_bytes, base) && shop_decode_image(jpeg, cur) && base.w == cur.w && base.h == cur.h &&
-                            cur.w == cam.width && cur.h == cam.height;
-    if (!comparable) {
-        // Not calibrated (or no reference photo): let the user judge, resuming after a countdown.
-        ev.mode = FailureCheckEvent::Mode::Review;
-        set_status(job.host, (boost::format(_u8L("Failure check: \"%1%\" photo shown for review")) % label).str());
+    std::string               base_bytes, review_reason;
+    double                    base_z         = job.baseline_z;
+    bool                      stand_in_reference = false;
+    if (!load_shop_camera(job.host, cam))
+        review_reason = _u8L("the camera is not calibrated yet");
+    else if (!shop_decode_image(jpeg, cur) || cur.w != cam.width || cur.h != cam.height)
+        review_reason = _u8L("the camera photo does not match the calibration's size");
+    else if (job.has_baseline && read_file(job.dir + "/cp0.jpg", base_bytes) && shop_decode_image(base_bytes, base) && base.w == cur.w &&
+             base.h == cur.h) {
+        // the job's own reference photo
+    } else if (previous_reference(job.dir, base, base_z) && base.w == cur.w && base.h == cur.h) {
+        // The printer parked for the reference photo while the slicer was closed: compare with the previous
+        // job's empty plate instead of leaving the whole print unchecked.
+        stand_in_reference = true;
+    } else
+        review_reason = _u8L("this job has no reference photo of the empty plate");
+    if (!review_reason.empty()) {
+        // Nothing to compare with: let the user judge, resuming after a countdown.
+        ev.mode          = FailureCheckEvent::Mode::Review;
+        ev.review_reason = review_reason;
+        set_status(job.host, (boost::format(_u8L("Failure check: \"%1%\" photo shown for review (%2%)")) % label % review_reason).str());
         post_event(ev);
         return;
     }
     // First-layer checks measure each part's offset (calibration error); later checks start from it.
     const bool first_layer = cp->kind == FailureCheck::CheckpointKind::Early || cp->kind == FailureCheck::CheckpointKind::FirstLayer;
-    const FailureCheck::CheckResult res = FailureCheck::compare(*model, *cp, cam, base, job.baseline_z, cur, z,
-                                                                first_layer ? FailureCheck::Alignment() : job.alignment);
+    FailureCheck::CheckResult res = FailureCheck::compare(*model, *cp, cam, base, base_z, cur, z,
+                                                          first_layer ? FailureCheck::Alignment() : job.alignment);
+    if (stand_in_reference)
+        res.reasons.push_back("compared with the previous job's empty-plate photo (this job has no reference photo)");
     if (first_layer && res.alignment.valid())
         job.alignment = res.alignment;
     {
@@ -551,7 +619,8 @@ void FailureCheckMonitor::handle_checkpoint(Job& job, int index, double z)
     case FailureCheck::Verdict::Pass:
         ++job.passed;
         shop_send_script(job.api, "SHOP_CHECK_OK");
-        set_status(job.host, (boost::format(_u8L("Failure check: \"%1%\" passed (%2% of %3%)")) % label % job.passed % (job.total - 1)).str());
+        set_status(job.host, (boost::format(_u8L("Failure check: \"%1%\" passed (%2% of %3%)")) % label % job.passed % (job.total - 1)).str() +
+                                 (stand_in_reference ? " " + _u8L("(reference: previous job's photo)") : std::string()));
         break;
     case FailureCheck::Verdict::Fail:
         shop_send_script(job.api, "SHOP_CHECK_HOLD");

@@ -232,7 +232,9 @@ private:
             m_countdown_label->SetLabel("");
             break;
         case FailureCheckEvent::Mode::Review:
-            m_title->SetLabel(_L("Checkpoint photo for review (the camera is not calibrated yet)") + "\n" + where);
+            m_title->SetLabel(format_wxstr(_L("Checkpoint photo for review (%1%)"),
+                                           m_ev.review_reason.empty() ? _L("it could not be compared") : from_u8(m_ev.review_reason)) +
+                              "\n" + where);
             m_seconds = 25;
             update_countdown();
             m_timer.Start(1000);

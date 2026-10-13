@@ -288,6 +288,16 @@ purge lines count as expected material.
   kept in `shop/camera/testprint/<host>/`. On rendered scenes: worst error 1.7 px vs 11.5 px from clicks;
   on the Plus 4 (2026-10-12): 58 dot positions, 0.63 px average vs 12.6 px for the click calibration,
   after which every saved job lines up with no offset or scale.
+- **Missed reference photo.** The reference is taken at checkpoint 0 only while the slicer runs; if
+  it was closed then, a job compares with the most recent earlier job's reference (`cp0.jpg`, its Z
+  from that job's `cp1.json`): the same plate and side, normally. The camera calibration's empty-plate
+  photos are not used: they can show another plate or side, whose printed markings read as material.
+  The status line and `cpN.json` say when the stand-in was used. A checkpoint that cannot be compared
+  says why in its review window (no calibration, photo size, no reference) instead of always "not
+  calibrated".
+- **Late slicer.** A slicer that starts while the printer is parked can see a checkpoint just before
+  its 45 s timeout resumes the print. Handling a checkpoint first resets the timeout to 60 s, and a
+  photo taken after the toolhead has left the park position (X95 Y324) is discarded as missed.
 - **Files.** Watched jobs: `shop/failure_check/jobs.json` (a restarted slicer resumes watching).
   Per job: `shop/failure_check/jobs/<time>_<name>/` with the G-code copy, every checkpoint photo
   (`cpN.jpg`) and its result (`cpN.json`); the last 15 jobs are kept.
