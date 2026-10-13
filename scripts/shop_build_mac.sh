@@ -23,7 +23,21 @@ export SDKROOT="$XCODE_SDK"
 echo "SDKROOT=$SDKROOT"
 
 cd "$ROOT"
-./build_release_macos.sh -s -x -b -j 8
+# -b skips CMake's configure step, but the cache holds absolute SDK paths: after Xcode replaces its SDK
+# (26.5 -> 27.0 on 2026-10-13) every one of them is stale. Then drop the cache and configure afresh.
+BUILD_ONLY="-b"
+CACHE="$ROOT/build/arm64/CMakeCache.txt"
+if [ ! -f "$CACHE" ]; then
+    BUILD_ONLY=""
+else
+    CACHED_SDK="$(sed -n 's/^CMAKE_OSX_SYSROOT:PATH=//p' "$CACHE")"
+    if [ ! -d "$CACHED_SDK" ] || [ "$(cd "$CACHED_SDK" && pwd -P)" != "$(cd "$SDKROOT" && pwd -P)" ]; then
+        echo "SDK changed since the last configure ($CACHED_SDK); reconfiguring from scratch"
+        rm -f "$CACHE"
+        BUILD_ONLY=""
+    fi
+fi
+./build_release_macos.sh -s -x $BUILD_ONLY -j 8
 if [ "${1:-}" != "--no-install" ]; then
     "$ROOT/scripts/shop_install_mac.sh"
 fi
