@@ -26,6 +26,14 @@ fan and notes. After editing data, run the generator then, per touched vendor:
     python3 scripts/orca_profile_tool.py update-index --vendor <Vendor>
     python3 scripts/orca_profile_tool.py generate-id  --vendor <Vendor>
     python3 scripts/orca_profile_tool.py check        --vendor <Vendor>
+    python3 scripts/shop_profiles/check_load_order.py <Vendor>
+
+The last step checks what `check` does not: every parent exists, is not the preset itself, and is
+listed before its children in `<Vendor>.json`. The slicer loads the lists in order, and one preset
+that fails to load stops it loading the rest of the vendor, printers included (on 2026-10-13 a
+self-inheriting `QIDI PLA-CF @Qidi X-Plus 4 0.2 nozzle` and a child indexed before it hid every
+Plus 4 printer). `--fix` moves parents ahead. The generator picks parents from upstream presets
+only, never from ones it generated.
 
 **Always bump the vendor version after any profile change.** OrcaSlicer runs from an installed copy
 of each vendor bundle in the user's settings folder (`system/<Vendor>`) and only replaces it when the

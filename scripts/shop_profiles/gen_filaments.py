@@ -476,6 +476,11 @@ def main():
         return 1
 
     vendor_names = {v: load_vendor_names(v) for v in {p["vendor"] for p in PRINTERS.values()}}
+    # Parents come from upstream presets only: a preset this script generated earlier can share the name of
+    # the parent it looks for ("QIDI PLA-CF @Qidi X-Plus 4 0.2 nozzle"), which made it inherit itself, and a
+    # preset that fails to load stops the slicer from loading the rest of the vendor (every Plus 4 printer).
+    upstream_names = {v: {n: path for n, path in names.items() if GENERATED_MARK not in path.read_text(encoding="utf-8")}
+                      for v, names in vendor_names.items()}
     bundles = {v: Bundle(v) for v in vendor_names}
     ofl = Bundle("OrcaFilamentLibrary")
     written, skipped = [], []
@@ -535,10 +540,10 @@ def main():
                 for noz in printer["nozzles"]:
                     suffix = f" {noz} nozzle" if noz == "0.2" else ""
                     parent = parent_pat.format(noz=noz, noz_suffix=suffix)
-                    if parent not in vendor_names[vendor]:
+                    if parent not in upstream_names[vendor]:
                         # fall back to the plain-PLA generic for PLA subclasses
                         alt = printer["generic"].get("PLA", "").format(noz=noz, noz_suffix=suffix) if mclass.startswith("PLA") else None
-                        if alt and alt in vendor_names[vendor]:
+                        if alt and alt in upstream_names[vendor]:
                             parent = alt
                         else:
                             skipped.append((product["name"], f"{pkey}/{noz}", f"parent missing: {parent}"))
@@ -546,7 +551,7 @@ def main():
                     # Prefer the product's own base when the bundle already ships one
                     # (Bambu convention: "X @BBL A1" inherits "X @base").
                     own_base = f"{product['name']} @base"
-                    if own_base in vendor_names[vendor]:
+                    if own_base in upstream_names[vendor]:
                         parent = own_base
                     triple = upstream_triple(product["name"], [bundles[vendor], ofl])
                     raw_mvs = bundles[vendor].resolve(parent, "filament_max_volumetric_speed")
@@ -557,6 +562,9 @@ def main():
                     ftype_for_cap = triple[1] if triple else refine_type(product, MATERIALS[product["material"]][1])
                     cap = upstream_caps[pkey].get(ftype_for_cap)
                     name, preset = build_preset(product, pkey, printer, noz, parent, triple, parent_mvs, cap)
+                    if parent == name:
+                        skipped.append((name, pkey, "would inherit itself"))
+                        continue
                     tag = name.partition(" @")[2]
                     out = PROFILES / vendor / "filament" / brand / (name.replace("/", "-") + ".json")
                     existing = find_existing(vendor_names[vendor], product["name"], tag)

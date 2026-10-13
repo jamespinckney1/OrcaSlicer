@@ -1,7 +1,7 @@
 {
     "type": "filament",
     "name": "Creality Hyper PLA-CF @Qidi X-Plus 4 0.2 nozzle",
-    "inherits": "QIDI PLA-CF @Qidi X-Plus 4 0.2 nozzle",
+    "inherits": "Generic PLA @Qidi X-Plus 4 0.2 nozzle",
     "from": "system",
     "setting_id": "skWsHavHprt5uSxi",
     "filament_id": "OFGwT5Av",

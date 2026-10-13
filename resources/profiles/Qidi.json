@@ -1,6 +1,6 @@
 {
 	"name": "Qidi",
-	"version": "02.04.90.20",
+	"version": "02.04.90.21",
 	"force_update": "0",
 	"description": "Qidi configurations",
 	"machine_model_list": [
@@ -7937,6 +7937,10 @@
 			"sub_path": "filament/Creality/Creality Ender-PLA @Qidi X-Plus 4 0.2 nozzle.json"
 		},
 		{
+			"name": "Creality Hyper PLA-CF @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/Creality/Creality Hyper PLA-CF @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
 			"name": "Creality Hyper Rainbow PLA @Qidi X-Plus 4 0.2 nozzle",
 			"sub_path": "filament/Creality/Creality Hyper Rainbow PLA @Qidi X-Plus 4 0.2 nozzle.json"
 		},
@@ -7987,6 +7991,10 @@
 		{
 			"name": "QIDI PLA Wood @Qidi X-Plus 4 0.2 nozzle",
 			"sub_path": "filament/QIDI/QIDI PLA Wood @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "QIDI PLA-CF @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/QIDI/QIDI PLA-CF @Qidi X-Plus 4 0.2 nozzle.json"
 		},
 		{
 			"name": "SUNLU APLA (AntiString PLA) @Qidi X-Plus 4 0.2 nozzle",
@@ -8047,6 +8055,10 @@
 		{
 			"name": "SUNLU PLA Wood @Qidi X-Plus 4 0.2 nozzle",
 			"sub_path": "filament/SUNLU/SUNLU PLA Wood @Qidi X-Plus 4 0.2 nozzle.json"
+		},
+		{
+			"name": "SUNLU PLA-CF @Qidi X-Plus 4 0.2 nozzle",
+			"sub_path": "filament/SUNLU/SUNLU PLA-CF @Qidi X-Plus 4 0.2 nozzle.json"
 		},
 		{
 			"name": "SUNLU Silk PLA+ 2.0 @Qidi X-Plus 4 0.2 nozzle",
@@ -9003,18 +9015,6 @@
 		{
 			"name": "SUNLU PLA Meta @Qidi X-Plus 4 0.8 nozzle",
 			"sub_path": "filament/SUNLU/SUNLU PLA Meta @Qidi X-Plus 4 0.8 nozzle.json"
-		},
-		{
-			"name": "Creality Hyper PLA-CF @Qidi X-Plus 4 0.2 nozzle",
-			"sub_path": "filament/Creality/Creality Hyper PLA-CF @Qidi X-Plus 4 0.2 nozzle.json"
-		},
-		{
-			"name": "QIDI PLA-CF @Qidi X-Plus 4 0.2 nozzle",
-			"sub_path": "filament/QIDI/QIDI PLA-CF @Qidi X-Plus 4 0.2 nozzle.json"
-		},
-		{
-			"name": "SUNLU PLA-CF @Qidi X-Plus 4 0.2 nozzle",
-			"sub_path": "filament/SUNLU/SUNLU PLA-CF @Qidi X-Plus 4 0.2 nozzle.json"
 		}
 	],
 	"machine_list": [
