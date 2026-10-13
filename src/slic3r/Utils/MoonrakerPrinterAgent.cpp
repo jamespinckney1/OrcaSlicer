@@ -930,7 +930,8 @@ bool MoonrakerPrinterAgent::apply_qidi_box_tool_mapping(const std::string& ams_m
             tray = item.get<int>();
         if (tray < 0 || tray > 15)
             continue;
-        const std::string gcode = "SAVE_VARIABLE VARIABLE=value_t" + std::to_string(i) + " VALUE='slot" + std::to_string(tray) + "'";
+        // VALUE='slotN' is rejected by QIDI's Klipper (it strips the outer quotes; a bare word is not a literal).
+        const std::string gcode = "SAVE_VARIABLE VARIABLE=value_t" + std::to_string(i) + " VALUE=\"'slot" + std::to_string(tray) + "'\"";
         BOOST_LOG_TRIVIAL(info) << "MoonrakerPrinterAgent: QIDI Box mapping: " << gcode;
         if (!send_gcode_sync(device_info.dev_id, gcode))
             ok = false;

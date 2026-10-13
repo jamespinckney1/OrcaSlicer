@@ -241,6 +241,7 @@
 #include "NotificationManager.hpp"
 #include "PresetComboBoxes.hpp"
 #include "MsgDialog.hpp"
+#include "ShopBoxMapping.hpp"
 #include "ShopNaming.hpp"
 #include "ShopPrinters.hpp"
 #include "QidiBoxDialog.hpp"
@@ -6623,6 +6624,8 @@ void Sidebar::sync_ams_list(bool is_from_big_sync_btn)
     std::vector<std::pair<DynamicPrintConfig *,std::string>> unknowns;
     auto enable_append  = wxGetApp().app_config->get_bool("enable_append_color_by_sync_ams");
     auto sync_color_only = wxGetApp().app_config->get("sync_ams_filament_mode") == "1";
+    // Print shop: keep the sync window's filament -> Box slot choices for the next classic upload.
+    ShopBox::remember_sync(sync_result.sync_maps, sync_result.direct_sync);
     auto n              = wxGetApp().preset_bundle->sync_ams_list(unknowns, !sync_result.direct_sync, sync_result.sync_maps, enable_append, merge_info, sync_color_only);
     wxString detail;
     for (auto & uk : unknowns) {
@@ -21146,6 +21149,26 @@ void Plater::send_gcode_legacy(int plate_idx, Export3mfProgressFn proFn)
         pDlg->init();
         if (pDlg->ShowModal() != wxID_OK) {
             return;
+        }
+        // Print shop: a QIDI Box printer loads each tool from the slot its tool map names; Box sync does not set
+        // it, so ask which slot each filament of this plate uses and write the map before the upload.
+        if (!use_3mf && (host_type == htMoonraker || host_type == htOctoPrint)) {
+            std::vector<ShopBox::UsedFilament> used;
+            const DynamicPrintConfig cfg     = wxGetApp().preset_bundle->full_config();
+            const auto*              colours = cfg.option<ConfigOptionStrings>("filament_colour");
+            const auto*              types   = cfg.option<ConfigOptionStrings>("filament_type");
+            if (PartPlate* plate = get_partplate_list().get_plate(resolved_plate_idx); plate != nullptr)
+                for (const FilamentInfo& fi : plate->get_slice_filaments_info()) {
+                    if (fi.id < 0)
+                        continue;
+                    ShopBox::UsedFilament u;
+                    u.index  = fi.id;
+                    u.colour = colours && size_t(fi.id) < colours->values.size() ? colours->values[fi.id] : std::string();
+                    u.type   = types && size_t(fi.id) < types->values.size() ? types->values[fi.id] : std::string();
+                    used.push_back(u);
+                }
+            if (!ShopBox::confirm_slots(this, physical_printer_config->opt_string("print_host"), used))
+                return;
         }
 
         config->set_bool("open_device_tab_post_upload", pDlg->switch_to_device_tab());

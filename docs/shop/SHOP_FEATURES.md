@@ -112,6 +112,16 @@ applies all three (and the physical printer/host if one was saved). Stored in
   slot's filament as the Box reports it (PETG-Tough 240-275 C: 275 C), then restores the nozzle target.
   Appended to the printer's `gcode_macro.cfg` like `failure_check.cfg`.
 
+* Box slots for classic uploads (`ShopBoxMapping.*`): the printer loads each tool from the slot its
+  `value_t<n>` saved variable names. Box sync copies only types and colours ("not including AMS slot
+  information"), and the classic Print dialog upload never wrote `value_t<n>`, so a print used the map an
+  earlier one left (a clear filament synced from slot 3 loaded the red slot 2). After Upload, for a
+  Moonraker/OctoPrint host whose printer reports a Box, a window lists the filaments the plate uses with a
+  dropdown of loaded slots, pre-filled from the sync window's choices (remembered as `shop_box_sync`), else
+  an exact colour match, else the n-th loaded slot; OK writes `value_t<n>` (not while the printer is busy).
+  QIDI's Klipper needs `VALUE="'slotN'"`: `VALUE='slotN'` is rejected, which also kept the Device-tab
+  send's mapping from ever applying (fixed).
+
 Setup: add the Plus 4 as a physical printer with host type Moonraker, connect it on the Device
 tab, then use the sidebar filament sync.
 

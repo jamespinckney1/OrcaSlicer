@@ -157,6 +157,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/EditGCodeDialog.hpp
     GUI/StartGCodeLibrary.cpp
     GUI/StartGCodeLibrary.hpp
+    GUI/ShopBoxMapping.cpp
+    GUI/ShopBoxMapping.hpp
     GUI/ShopNaming.cpp
     GUI/ShopNaming.hpp
     GUI/ShopNotify.cpp
