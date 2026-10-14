@@ -11,11 +11,14 @@
 #include "slic3r/Utils/Http.hpp"
 
 #include <boost/algorithm/string/case_conv.hpp>
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/algorithm/string/trim.hpp>
 #include <boost/log/trivial.hpp>
 #include <nlohmann/json.hpp>
 #include <wx/bitmap.h>
 #include <wx/bmpcbox.h>
 #include <wx/button.h>
+#include <wx/checkbox.h>
 #include <wx/dc.h>
 #include <wx/dcmemory.h>
 #include <wx/dialog.h>
@@ -24,7 +27,9 @@
 #include <wx/stattext.h>
 
 #include <algorithm>
+#include <cmath>
 #include <cstdlib>
+#include <sstream>
 
 namespace Slic3r { namespace GUI { namespace ShopBox {
 
@@ -39,7 +44,65 @@ struct Slot
     std::string colour;    // "#RRGGBB"
     std::string name;      // e.g. "PETG-Tough"
     std::string type;      // e.g. "PETG"
+    int         colour_index   = -1; // the Box's label: color_slot<n> (index into [colordict])
+    int         filament_index = -1; //                   filament_slot<n> (index into [fila<n>])
 };
+
+wxColour parse_colour(const std::string& c);
+
+// The Box labels each slot with indexes into QIDI's lists (officiall_filas_list.cfg on the printer), saved
+// as color_slot<n> / filament_slot<n>; the touchscreen edits exactly those.
+struct BoxLists
+{
+    std::map<int, std::string> colours; // [colordict] index -> "#RRGGBB"
+    std::map<int, std::string> types;   // [fila<n>] n -> type ("PETG", ...)
+};
+
+bool fetch_box_lists(const std::string& api, BoxLists& out)
+{
+    std::string body;
+    Http::get(api + "/server/files/config/officiall_filas_list.cfg")
+        .timeout_connect(4)
+        .timeout_max(8)
+        .on_complete([&](std::string b, unsigned status) { if (status == 200) body = std::move(b); })
+        .on_error([](std::string, std::string, unsigned) {})
+        .perform_sync();
+    std::istringstream in(body);
+    std::string        line, section;
+    while (std::getline(in, line)) {
+        boost::algorithm::trim(line);
+        if (line.size() > 2 && line.front() == '[' && line.back() == ']') {
+            section = line.substr(1, line.size() - 2);
+            continue;
+        }
+        const size_t eq = line.find('=');
+        if (eq == std::string::npos)
+            continue;
+        const std::string key = boost::algorithm::trim_copy(line.substr(0, eq)), value = boost::algorithm::trim_copy(line.substr(eq + 1));
+        if (section == "colordict" && !value.empty())
+            out.colours[std::atoi(key.c_str())] = value;
+        else if (section.rfind("fila", 0) == 0 && key == "type")
+            out.types[std::atoi(section.c_str() + 4)] = value;
+    }
+    return !out.colours.empty() && !out.types.empty();
+}
+
+// The QIDI colour closest to a filament colour; a clear filament ("#RRGGBB00") takes QIDI's clear swatch.
+int closest_colour(const BoxLists& lists, const std::string& colour, bool clear)
+{
+    const wxColour want = parse_colour(clear ? std::string("#D9E3ED") : colour);
+    int            best = -1;
+    double         best_d = 1e18;
+    for (const auto& [idx, hex] : lists.colours) {
+        const wxColour c = parse_colour(hex);
+        const double   d = std::pow(c.Red() - want.Red(), 2) + std::pow(c.Green() - want.Green(), 2) + std::pow(c.Blue() - want.Blue(), 2);
+        if (d < best_d) {
+            best_d = d;
+            best = idx;
+        }
+    }
+    return best;
+}
 
 std::map<int, int> load_remembered()
 {
@@ -73,7 +136,7 @@ int to_int(const nlohmann::json& v, int fallback = 0)
 bool fetch_box(const std::string& api, std::vector<Slot>& slots, std::string& state)
 {
     std::string body;
-    Http::get(api + "/printer/objects/query?multi_color_controller&print_stats=state")
+    Http::get(api + "/printer/objects/query?multi_color_controller&print_stats=state&save_variables")
         .timeout_connect(4)
         .timeout_max(8)
         .on_complete([&](std::string b, unsigned status) { if (status == 200) body = std::move(b); })
@@ -108,6 +171,13 @@ bool fetch_box(const std::string& api, std::vector<Slot>& slots, std::string& st
                     s.name = m["filament"].value("filament", std::string());
                     s.type = m["filament"].value("type", std::string());
                 }
+            }
+            if (st.contains("save_variables") && st["save_variables"].contains("variables")) {
+                const auto& vars = st["save_variables"]["variables"];
+                if (vars.contains("color_slot" + std::to_string(i)))
+                    s.colour_index = to_int(vars["color_slot" + std::to_string(i)], -1);
+                if (vars.contains("filament_slot" + std::to_string(i)))
+                    s.filament_index = to_int(vars["filament_slot" + std::to_string(i)], -1);
             }
             slots.push_back(s);
         }
@@ -261,6 +331,18 @@ bool confirm_slots(wxWindow* parent, const std::string& print_host, const std::v
         combos.push_back(combo);
     }
     top->Add(grid, 0, wxLEFT | wxRIGHT, dlg.FromDIP(12));
+    // Sync back: label the chosen slots with these filaments, so the touchscreen and the next Box sync show
+    // what is really loaded (the Box cannot see colours; its labels come from RFID or the touchscreen).
+    BoxLists      lists;
+    const bool    have_lists = !busy && fetch_box_lists(api, lists);
+    wxCheckBox*   relabel    = nullptr;
+    if (have_lists) {
+        relabel = new wxCheckBox(&dlg, wxID_ANY, _L("Also update the Box's slot labels to these filaments"));
+        relabel->SetValue(wxGetApp().app_config->get("shop_box_relabel") != "0");
+        relabel->SetToolTip(_L("The Box cannot see colours: each slot's label comes from the spool's RFID tag or the touchscreen. "
+                               "This sets the chosen slots' colour (closest of QIDI's colours) and, if the type differs, the material."));
+        top->Add(relabel, 0, wxLEFT | wxRIGHT | wxTOP, dlg.FromDIP(12));
+    }
     auto* buttons = dlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL);
     top->Add(buttons, 0, wxEXPAND | wxALL, dlg.FromDIP(12));
     dlg.SetSizerAndFit(top);
@@ -275,10 +357,34 @@ bool confirm_slots(wxWindow* parent, const std::string& print_host, const std::v
     if (busy)
         return true;
 
-    // Write the tool map before the upload starts the print.
+    // Write the tool map before the upload starts the print, and the slot labels when asked.
+    std::vector<std::string> scripts;
+    for (const UsedFilament& f : used)
+        scripts.push_back(tool_map_gcode(f.index, chosen[f.index]));
+    if (relabel != nullptr) {
+        wxGetApp().app_config->set("shop_box_relabel", relabel->GetValue() ? "1" : "0");
+        if (relabel->GetValue())
+            for (const UsedFilament& f : used) {
+                const int slot = chosen[f.index];
+                auto      it   = std::find_if(loaded.begin(), loaded.end(), [slot](const Slot& s) { return s.index == slot; });
+                if (it == loaded.end())
+                    continue;
+                const int colour = closest_colour(lists, f.colour, is_clear(f.colour));
+                if (colour >= 0 && colour != it->colour_index)
+                    scripts.push_back("SAVE_VARIABLE VARIABLE=color_slot" + std::to_string(slot) + " VALUE=" + std::to_string(colour));
+                // Material: keep the slot's own entry when its type already matches (it may name the brand),
+                // otherwise the first QIDI entry of the filament's type.
+                auto cur = lists.types.find(it->filament_index);
+                if (!f.type.empty() && (cur == lists.types.end() || !boost::algorithm::iequals(cur->second, f.type)))
+                    for (const auto& [idx, type] : lists.types)
+                        if (boost::algorithm::iequals(type, f.type)) {
+                            scripts.push_back("SAVE_VARIABLE VARIABLE=filament_slot" + std::to_string(slot) + " VALUE=" + std::to_string(idx));
+                            break;
+                        }
+            }
+    }
     std::string failed;
-    for (const UsedFilament& f : used) {
-        const std::string script = tool_map_gcode(f.index, chosen[f.index]);
+    for (const std::string& script : scripts) {
         bool              ok     = false;
         Http::post(api + "/printer/gcode/script")
             .header("Content-Type", "application/json")

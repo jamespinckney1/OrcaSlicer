@@ -127,6 +127,12 @@ applies all three (and the physical printer/host if one was saved). Stored in
   Moonraker/OctoPrint host whose printer reports a Box, a window lists the filaments the plate uses with a
   dropdown of loaded slots, pre-filled from the sync window's choices (remembered as `shop_box_sync`), else
   an exact colour match, else the n-th loaded slot; OK writes `value_t<n>` (not while the printer is busy).
+  "Also update the Box's slot labels" (on by default, remembered as `shop_box_relabel`) syncs back:
+  the Box cannot see colours, and each slot's label is three saved variables the touchscreen edits,
+  `color_slot<n>` (index into `[colordict]` of the printer's `officiall_filas_list.cfg`, 24 colours),
+  `filament_slot<n>` (index into its `[fila<n>]` entries) and `vendor_slot<n>`. The chosen slots get
+  the closest QIDI colour (a clear filament takes QIDI's clear, #D9E3ED) and, when the slot's material
+  type differs, the first QIDI entry of the filament's type; the Box reports the change at once.
   QIDI's Klipper needs `VALUE="'slotN'"`: `VALUE='slotN'` is rejected, which also kept the Device-tab
   send's mapping from ever applying (fixed).
 
