@@ -8,6 +8,7 @@
 // SHOP_CHECK_OK or SHOP_CHECK_HOLD. Watched jobs are saved, so a restarted slicer picks them up again.
 
 #include "FailureCheck.hpp"
+#include "ShopNotify.hpp"
 
 #include <atomic>
 #include <condition_variable>
@@ -66,6 +67,7 @@ private:
         double           baseline_z   = 0;
         int              total        = 0;
         int              passed       = 0;
+        bool             camera_warned = false; // phone told the camera is not answering (once per job)
         FailureCheck::Alignment alignment; // per-part offsets measured on the first layer
     };
 
@@ -79,6 +81,7 @@ private:
     std::shared_ptr<const FailureCheck::GCodeModel> model_for(const Job& job);
     void post_event(const FailureCheckEvent& ev);
     void notify_hold(const FailureCheckEvent& ev); // phone notification, when a topic is set
+    void notify(const ShopNotify::Message& msg);   // on the UI thread, which owns app_config
 
     mutable std::mutex                 m_mutex;
     std::condition_variable            m_cv;

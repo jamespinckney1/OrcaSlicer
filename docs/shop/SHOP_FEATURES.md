@@ -224,6 +224,11 @@ purge lines count as expected material.
   With no answer in 45 s the printer resumes on its own, so a closed slicer or a Wi-Fi drop never
   strands a print. The checkpoint saves the same states as Qidi's PAUSE, so Resume on the
   touchscreen works during a checkpoint or a hold.
+- **Camera.** The photo is the printer's `/webcam/?action=snapshot`, the same mjpg-streamer (`webcamd`)
+  that Qidi Link's live view uses. It can keep running with a dead capture (it froze when the Box's MCU
+  shut down and Klipper restarted): the stream sends no frames and snapshots time out. A snapshot that
+  gets no answer in 10 s restarts `webcamd` through Moonraker and waits up to 20 s for a photo; still
+  none, the print resumes unchecked and the phone (when notifications are set) is told once per job.
 - **Comparison** (`FailureCheck.*`, no GUI): both photos are resampled onto a 2 mm bed grid using
   the camera calibration and the toolhead Z at each photo (the bed moves in Z, the camera does not),
   staying 10 mm clear of the plate edge.
@@ -278,7 +283,7 @@ purge lines count as expected material.
   follow-up. The server is `https://ntfy.sh` unless `shop_notify_server` names another one. Install
   the ntfy app on the phone and subscribe to the same topic; anyone who knows the topic can read
   it, so pick one that is hard to guess. "Send test notification" saves what is typed and sends one
-  message to it, with the latest checkpoint photo attached when there is one. Pass, uncertain and review checkpoints never notify.
+  message to it, with the latest checkpoint photo attached when there is one. Pass, uncertain and review checkpoints never notify; a camera that stays dead does, once per job.
 - **Camera calibration** (Device tab, printer idle, empty plate): the printer moves to 11 poses
   (`SHOP_CAMERA_POSE`); you click the plate corners at bed heights 10 and 170 mm and the nozzle tip
   at a 3 x 3 grid. The plate's exact size is solved for, so the printable area is only a first

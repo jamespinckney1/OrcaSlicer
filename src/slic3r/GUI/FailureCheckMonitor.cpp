@@ -87,6 +87,34 @@ bool http_get(const std::string& url, std::string& body, long max_s)
     return ok;
 }
 
+// A snapshot, restarting the printer's camera service once when it does not answer. Its mjpg-streamer can
+// keep running with a dead capture (it froze when the Box's MCU shut down and Klipper restarted), which
+// leaves Qidi Link without live view and every checkpoint without a photo until someone restarts it.
+bool snapshot_or_restart_camera(const std::string& api, const std::string& print_host, std::string& jpeg)
+{
+    const std::string url = shop_snapshot_url(print_host);
+    if (http_get(url, jpeg, 10))
+        return true;
+    bool restarted = false;
+    Http::post(api + "/machine/services/restart?service=webcamd")
+        .header("Content-Type", "application/json")
+        .set_post_body(std::string("{}"))
+        .timeout_connect(5)
+        .timeout_max(30)
+        .on_complete([&](std::string, unsigned status) { restarted = status == 200; })
+        .on_error([](std::string, std::string, unsigned) {})
+        .perform_sync();
+    BOOST_LOG_TRIVIAL(warning) << "Shop failure check: camera did not answer; webcamd restart " << (restarted ? "requested" : "FAILED");
+    if (!restarted)
+        return false;
+    for (int i = 0; i < 10; ++i) {
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+        if (http_get(url, jpeg, 5))
+            return true;
+    }
+    return false;
+}
+
 std::string now_stamp(const char* fmt)
 {
     const std::time_t t = std::time(nullptr);
@@ -515,6 +543,11 @@ void FailureCheckMonitor::notify_hold(const FailureCheckEvent& ev)
     msg.tags            = "warning";
     msg.priority        = "high";
     msg.attachment_path = ev.photo_path;
+    notify(msg);
+}
+
+void FailureCheckMonitor::notify(const ShopNotify::Message& msg)
+{
     // ShopNotify reads the topic from app_config, which belongs to the UI thread.
     auto stop = m_stop;
     if (stop->load() || wxTheApp == nullptr)
@@ -540,9 +573,19 @@ void FailureCheckMonitor::handle_checkpoint(Job& job, int index, double z)
     // fresh minute first, and use the photo only if the toolhead was still parked when it was taken.
     shop_send_script(job.api, "UPDATE_DELAYED_GCODE ID=_SHOP_CHECK_TIMEOUT DURATION=60");
     std::string jpeg;
-    if (!http_get(shop_snapshot_url(job.host), jpeg, 10)) {
+    if (!snapshot_or_restart_camera(job.api, job.host, jpeg)) {
         shop_send_script(job.api, "SHOP_CHECK_OK"); // fail open
         set_status(job.host, (boost::format(_u8L("Failure check: camera did not answer at \"%1%\"; print continues")) % label).str());
+        if (!job.camera_warned) {
+            job.camera_warned = true;
+            ShopNotify::Message msg;
+            msg.title = (boost::format(_u8L("Camera not answering: %1%")) % job.job_name).str();
+            msg.body  = (boost::format(_u8L("The camera on %1% did not answer at \"%2%\", even after restarting it. The print continues "
+                                            "without failure checks; power-cycling the printer usually brings the camera back.")) %
+                         job.host % label).str();
+            msg.tags = "warning";
+            notify(msg);
+        }
         return;
     }
     if (!still_parked(job.api)) {
