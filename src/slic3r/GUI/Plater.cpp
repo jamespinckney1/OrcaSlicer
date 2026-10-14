@@ -21157,16 +21157,26 @@ void Plater::send_gcode_legacy(int plate_idx, Export3mfProgressFn proFn)
             const DynamicPrintConfig cfg     = wxGetApp().preset_bundle->full_config();
             const auto*              colours = cfg.option<ConfigOptionStrings>("filament_colour");
             const auto*              types   = cfg.option<ConfigOptionStrings>("filament_type");
-            if (PartPlate* plate = get_partplate_list().get_plate(resolved_plate_idx); plate != nullptr)
-                for (const FilamentInfo& fi : plate->get_slice_filaments_info()) {
-                    if (fi.id < 0)
-                        continue;
-                    ShopBox::UsedFilament u;
-                    u.index  = fi.id;
-                    u.colour = colours && size_t(fi.id) < colours->values.size() ? colours->values[fi.id] : std::string();
-                    u.type   = types && size_t(fi.id) < types->values.size() ? types->values[fi.id] : std::string();
-                    used.push_back(u);
-                }
+            // The plate's slice result names the filaments it uses; get_slice_filaments_info() is only filled
+            // for a plate loaded from a sliced 3MF, so it is the fallback.
+            std::set<int> ids;
+            if (PartPlate* plate = get_partplate_list().get_plate(resolved_plate_idx); plate != nullptr) {
+                if (const GCodeProcessorResult* res = plate->get_slice_result(); res != nullptr)
+                    for (const auto& [id, volume] : res->print_statistics.total_volumes_per_extruder)
+                        ids.insert(int(id));
+                if (ids.empty())
+                    for (const FilamentInfo& fi : plate->get_slice_filaments_info())
+                        ids.insert(fi.id);
+            }
+            for (const int id : ids) {
+                if (id < 0)
+                    continue;
+                ShopBox::UsedFilament u;
+                u.index  = id;
+                u.colour = colours && size_t(id) < colours->values.size() ? colours->values[id] : std::string();
+                u.type   = types && size_t(id) < types->values.size() ? types->values[id] : std::string();
+                used.push_back(u);
+            }
             if (!ShopBox::confirm_slots(this, physical_printer_config->opt_string("print_host"), used))
                 return;
         }

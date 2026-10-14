@@ -124,9 +124,11 @@ applies all three (and the physical printer/host if one was saved). Stored in
   `value_t<n>` saved variable names. Box sync copies only types and colours ("not including AMS slot
   information"), and the classic Print dialog upload never wrote `value_t<n>`, so a print used the map an
   earlier one left (a clear filament synced from slot 3 loaded the red slot 2). After Upload, for a
-  Moonraker/OctoPrint host whose printer reports a Box, a window lists the filaments the plate uses with a
-  dropdown of loaded slots, pre-filled from the sync window's choices (remembered as `shop_box_sync`), else
-  an exact colour match, else the n-th loaded slot; OK writes `value_t<n>` (not while the printer is busy).
+  Moonraker/OctoPrint host whose printer reports a Box, a window lists the filaments the plate uses (from
+  the slice result; the plate's saved filament list exists only for a plate loaded from a sliced 3MF) with a
+  dropdown of loaded slots, pre-filled with the one slot labelled in exactly the filament's colour, else the
+  last sync or upload choice (remembered as `shop_box_sync`, which goes stale when slots are relabelled),
+  else the n-th loaded slot; OK writes `value_t<n>` (not while the printer is busy).
   "Also update the Box's slot labels" (on by default, remembered as `shop_box_relabel`) syncs back:
   the Box cannot see colours, and each slot's label is three saved variables the touchscreen edits,
   `color_slot<n>` (index into `[colordict]` of the printer's `officiall_filas_list.cfg`, 24 colours),

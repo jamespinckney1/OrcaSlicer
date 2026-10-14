@@ -266,15 +266,19 @@ std::string tool_map_gcode(int tool, int slot)
 
 bool confirm_slots(wxWindow* parent, const std::string& print_host, const std::vector<UsedFilament>& used)
 {
-    if (used.empty())
+    if (used.empty()) {
+        BOOST_LOG_TRIVIAL(warning) << "Shop Box: the plate names no used filaments; tool map left as it is";
         return true;
+    }
     std::string       api, state;
     std::vector<Slot> slots;
     {
         wxBusyCursor wait;
         api = shop_resolve_api(print_host);
-        if (api.empty() || !fetch_box(api, slots, state))
+        if (api.empty() || !fetch_box(api, slots, state)) {
+            BOOST_LOG_TRIVIAL(info) << "Shop Box: no Box at " << print_host << " (or no answer); tool map left as it is";
             return true; // not a Box printer, or not reachable: upload as before
+        }
     }
     std::vector<Slot> loaded;
     for (const Slot& s : slots)
@@ -287,20 +291,26 @@ bool confirm_slots(wxWindow* parent, const std::string& print_host, const std::v
         return dlg.ShowModal() == wxID_YES;
     }
 
-    // Defaults: the slot this filament was synced from, else a slot of exactly its colour, else the n-th
-    // loaded slot (the order Box sync fills the filament list in).
+    // Defaults: the one slot labelled with exactly this filament's colour (a clear filament: QIDI's clear),
+    // else the slot it was last synced or sent from, else the n-th loaded slot (the order Box sync fills the
+    // filament list in). The colour comes first because a remembered choice outlives relabelled slots.
     const std::map<int, int> remembered = load_remembered();
     auto default_slot = [&](const UsedFilament& f) -> int {
+        const std::string want = boost::algorithm::to_lower_copy(is_clear(f.colour) ? std::string("#d9e3ed") : f.colour.substr(0, 7));
+        int match = -1, matches = 0;
+        for (size_t k = 0; k < loaded.size(); ++k)
+            if (boost::algorithm::to_lower_copy(loaded[k].colour) == want) {
+                match = int(k);
+                ++matches;
+            }
+        if (matches == 1)
+            return match;
         auto it = remembered.find(f.index);
         if (it != remembered.end())
             for (size_t k = 0; k < loaded.size(); ++k)
                 if (loaded[k].index == it->second)
                     return int(k);
-        if (!is_clear(f.colour))
-            for (size_t k = 0; k < loaded.size(); ++k)
-                if (boost::algorithm::to_lower_copy(loaded[k].colour) == boost::algorithm::to_lower_copy(f.colour.substr(0, 7)))
-                    return int(k);
-        return std::min(f.index, int(loaded.size()) - 1);
+        return match >= 0 ? match : std::min(f.index, int(loaded.size()) - 1);
     };
 
     wxDialog dlg(parent, wxID_ANY, title, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE);
