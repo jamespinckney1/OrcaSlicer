@@ -20,7 +20,9 @@ Creality filament; only YOOPAI-branded products are in its file. The generator u
 generated earlier and never touches upstream ones. Shop printers: Qidi X-Plus 4, Creality
 Ender-3 Pro, Creality CR-10 Smart, Bambu Lab A1. Each preset inherits the vendor bundle's existing
 printer-specific generic for its material and overrides manufacturer temperatures, bed, density,
-fan and notes. After editing data, run the generator then, per touched vendor:
+fan and notes. After editing data, run `python3 scripts/shop_profiles/regen.py`, which does all of
+the following and bumps the vendor version (`--check` only reports whether the committed profiles
+are stale). By hand, run the generator then, per touched vendor:
 
     python3 scripts/orca_profile_tool.py normalize    --vendor <Vendor>
     python3 scripts/orca_profile_tool.py update-index --vendor <Vendor>
