@@ -29,17 +29,34 @@ if [ -z "$IDENTITY" ]; then
     exit 1
 fi
 
-STAGE="$(mktemp -d)/OrcaSlicer.app"
+STAGE_DIR="$(mktemp -d)"
+STAGE="$STAGE_DIR/OrcaSlicer.app"
+PREV="$DEST.previous-$$"
+NEXT="$DEST.new-$$"
+# On any failure: drop the staging copy and, if the old app was already moved aside, put it back,
+# so a failed install never leaves /Applications without OrcaSlicer.
+cleanup() {
+    rm -rf "$STAGE_DIR" "$NEXT"
+    if [ -d "$PREV" ] && [ ! -d "$DEST" ]; then
+        mv "$PREV" "$DEST"
+        echo "Install failed; restored the previous $DEST" >&2
+    fi
+}
+trap cleanup EXIT
+
 ditto "$SRC" "$STAGE"
 xattr -cr "$STAGE"
 codesign --force --deep --timestamp=none --sign "$IDENTITY" "$STAGE"
 codesign --verify --deep --strict "$STAGE"
 
+# Copy beside the destination first, then swap by rename: the copy is the slow step that can fail,
+# and the old app stays in place until it has succeeded.
+ditto "$STAGE" "$NEXT"
 if [ -d "$DEST" ]; then
-    mv "$DEST" "$DEST.previous-$$"
+    mv "$DEST" "$PREV"
 fi
-ditto "$STAGE" "$DEST"
-rm -rf "$DEST.previous-$$" "$(dirname "$STAGE")"
+mv "$NEXT" "$DEST"
+rm -rf "$PREV"
 
 echo "Installed $DEST, signed by: $IDENTITY"
 codesign -dv "$DEST" 2>&1 | grep -E 'Identifier=|TeamIdentifier='

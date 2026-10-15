@@ -9,6 +9,16 @@
 #        scripts/shop_build_mac.sh --no-install
 set -euo pipefail
 
+usage() { sed -n '2,9p' "$0" | sed 's/^# \{0,1\}//'; }
+INSTALL=1
+for arg in "$@"; do
+    case "$arg" in
+        --no-install) INSTALL=0 ;;
+        -h|--help) usage; exit 0 ;;
+        *) echo "Unknown option: $arg" >&2; usage >&2; exit 2 ;;
+    esac
+done
+
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 XCODE_SDK="$(xcrun --sdk macosx --show-sdk-path 2>/dev/null || true)"
 DEV="$(xcode-select -p)"
@@ -25,19 +35,18 @@ echo "SDKROOT=$SDKROOT"
 cd "$ROOT"
 # -b skips CMake's configure step, but the cache holds absolute SDK paths: after Xcode replaces its SDK
 # (26.5 -> 27.0 on 2026-10-13) every one of them is stale. Then drop the cache and configure afresh.
-BUILD_ONLY="-b"
+BUILD_ARGS=(-s -x -j "$(sysctl -n hw.ncpu)")
 CACHE="$ROOT/build/arm64/CMakeCache.txt"
-if [ ! -f "$CACHE" ]; then
-    BUILD_ONLY=""
-else
+if [ -f "$CACHE" ]; then
     CACHED_SDK="$(sed -n 's/^CMAKE_OSX_SYSROOT:PATH=//p' "$CACHE")"
     if [ ! -d "$CACHED_SDK" ] || [ "$(cd "$CACHED_SDK" && pwd -P)" != "$(cd "$SDKROOT" && pwd -P)" ]; then
         echo "SDK changed since the last configure ($CACHED_SDK); reconfiguring from scratch"
         rm -f "$CACHE"
-        BUILD_ONLY=""
+    else
+        BUILD_ARGS+=(-b)
     fi
 fi
-./build_release_macos.sh -s -x $BUILD_ONLY -j 8
-if [ "${1:-}" != "--no-install" ]; then
+./build_release_macos.sh "${BUILD_ARGS[@]}"
+if [ "$INSTALL" = 1 ]; then
     "$ROOT/scripts/shop_install_mac.sh"
 fi
