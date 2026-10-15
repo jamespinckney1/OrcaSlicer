@@ -155,38 +155,6 @@ set(SLIC3R_GUI_SOURCES
     GUI/DragCanvas.hpp
     GUI/EditGCodeDialog.cpp
     GUI/EditGCodeDialog.hpp
-    GUI/StartGCodeLibrary.cpp
-    GUI/StartGCodeLibrary.hpp
-    GUI/ShopBoxMapping.cpp
-    GUI/ShopBoxMapping.hpp
-    GUI/ShopNaming.cpp
-    GUI/ShopNaming.hpp
-    GUI/ShopNotify.cpp
-    GUI/ShopNotify.hpp
-    GUI/ShopPrinters.cpp
-    GUI/ShopPrinters.hpp
-    GUI/QidiBoxDialog.cpp
-    GUI/QidiBoxDialog.hpp
-    GUI/GCodeEditDialog.cpp
-    GUI/GCodeEditDialog.hpp
-    GUI/EnvisionInbox.cpp
-    GUI/EnvisionInbox.hpp
-    GUI/ShopPrintHistory.cpp
-    GUI/ShopPrintHistory.hpp
-    GUI/BedMeshAnalysis.cpp
-    GUI/BedMeshAnalysis.hpp
-    GUI/BedMeshView.cpp
-    GUI/BedMeshView.hpp
-    GUI/FailureCheck.cpp
-    GUI/FailureCheck.hpp
-    GUI/FailureCheckDialogs.cpp
-    GUI/FailureCheckDialogs.hpp
-    GUI/FailureCheckMonitor.cpp
-    GUI/FailureCheckMonitor.hpp
-    GUI/ShopCalibration.cpp
-    GUI/ShopCalibration.hpp
-    GUI/CalibrationLogDialog.cpp
-    GUI/CalibrationLogDialog.hpp
     GUI/EncodedFilament.hpp
     GUI/EncodedFilament.cpp
     GUI/ExtraRenderers.cpp
@@ -862,6 +830,10 @@ set(SLIC3R_GUI_SOURCES
     Utils/wxInspectorPlugins/CustomWidgetsPlugin.cpp
     Utils/wxInspectorPlugins/Registration.hpp
 )
+
+# Print-shop sources (see ShopSources.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/ShopSources.cmake)
+list(APPEND SLIC3R_GUI_SOURCES ${SHOP_GUI_SOURCES})
 
 # Design/CAD tab: parametric sketch UI, its gizmos, and the MCP control socket.
 # All of it sits behind SLIC3R_CAD and links the CAD kernel in libslic3r.

@@ -1,11 +1,8 @@
 #include "ShopPrinters.hpp"
-
-#include "libslic3r/Utils.hpp"
+#include "ShopFiles.hpp"
 
 #include <algorithm>
-#include <boost/filesystem.hpp>
-#include <boost/log/trivial.hpp>
-#include <boost/nowide/fstream.hpp>
+#include <optional>
 #include <nlohmann/json.hpp>
 
 namespace Slic3r { namespace GUI {
@@ -20,7 +17,7 @@ ShopPrinters& ShopPrinters::get()
 
 std::string ShopPrinters::path()
 {
-    return (boost::filesystem::path(data_dir()) / "shop" / "printers.json").string();
+    return shop_path("printers.json").string();
 }
 
 const ShopPrinter* ShopPrinters::find(const std::string& name) const
@@ -56,52 +53,44 @@ void ShopPrinters::load()
 {
     m_loaded = true;
     m_printers.clear();
-    const std::string file = path();
-    if (!boost::filesystem::exists(file))
+    const std::optional<nlohmann::json> j = read_json_file(path());
+    if (!j || !j->is_object())
         return;
-    try {
-        boost::nowide::ifstream in(file);
-        nlohmann::json j = nlohmann::json::parse(in);
-        for (const auto& item : j.value("printers", nlohmann::json::array())) {
-            ShopPrinter p;
-            p.name             = item.value("name", "");
-            p.printer_preset   = item.value("printer_preset", "");
-            p.physical_printer = item.value("physical_printer", "");
-            p.process_preset   = item.value("process_preset", "");
-            p.notes            = item.value("notes", "");
-            for (const auto& f : item.value("filament_presets", nlohmann::json::array()))
+    auto printers = j->find("printers");
+    if (printers == j->end() || !printers->is_array())
+        return;
+    for (const auto& item : *printers) {
+        if (!item.is_object())
+            continue;
+        ShopPrinter p;
+        p.name             = json_get(item, "name", "");
+        p.printer_preset   = json_get(item, "printer_preset", "");
+        p.physical_printer = json_get(item, "physical_printer", "");
+        p.process_preset   = json_get(item, "process_preset", "");
+        p.notes            = json_get(item, "notes", "");
+        auto filaments     = item.find("filament_presets");
+        if (filaments != item.end() && filaments->is_array())
+            for (const auto& f : *filaments)
                 if (f.is_string())
                     p.filament_presets.push_back(f.get<std::string>());
-            if (!p.name.empty() && !p.printer_preset.empty())
-                m_printers.push_back(std::move(p));
-        }
-    } catch (const std::exception& e) {
-        BOOST_LOG_TRIVIAL(error) << "ShopPrinters: cannot read " << file << ": " << e.what();
+        if (!p.name.empty() && !p.printer_preset.empty())
+            m_printers.push_back(std::move(p));
     }
 }
 
 bool ShopPrinters::save() const
 {
-    const std::string file = path();
-    try {
-        boost::filesystem::create_directories(boost::filesystem::path(file).parent_path());
-        nlohmann::json j;
-        j["version"]  = 1;
-        j["printers"] = nlohmann::json::array();
-        for (const auto& p : m_printers)
-            j["printers"].push_back({{"name", p.name},
-                                     {"printer_preset", p.printer_preset},
-                                     {"physical_printer", p.physical_printer},
-                                     {"process_preset", p.process_preset},
-                                     {"filament_presets", p.filament_presets},
-                                     {"notes", p.notes}});
-        boost::nowide::ofstream out(file);
-        out << j.dump(2);
-        return bool(out);
-    } catch (const std::exception& e) {
-        BOOST_LOG_TRIVIAL(error) << "ShopPrinters: cannot write " << file << ": " << e.what();
-        return false;
-    }
+    nlohmann::json j;
+    j["version"]  = 1;
+    j["printers"] = nlohmann::json::array();
+    for (const auto& p : m_printers)
+        j["printers"].push_back({{"name", p.name},
+                                 {"printer_preset", p.printer_preset},
+                                 {"physical_printer", p.physical_printer},
+                                 {"process_preset", p.process_preset},
+                                 {"filament_presets", p.filament_presets},
+                                 {"notes", p.notes}});
+    return write_json_file(path(), j);
 }
 
 }} // namespace Slic3r::GUI

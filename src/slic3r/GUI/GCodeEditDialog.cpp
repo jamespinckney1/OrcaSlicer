@@ -4,6 +4,7 @@
 #include "GUI.hpp"
 #include "I18N.hpp"
 #include "MsgDialog.hpp"
+#include "ShopFiles.hpp"
 #include "format.hpp"
 #include "Widgets/Button.hpp"
 #include "Widgets/DialogButtons.hpp"
@@ -83,15 +84,26 @@ GCodeEditDialog::GCodeEditDialog(wxWindow* parent, const std::string& gcode_path
         wxBusyCursor wait;
         boost::nowide::ifstream in(m_path, std::ios::binary);
         std::stringstream ss;
-        ss << in.rdbuf();
+        if (in)
+            ss << in.rdbuf();
         const std::string text = ss.str();
-        m_editor->ChangeValue(from_u8(text));
-        m_editor->DiscardEdits();
-        size_t lines = 0;
-        for (char c : text)
-            if (c == '\n') ++lines;
-        m_status->SetLabel(format_wxstr(_L("%1%  (%2% lines, %3% KB). Export G-code and Send to printer use this file."),
-                                        from_u8(boost::filesystem::path(m_path).filename().string()), lines, text.size() / 1024));
+        const wxString    wtext = from_u8(text);
+        const wxString    file_name = from_u8(boost::filesystem::path(m_path).filename().string());
+        if (!in || in.bad() || (wtext.empty() && !text.empty())) {
+            // Unreadable file or not valid UTF-8: saving would write empty or garbled G-code.
+            m_load_failed = true;
+            m_editor->SetEditable(false);
+            dlg_btns->GetOK()->Enable(false);
+            m_status->SetLabel(format_wxstr(_L("Could not read %1% as text. Editing is disabled."), file_name));
+        } else {
+            m_editor->ChangeValue(wtext);
+            m_editor->DiscardEdits();
+            size_t lines = 0;
+            for (char c : text)
+                if (c == '\n') ++lines;
+            m_status->SetLabel(format_wxstr(_L("%1%  (%2% lines, %3% KB). Export G-code and Send to printer use this file."),
+                                            file_name, lines, text.size() / 1024));
+        }
     }
 
     SetSizer(main);
@@ -162,15 +174,15 @@ void GCodeEditDialog::go_to_layer()
 
 bool GCodeEditDialog::save()
 {
+    if (m_load_failed)
+        return false;
     try {
         const boost::filesystem::path p(m_path);
         const boost::filesystem::path backup = p.string() + ".orig";
         if (!boost::filesystem::exists(backup))
             boost::filesystem::copy_file(p, backup);
-        boost::nowide::ofstream out(m_path, std::ios::binary | std::ios::trunc);
         const std::string text = into_u8(m_editor->GetValue());
-        out.write(text.data(), std::streamsize(text.size()));
-        if (!out) {
+        if (!write_file_atomic(p, text)) {
             MessageDialog err(this, _L("Could not write the G-code file."), _L("Edit sliced G-code"), wxICON_ERROR | wxOK);
             err.ShowModal();
             return false;

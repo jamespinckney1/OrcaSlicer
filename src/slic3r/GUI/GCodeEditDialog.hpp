@@ -30,6 +30,7 @@ private:
 
     std::string  m_path;
     bool         m_saved = false;
+    bool         m_load_failed = false; // file unreadable or not UTF-8: saving disabled
     wxTextCtrl*  m_editor = nullptr;
     wxTextCtrl*  m_find = nullptr;
     wxSpinCtrl*  m_layer = nullptr;

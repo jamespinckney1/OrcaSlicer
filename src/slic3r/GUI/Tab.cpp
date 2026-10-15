@@ -6087,7 +6087,6 @@ if (is_marlin_flavor)
     apply_searcher();
 }
 
-// this gets executed after preset is loaded and before GUI fields are updated
 // ---- Print-shop: start G-code snippet library -------------------------------------------------
 
 static std::string current_printer_model(const PresetCollection* presets)
@@ -6176,10 +6175,15 @@ void TabPrinter::delete_start_gcode_snippet(wxWindow* parent)
         return;
     StartGCodeLibrary& lib = StartGCodeLibrary::get();
     lib.remove(snippet.name, snippet.printer_model);
-    lib.save();
+    if (!lib.save()) {
+        MessageDialog err(parent, _L("Could not write the start G-code library file") + ":\n" + from_u8(StartGCodeLibrary::path()),
+                          _L("Delete start G-code"), wxICON_ERROR | wxOK);
+        err.ShowModal();
+    }
     refresh_start_gcode_library();
 }
 
+// this gets executed after preset is loaded and before GUI fields are updated
 void TabPrinter::on_preset_loaded()
 {
     refresh_start_gcode_library();
@@ -6337,6 +6341,8 @@ void TabPrinter::clear_pages()
 {
     Tab::clear_pages();
     m_reset_to_filament_color = nullptr;
+    m_start_gcode_lib_combo   = nullptr;
+    m_start_gcode_lib_items.clear();
 }
 
 std::vector<InputShaperType> input_shaper_types_for_flavor(GCodeFlavor flavor)

@@ -27,12 +27,13 @@ wxString fmt_val(double v, int decimals)
 double parse_val(const wxString& s)
 {
     double v;
-    wxString t = s;
+    wxString t = s; // FromDouble above formats in the C locale
     t.Trim(true).Trim(false);
-    if (t.empty() || !t.ToDouble(&v))
+    if (t.empty() || !t.ToCDouble(&v))
         return -1;
     return v;
 }
+wxString write_failed_msg() { return _L("Could not write the calibration log."); }
 } // namespace
 
 CalibrationLogDialog::CalibrationLogDialog(wxWindow* parent)
@@ -165,9 +166,10 @@ void CalibrationLogDialog::add_from_current()
     }
     r.date = ShopCalibration::today();
     ShopCalibration::get().results().push_back(r);
-    ShopCalibration::get().save();
+    const bool saved = ShopCalibration::get().save();
     fill_list(int(ShopCalibration::get().results().size()) - 1);
-    m_status->SetLabel(_L("New entry created from the current presets. Edit the values and click \"Save entry\"."));
+    m_status->SetLabel(saved ? _L("New entry created from the current presets. Edit the values and click \"Save entry\".") :
+                               write_failed_msg());
 }
 
 void CalibrationLogDialog::save_fields()
@@ -190,9 +192,9 @@ void CalibrationLogDialog::save_fields()
     r.notes            = into_u8(m_notes->GetValue());
     if (r.date.empty())
         r.date = ShopCalibration::today();
-    ShopCalibration::get().save();
+    const bool saved = ShopCalibration::get().save();
     fill_list(idx);
-    m_status->SetLabel(_L("Entry saved."));
+    m_status->SetLabel(saved ? _L("Entry saved.") : write_failed_msg());
 }
 
 void CalibrationLogDialog::apply_to_filament()
@@ -203,7 +205,7 @@ void CalibrationLogDialog::apply_to_filament()
         m_status->SetLabel(_L("Select an entry to apply."));
         return;
     }
-    const CalibResult& r = results[idx];
+    const CalibResult r = results[idx]; // copy: selecting a preset below runs arbitrary GUI code
     PresetBundle& bundle = *wxGetApp().preset_bundle;
     Tab* tab = wxGetApp().get_tab(Preset::TYPE_FILAMENT);
     if (!tab)
@@ -214,7 +216,10 @@ void CalibrationLogDialog::apply_to_filament()
             m_status->SetLabel(format_wxstr(_L("Filament preset \"%1%\" no longer exists."), r.filament_preset));
             return;
         }
-        tab->select_preset(r.filament_preset);
+        if (!tab->select_preset(r.filament_preset) || bundle.filaments.get_selected_preset_name() != r.filament_preset) {
+            m_status->SetLabel(format_wxstr(_L("Could not switch to filament preset \"%1%\"; nothing was applied."), r.filament_preset));
+            return;
+        }
     }
     DynamicPrintConfig new_conf = *tab->get_config();
     auto set_float = [&](const char* key, double v) {
@@ -249,9 +254,9 @@ void CalibrationLogDialog::remove_selected()
     if (confirm.ShowModal() != wxID_YES)
         return;
     results.erase(results.begin() + idx);
-    ShopCalibration::get().save();
+    const bool saved = ShopCalibration::get().save();
     fill_list();
-    m_status->SetLabel(_L("Entry deleted."));
+    m_status->SetLabel(saved ? _L("Entry deleted.") : write_failed_msg());
 }
 
 }} // namespace Slic3r::GUI

@@ -1,0 +1,37 @@
+# Print-shop GUI sources. Kept out of CMakeLists.txt so upstream merges of that file stay clean.
+set(SHOP_GUI_SOURCES
+    GUI/StartGCodeLibrary.cpp
+    GUI/StartGCodeLibrary.hpp
+    GUI/ShopBoxMapping.cpp
+    GUI/ShopBoxMapping.hpp
+    GUI/ShopFiles.cpp
+    GUI/ShopFiles.hpp
+    GUI/ShopNaming.cpp
+    GUI/ShopNaming.hpp
+    GUI/ShopNotify.cpp
+    GUI/ShopNotify.hpp
+    GUI/ShopPrinters.cpp
+    GUI/ShopPrinters.hpp
+    GUI/QidiBoxDialog.cpp
+    GUI/QidiBoxDialog.hpp
+    GUI/GCodeEditDialog.cpp
+    GUI/GCodeEditDialog.hpp
+    GUI/EnvisionInbox.cpp
+    GUI/EnvisionInbox.hpp
+    GUI/ShopPrintHistory.cpp
+    GUI/ShopPrintHistory.hpp
+    GUI/BedMeshAnalysis.cpp
+    GUI/BedMeshAnalysis.hpp
+    GUI/BedMeshView.cpp
+    GUI/BedMeshView.hpp
+    GUI/FailureCheck.cpp
+    GUI/FailureCheck.hpp
+    GUI/FailureCheckDialogs.cpp
+    GUI/FailureCheckDialogs.hpp
+    GUI/FailureCheckMonitor.cpp
+    GUI/FailureCheckMonitor.hpp
+    GUI/ShopCalibration.cpp
+    GUI/ShopCalibration.hpp
+    GUI/CalibrationLogDialog.cpp
+    GUI/CalibrationLogDialog.hpp
+)

@@ -1,10 +1,7 @@
 #include "StartGCodeLibrary.hpp"
+#include "ShopFiles.hpp"
 
-#include "libslic3r/Utils.hpp"
-
-#include <boost/filesystem.hpp>
-#include <boost/log/trivial.hpp>
-#include <boost/nowide/fstream.hpp>
+#include <optional>
 #include <nlohmann/json.hpp>
 
 namespace Slic3r { namespace GUI {
@@ -19,7 +16,7 @@ StartGCodeLibrary& StartGCodeLibrary::get()
 
 std::string StartGCodeLibrary::path()
 {
-    return (boost::filesystem::path(data_dir()) / "shop" / "start_gcode_library.json").string();
+    return shop_path("start_gcode_library.json").string();
 }
 
 std::vector<const StartGCodeSnippet*> StartGCodeLibrary::for_printer(const std::string& printer_model) const
@@ -63,42 +60,32 @@ void StartGCodeLibrary::load()
 {
     m_loaded = true;
     m_snippets.clear();
-    const std::string file = path();
-    if (!boost::filesystem::exists(file))
+    const std::optional<nlohmann::json> j = read_json_file(path());
+    if (!j || !j->is_object())
         return;
-    try {
-        boost::nowide::ifstream in(file);
-        nlohmann::json j = nlohmann::json::parse(in);
-        for (const auto& item : j.value("snippets", nlohmann::json::array())) {
-            StartGCodeSnippet s;
-            s.name          = item.value("name", "");
-            s.printer_model = item.value("printer_model", "");
-            s.gcode         = item.value("gcode", "");
-            if (!s.name.empty())
-                m_snippets.push_back(std::move(s));
-        }
-    } catch (const std::exception& e) {
-        BOOST_LOG_TRIVIAL(error) << "StartGCodeLibrary: cannot read " << file << ": " << e.what();
+    auto snippets = j->find("snippets");
+    if (snippets == j->end() || !snippets->is_array())
+        return;
+    for (const auto& item : *snippets) {
+        if (!item.is_object())
+            continue;
+        StartGCodeSnippet s;
+        s.name          = json_get(item, "name", "");
+        s.printer_model = json_get(item, "printer_model", "");
+        s.gcode         = json_get(item, "gcode", "");
+        if (!s.name.empty())
+            m_snippets.push_back(std::move(s));
     }
 }
 
 bool StartGCodeLibrary::save() const
 {
-    const std::string file = path();
-    try {
-        boost::filesystem::create_directories(boost::filesystem::path(file).parent_path());
-        nlohmann::json j;
-        j["version"]  = 1;
-        j["snippets"] = nlohmann::json::array();
-        for (const auto& s : m_snippets)
-            j["snippets"].push_back({{"name", s.name}, {"printer_model", s.printer_model}, {"gcode", s.gcode}});
-        boost::nowide::ofstream out(file);
-        out << j.dump(2);
-        return bool(out);
-    } catch (const std::exception& e) {
-        BOOST_LOG_TRIVIAL(error) << "StartGCodeLibrary: cannot write " << file << ": " << e.what();
-        return false;
-    }
+    nlohmann::json j;
+    j["version"]  = 1;
+    j["snippets"] = nlohmann::json::array();
+    for (const auto& s : m_snippets)
+        j["snippets"].push_back({{"name", s.name}, {"printer_model", s.printer_model}, {"gcode", s.gcode}});
+    return write_json_file(path(), j);
 }
 
 }} // namespace Slic3r::GUI

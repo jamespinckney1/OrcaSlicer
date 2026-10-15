@@ -1,12 +1,8 @@
 #include "ShopPrintHistory.hpp"
-
-#include "libslic3r/Utils.hpp"
+#include "ShopFiles.hpp"
 
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/log/trivial.hpp>
-#include <boost/nowide/fstream.hpp>
 #include <ctime>
 #include <nlohmann/json.hpp>
 
@@ -30,36 +26,33 @@ namespace ShopPrintHistory {
 
 std::string path()
 {
-    return (boost::filesystem::path(data_dir()) / "shop" / "last_print_filament.json").string();
+    return shop_path("last_print_filament.json").string();
 }
 
 static nlohmann::json load_all()
 {
-    const std::string file = path();
-    if (!boost::filesystem::exists(file))
-        return nlohmann::json::object();
-    try {
-        boost::nowide::ifstream in(file);
-        nlohmann::json j = nlohmann::json::parse(in);
-        if (j.is_object() && j.contains("printers") && j["printers"].is_object())
-            return j["printers"];
-    } catch (const std::exception& e) {
-        BOOST_LOG_TRIVIAL(warning) << "ShopPrintHistory: cannot read " << file << ": " << e.what();
+    const std::optional<nlohmann::json> j = read_json_file(path());
+    if (j && j->is_object()) {
+        auto printers = j->find("printers");
+        if (printers != j->end() && printers->is_object())
+            return *printers;
     }
     return nlohmann::json::object();
 }
 
 std::optional<ShopFilamentRecord> last_filament(const std::string& printer_key)
 {
-    const nlohmann::json all = load_all();
-    if (printer_key.empty() || !all.contains(printer_key) || !all[printer_key].is_object())
+    if (printer_key.empty())
         return std::nullopt;
-    const auto& j = all[printer_key];
+    const nlohmann::json all = load_all();
+    auto it = all.find(printer_key);
+    if (it == all.end() || !it->is_object())
+        return std::nullopt;
     ShopFilamentRecord r;
-    r.preset = j.value("preset", "");
-    r.type   = j.value("type", "");
-    r.color  = j.value("color", "");
-    r.when   = j.value("when", "");
+    r.preset = json_get(*it, "preset", "");
+    r.type   = json_get(*it, "type", "");
+    r.color  = json_get(*it, "color", "");
+    r.when   = json_get(*it, "when", "");
     return r;
 }
 
@@ -72,17 +65,10 @@ void store_last_filament(const std::string& printer_key, const ShopFilamentRecor
     char buf[32];
     std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M", std::localtime(&t));
     all[printer_key] = {{"preset", record.preset}, {"type", record.type}, {"color", record.color}, {"when", buf}};
-    const std::string file = path();
-    try {
-        boost::filesystem::create_directories(boost::filesystem::path(file).parent_path());
-        nlohmann::json root;
-        root["version"]  = 1;
-        root["printers"] = all;
-        boost::nowide::ofstream out(file);
-        out << root.dump(2);
-    } catch (const std::exception& e) {
-        BOOST_LOG_TRIVIAL(error) << "ShopPrintHistory: cannot write " << file << ": " << e.what();
-    }
+    nlohmann::json root;
+    root["version"]  = 1;
+    root["printers"] = all;
+    write_json_file(path(), root);
 }
 
 } // namespace ShopPrintHistory

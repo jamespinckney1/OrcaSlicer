@@ -8795,18 +8795,6 @@ std::vector<std::pair<unsigned int, std::string>> GUI_App::get_selected_presets(
     return ret;
 }
 
-// To notify the user whether he is aware that some preset changes will be lost,
-// UnsavedChangesDialog: "Discard / Save / Cancel"
-// This is called when:
-// - Close Application & Current project isn't saved
-// - Load Project      & Current project isn't saved
-// - Undo / Redo with change of print technologie
-// - Loading snapshot
-// - Loading config_file/bundle
-// UnsavedChangesDialog: "Don't save / Save / Cancel"
-// This is called when:
-// - Exporting config_bundle
-// - Taking snapshot
 // Print shop: a project saved against a system preset with changes, which the user later saved as their own
 // preset (e.g. "... -standard"), opens as "system preset (modified)" and is reported as unsaved changes on
 // every project switch although nothing would be lost. Any modified preset whose settings are exactly those
@@ -8857,6 +8845,18 @@ int GUI_App::shop_adopt_matching_saved_presets()
     return switched;
 }
 
+// To notify the user whether he is aware that some preset changes will be lost,
+// UnsavedChangesDialog: "Discard / Save / Cancel"
+// This is called when:
+// - Close Application & Current project isn't saved
+// - Load Project      & Current project isn't saved
+// - Undo / Redo with change of print technologie
+// - Loading snapshot
+// - Loading config_file/bundle
+// UnsavedChangesDialog: "Don't save / Save / Cancel"
+// This is called when:
+// - Exporting config_bundle
+// - Taking snapshot
 bool GUI_App::check_and_save_current_preset_changes(const wxString& caption, const wxString& header, bool remember_choice/* = true*/, bool dont_save_insted_of_discard/* = false*/)
 {
     shop_adopt_matching_saved_presets();

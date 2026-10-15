@@ -242,6 +242,7 @@
 #include "PresetComboBoxes.hpp"
 #include "MsgDialog.hpp"
 #include "ShopBoxMapping.hpp"
+#include "ShopFiles.hpp"
 #include "ShopNaming.hpp"
 #include "ShopPrinters.hpp"
 #include "QidiBoxDialog.hpp"
@@ -4007,7 +4008,9 @@ void Sidebar::apply_shop_printer(size_t idx)
         bundle.physical_printers.unselect_printer();
     {
         wxWindowUpdateLocker no_updates(filament_panel());
-        wxGetApp().get_tab(Preset::TYPE_PRINTER)->select_preset(m.printer_preset);
+        // false: the user cancelled the unsaved-changes prompt; leave process and filaments alone
+        if (!wxGetApp().get_tab(Preset::TYPE_PRINTER)->select_preset(m.printer_preset))
+            return;
     }
 
     // Process
@@ -4103,7 +4106,11 @@ void Sidebar::delete_shop_printer()
     if (confirm.ShowModal() != wxID_YES)
         return;
     ShopPrinters::get().remove(name);
-    ShopPrinters::get().save();
+    if (!ShopPrinters::get().save()) {
+        MessageDialog err(this, _L("Could not write the shop machines file") + ":\n" + from_u8(ShopPrinters::path()),
+                          _L("Delete shop machine"), wxICON_ERROR | wxOK);
+        err.ShowModal();
+    }
     refresh_shop_printers();
 }
 
@@ -10812,7 +10819,8 @@ wxString Plater::priv::get_export_file(GUI::FileType file_type, const wxString& 
         }
         if (get_project_filename(".3mf").IsEmpty()) {
             const std::string shop_dir = wxGetApp().app_config->get(ShopNaming::kProjectDirKey);
-            if (!shop_dir.empty() && fs::is_directory(shop_dir))
+            boost::system::error_code ec;
+            if (!shop_dir.empty() && fs::is_directory(shop_dir, ec))
                 output_file = fs::path(shop_dir) / output_file.filename();
         }
             break;
@@ -19534,13 +19542,12 @@ static bool set_print_start_flush(const std::string& path, int flush)
     std::string line = text.substr(pos, eol - pos);
     if (!line.empty() && line.back() == '\r')
         line.pop_back(), --eol;
-    const std::regex flush_re(R"(\s+FLUSH=\d+)");
+    static const std::regex flush_re(R"(\s+FLUSH=\d+)");
     line = std::regex_replace(line, flush_re, "");
     line += " FLUSH=" + std::to_string(flush);
     text.replace(pos, eol - pos, line);
-    boost::nowide::ofstream out(path, std::ios::binary | std::ios::trunc);
-    out.write(text.data(), std::streamsize(text.size()));
-    return bool(out);
+    // temp file + rename: a failed write leaves the sliced G-code intact
+    return write_file_atomic(path, text);
 }
 
 bool Plater::check_quick_start_filament()
