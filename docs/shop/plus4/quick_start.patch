@@ -38,7 +38,7 @@
      G0 Z50 F600
      G0 X5 Y5  F6000
      
-@@ -1079,4 +1092,80 @@
+@@ -1079,4 +1092,84 @@
      G4 P1000
      G1 Z4
      G90
@@ -102,22 +102,26 @@
 +[gcode_macro SHOP_FULL_MESH]
 +description: Rebuild the full-bed default mesh used by quick start
 +gcode:
-+    {% set bed = params.BED|default(80)|int %}
-+    M118 Rebuilding full-bed mesh at bed {bed} C
-+    M190 S{bed}
-+    BED_MESH_CLEAR
-+    G28
-+    Z_TILT_ADJUST
-+    G28
-+    get_zoffset
-+    G1 X{150 - printer.probe["x_offset"]} Y{150 - printer.probe["y_offset"]} F9000
-+    G1 Z10 F600
-+    probe
-+    SAVE_Z_OFFSET_TO_BED_MESH
-+    G1 Z10 F600
-+    _BED_MESH_CALIBRATE PROFILE=default
-+    SAVE_VARIABLE VARIABLE=shop_full_mesh_ok VALUE=1
-+    G4 P5000
-+    SAVE_CONFIG_QD
-+    M140 S0
-+    M118 Full-bed mesh saved as default
++    {% if printer.print_stats.state in ["printing", "paused"] %}
++        {action_raise_error("SHOP_FULL_MESH: not while a print is running or paused")}
++    {% else %}
++        {% set bed = params.BED|default(80)|int %}
++        M118 Rebuilding full-bed mesh at bed {bed} C
++        M190 S{bed}
++        BED_MESH_CLEAR
++        G28
++        Z_TILT_ADJUST
++        G28
++        get_zoffset
++        G1 X{150 - printer.probe["x_offset"]} Y{150 - printer.probe["y_offset"]} F9000
++        G1 Z10 F600
++        probe
++        SAVE_Z_OFFSET_TO_BED_MESH
++        G1 Z10 F600
++        _BED_MESH_CALIBRATE PROFILE=default
++        SAVE_VARIABLE VARIABLE=shop_full_mesh_ok VALUE=1
++        G4 P5000
++        SAVE_CONFIG_QD
++        M140 S0
++        M118 Full-bed mesh saved as default
++    {% endif %}

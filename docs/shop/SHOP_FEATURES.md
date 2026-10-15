@@ -116,7 +116,7 @@ applies all three (and the physical printer/host if one was saved). Stored in
   `UNLOAD_T`, so it survives an overwritten printer profile, a user preset or a project's own
   settings; on change G-code that already does it, it changes nothing.
 * Unloads outside the change G-code (touchscreen, end G-code, the Box dialog) are not heated.
-  `docs/shop/plus4/hot_unload.cfg` tried a printer macro that renamed `EXTRUDER_UNLOAD`; it is retired
+  `docs/shop/plus4/retired/hot_unload.cfg` tried a printer macro that renamed `EXTRUDER_UNLOAD`; it is retired
   and must not be installed: the Box module registers that command late on some restarts, and Klipper
   then halts ("Existing command 'EXTRUDER_UNLOAD' not found in gcode_macro rename").
 
