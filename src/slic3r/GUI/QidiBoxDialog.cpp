@@ -16,6 +16,7 @@
 #include <wx/colour.h>
 #include <wx/panel.h>
 #include <wx/stattext.h>
+#include <wx/utils.h>
 
 namespace Slic3r { namespace GUI {
 
@@ -94,11 +95,17 @@ void QidiBoxDialog::refresh(bool fetch)
     if (fetch) {
         auto* agent = wxGetApp().getDeviceManager() ? wxGetApp().getDeviceManager()->get_agent() : nullptr;
         if (agent && agent->get_filament_sync_mode() == FilamentSyncMode::pull) {
-            if (!agent->fetch_filament_info(m_obj->get_dev_id()))
+            bool fetched = false;
+            {
+                wxBusyCursor wait;
+                fetched = agent->fetch_filament_info(m_obj->get_dev_id());
+            }
+            if (!fetched)
                 m_status->SetLabel(_L("The printer did not report a Box. Check the connection and that the Box is enabled."));
             else
                 m_status->SetLabel(_L("Slots refreshed."));
-        }
+        } else
+            m_status->SetLabel(_L("This connection does not fetch the Box on demand; showing the slots as last reported."));
     }
     rebuild_rows();
 }

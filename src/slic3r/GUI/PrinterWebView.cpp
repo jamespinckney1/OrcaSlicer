@@ -551,9 +551,12 @@ void PrinterWebView::on_rebuild_full_mesh()
         })
         .on_error([finish](std::string body, std::string error, unsigned status) {
             std::string detail = error;
-            auto j = nlohmann::json::parse(body, nullptr, false);
-            if (!j.is_discarded() && j.contains("error") && j["error"].contains("message"))
-                detail = j["error"]["message"].get<std::string>();
+            try {
+                auto j = nlohmann::json::parse(body, nullptr, false);
+                if (j.is_object() && j.contains("error") && j["error"].is_object() && j["error"].contains("message") &&
+                    j["error"]["message"].is_string())
+                    detail = j["error"]["message"].get<std::string>();
+            } catch (...) {}
             finish(_L("Mesh rebuild failed") + ": " + from_u8(detail));
         })
         .perform();

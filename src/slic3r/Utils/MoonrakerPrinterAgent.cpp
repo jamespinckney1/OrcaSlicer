@@ -6,6 +6,7 @@
 #include "libslic3r/PresetBundle.hpp"
 #include "slic3r/GUI/GUI_App.hpp"
 #include "slic3r/GUI/DeviceManager.hpp"
+#include "slic3r/GUI/ShopBoxMapping.hpp"
 #include "slic3r/GUI/DeviceCore/DevFilaSystem.h"
 #include "slic3r/GUI/DeviceCore/DevManager.h"
 #include "../GUI/DeviceCore/DevStorage.h"
@@ -362,7 +363,13 @@ int MoonrakerPrinterAgent::start_local_print(PrintParams params, OnUpdateStatusF
 
     // QIDI Box: push the filament->slot mapping chosen in the send dialog so the file's
     // T<n> commands load the right slots.
-    if ((m_qidi_box_detected || available_objects.count("multi_color_controller")) && !params.ams_mapping.empty()) {
+    bool box_listed = false;
+    {
+        // run_status_stream replaces available_objects under payload_mutex.
+        std::lock_guard<std::recursive_mutex> lock(payload_mutex);
+        box_listed = available_objects.count("multi_color_controller") != 0;
+    }
+    if ((m_qidi_box_detected || box_listed) && !params.ams_mapping.empty()) {
         if (update_fn)
             update_fn(PrintingStageSending, 0, "Applying QIDI Box slot mapping...");
         if (!apply_qidi_box_tool_mapping(params.ams_mapping))
@@ -930,8 +937,7 @@ bool MoonrakerPrinterAgent::apply_qidi_box_tool_mapping(const std::string& ams_m
             tray = item.get<int>();
         if (tray < 0 || tray > 15)
             continue;
-        // VALUE='slotN' is rejected by QIDI's Klipper (it strips the outer quotes; a bare word is not a literal).
-        const std::string gcode = "SAVE_VARIABLE VARIABLE=value_t" + std::to_string(i) + " VALUE=\"'slot" + std::to_string(tray) + "'\"";
+        const std::string gcode = GUI::ShopBox::tool_map_gcode(int(i), tray);
         BOOST_LOG_TRIVIAL(info) << "MoonrakerPrinterAgent: QIDI Box mapping: " << gcode;
         if (!send_gcode_sync(device_info.dev_id, gcode))
             ok = false;

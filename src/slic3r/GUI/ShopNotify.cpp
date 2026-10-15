@@ -63,11 +63,24 @@ std::string query(const Message& msg, bool with_body)
     return q;
 }
 
+// The topic is effectively a password (anyone who knows it can read the feed), so logs only show
+// the server and a masked topic.
+std::string masked_url(const std::string& url)
+{
+    const size_t slash = url.rfind('/');
+    if (slash == std::string::npos)
+        return "<url>";
+    const std::string topic = url.substr(slash + 1);
+    return url.substr(0, slash + 1) + topic.substr(0, 3) + "\xE2\x80\xA6(" + std::to_string(topic.size()) + ")";
+}
+
 void post_text(const std::string& url, const Message& msg, DoneFn done)
 {
+    // Http::post must always carry a body.
+    const std::string body = !msg.body.empty() ? msg.body : !msg.title.empty() ? msg.title : std::string(" ");
     Http::post(url + query(msg, false))
         .header("Content-Type", "text/plain; charset=utf-8")
-        .set_post_body(msg.body)
+        .set_post_body(body)
         .timeout_connect(5)
         .timeout_max(30)
         .on_complete([done](std::string, unsigned) {
@@ -75,7 +88,7 @@ void post_text(const std::string& url, const Message& msg, DoneFn done)
                 done({});
         })
         .on_error([url, done](std::string body, std::string error, unsigned status) {
-            BOOST_LOG_TRIVIAL(warning) << "Shop notify: " << url << " failed: " << status << " " << error << " " << body;
+            BOOST_LOG_TRIVIAL(warning) << "Shop notify: " << masked_url(url) << " failed: " << status << " " << error << " " << body;
             if (done)
                 done(status ? "HTTP " + std::to_string(status) + " " + body : error);
         })
@@ -108,7 +121,7 @@ void send_to(const std::string& server, const std::string& topic, const Message&
                 done({});
         })
         .on_error([url, msg, done](std::string body, std::string error, unsigned status) {
-            BOOST_LOG_TRIVIAL(warning) << "Shop notify: attachment to " << url << " failed (" << status << " " << error << " " << body
+            BOOST_LOG_TRIVIAL(warning) << "Shop notify: attachment to " << masked_url(url) << " failed (" << status << " " << error << " " << body
                                        << "), sending text only";
             post_text(url, msg, done);
         })

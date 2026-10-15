@@ -168,7 +168,7 @@ private:
     // Write the slicer's filament->slot mapping into the printer's value_tN saved variables,
     // which QIDI's T<n> macros read (EXTRUDER_LOAD SLOT=slotK). Returns false on send failure.
     bool apply_qidi_box_tool_mapping(const std::string& ams_mapping_json);
-    bool m_qidi_box_detected = false;
+    std::atomic<bool> m_qidi_box_detected{false};
     bool fetch_moonraker_filament_data(std::vector<AmsTrayData>& trays, int& max_lane_index);
 
     // JSON helper methods

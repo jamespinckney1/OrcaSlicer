@@ -32,16 +32,18 @@ bool extruder_temp(const std::string& line, int& target, bool& waits, size_t& va
 {
     static const std::regex m10x(R"(^(M10[49])((?:\s+[A-Z][-0-9.]*)*?)\s+S(\d+))", std::regex::icase);
     static const std::regex set_heater(R"(^SET_HEATER_TEMPERATURE\s+HEATER=extruder\s+TARGET=(\d+)(.*)$)", std::regex::icase);
+    static const std::regex wait_flag(R"(WAIT=1)", std::regex::icase);
+    static const std::regex other_tool(R"(\bT[1-9])", std::regex::icase);
     std::smatch m;
     if (std::regex_search(line, m, set_heater)) {
         target    = std::atoi(m[1].str().c_str());
-        waits     = std::regex_search(m[2].str(), std::regex(R"(WAIT=1)", std::regex::icase));
+        waits     = std::regex_search(m[2].str(), wait_flag);
         value_pos = size_t(m.position(1));
         value_len = size_t(m.length(1));
         return true;
     }
     if (std::regex_search(line, m, m10x)) {
-        if (std::regex_search(m[2].str(), std::regex(R"(\bT[1-9])", std::regex::icase)))
+        if (std::regex_search(m[2].str(), other_tool))
             return false;
         target    = std::atoi(m[3].str().c_str());
         waits     = toupper(static_cast<unsigned char>(m[1].str()[3])) == '9';

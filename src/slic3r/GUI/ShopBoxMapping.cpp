@@ -25,6 +25,7 @@
 #include <wx/sizer.h>
 #include <wx/statbmp.h>
 #include <wx/stattext.h>
+#include <wx/utils.h>
 
 #include <algorithm>
 #include <cmath>
@@ -35,7 +36,8 @@ namespace Slic3r { namespace GUI { namespace ShopBox {
 
 namespace {
 
-constexpr const char* kSyncKey = "shop_box_sync"; // app_config: {"<filament index>": <slot>, ...}
+constexpr const char* kSyncKey     = "shop_box_sync"; // app_config: {"<filament index>": <slot>, ...}
+constexpr const char* kClearSwatch = "#D9E3ED";       // QIDI's swatch for a clear filament
 
 struct Slot
 {
@@ -90,7 +92,7 @@ bool fetch_box_lists(const std::string& api, BoxLists& out)
 // The QIDI colour closest to a filament colour; a clear filament ("#RRGGBB00") takes QIDI's clear swatch.
 int closest_colour(const BoxLists& lists, const std::string& colour, bool clear)
 {
-    const wxColour want = parse_colour(clear ? std::string("#D9E3ED") : colour);
+    const wxColour want = parse_colour(clear ? std::string(kClearSwatch) : colour);
     int            best = -1;
     double         best_d = 1e18;
     for (const auto& [idx, hex] : lists.colours) {
@@ -132,6 +134,32 @@ int to_int(const nlohmann::json& v, int fallback = 0)
     return fallback;
 }
 
+// A string field of an object, or empty when it is missing, null or not a string (one odd field must not
+// hide the whole Box).
+std::string to_str(const nlohmann::json& obj, const char* key)
+{
+    const auto it = obj.find(key);
+    return it != obj.end() && it->is_string() ? it->get<std::string>() : std::string();
+}
+
+// Why a gcode script POST failed, short enough for a dialog: Moonraker's error.message, else the HTTP status.
+std::string script_error(const std::string& body, const std::string& error, unsigned status)
+{
+    std::string reason;
+    const auto  j = nlohmann::json::parse(body, nullptr, false);
+    if (j.is_object() && j.contains("error") && j["error"].is_object())
+        reason = to_str(j["error"], "message");
+    if (reason.empty())
+        reason = status != 0 ? "HTTP " + std::to_string(status) : error;
+    if (reason.size() > 200) {
+        size_t cut = 200;
+        while (cut > 0 && (static_cast<unsigned char>(reason[cut]) & 0xC0) == 0x80) // don't split a UTF-8 sequence
+            --cut;
+        reason = reason.substr(0, cut) + "...";
+    }
+    return reason;
+}
+
 // The Box's slots and the printer state, or false when the printer has no Box (or does not answer).
 bool fetch_box(const std::string& api, std::vector<Slot>& slots, std::string& state)
 {
@@ -166,10 +194,10 @@ bool fetch_box(const std::string& api, std::vector<Slot>& slots, std::string& st
             s.state = states.contains(key) ? to_int(states[key]) : 0;
             if (mats.contains(key) && mats[key].is_object()) {
                 const auto& m = mats[key];
-                s.colour      = m.value("color", std::string());
+                s.colour      = to_str(m, "color");
                 if (m.contains("filament") && m["filament"].is_object()) {
-                    s.name = m["filament"].value("filament", std::string());
-                    s.type = m["filament"].value("type", std::string());
+                    s.name = to_str(m["filament"], "filament");
+                    s.type = to_str(m["filament"], "type");
                 }
             }
             if (st.contains("save_variables") && st["save_variables"].contains("variables")) {
@@ -296,7 +324,7 @@ bool confirm_slots(wxWindow* parent, const std::string& print_host, const std::v
     // filament list in). The colour comes first because a remembered choice outlives relabelled slots.
     const std::map<int, int> remembered = load_remembered();
     auto default_slot = [&](const UsedFilament& f) -> int {
-        const std::string want = boost::algorithm::to_lower_copy(is_clear(f.colour) ? std::string("#d9e3ed") : f.colour.substr(0, 7));
+        const std::string want = boost::algorithm::to_lower_copy(is_clear(f.colour) ? std::string(kClearSwatch) : f.colour.substr(0, 7));
         int match = -1, matches = 0;
         for (size_t k = 0; k < loaded.size(); ++k)
             if (boost::algorithm::to_lower_copy(loaded[k].colour) == want) {
@@ -344,7 +372,11 @@ bool confirm_slots(wxWindow* parent, const std::string& print_host, const std::v
     // Sync back: label the chosen slots with these filaments, so the touchscreen and the next Box sync show
     // what is really loaded (the Box cannot see colours; its labels come from RFID or the touchscreen).
     BoxLists      lists;
-    const bool    have_lists = !busy && fetch_box_lists(api, lists);
+    bool          have_lists = false;
+    if (!busy) {
+        wxBusyCursor wait;
+        have_lists = fetch_box_lists(api, lists);
+    }
     wxCheckBox*   relabel    = nullptr;
     if (have_lists) {
         relabel = new wxCheckBox(&dlg, wxID_ANY, _L("Also update the Box's slot labels to these filaments"));
@@ -402,7 +434,7 @@ bool confirm_slots(wxWindow* parent, const std::string& print_host, const std::v
             .timeout_connect(5)
             .timeout_max(15)
             .on_complete([&](std::string, unsigned status) { ok = status == 200; })
-            .on_error([&](std::string body, std::string err, unsigned) { failed += script + ": " + err + " " + body + "\n"; })
+            .on_error([&](std::string body, std::string err, unsigned status) { failed += script + ": " + script_error(body, err, status) + "\n"; })
             .perform_sync();
         BOOST_LOG_TRIVIAL(info) << "Shop Box: " << script << (ok ? " ok" : " FAILED");
     }
