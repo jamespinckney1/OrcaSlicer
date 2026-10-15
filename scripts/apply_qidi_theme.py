@@ -109,14 +109,17 @@ def main() -> int:
             if not path.is_file() or path.suffix.lower() not in TEXT_SUFFIXES:
                 continue
             try:
-                original = path.read_text(encoding="utf-8")
+                # newline="" keeps CRLF files CRLF, so recolouring never rewrites every line.
+                with open(path, encoding="utf-8", newline="") as f:
+                    original = f.read()
             except UnicodeDecodeError:
                 continue
             updated = recolor(original)
             if updated != original:
                 changed.append(path)
                 if not args.dry_run:
-                    path.write_text(updated, encoding="utf-8")
+                    with open(path, "w", encoding="utf-8", newline="") as f:
+                        f.write(updated)
 
     verb = "would change" if args.dry_run else "changed"
     print(f"{verb} {len(changed)} files")
