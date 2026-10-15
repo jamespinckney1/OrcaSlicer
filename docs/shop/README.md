@@ -22,6 +22,18 @@ place. Quit OrcaSlicer before installing.
 Check a build by launching it with the real settings folder (no `--datadir`): a scratch folder
 starts in first-run state and skips code that only runs once a printer is selected.
 
+## Settings backup
+
+The source holds no personal values: printer addresses, the ntfy topic, camera calibrations, Box
+slot choices and user presets live in the app data folder (`~/Library/Application Support/OrcaSlicer`).
+A build from this branch therefore matches the shop's own, but that folder needs its own backup:
+
+    scripts/shop_backup_settings.sh <private folder>             # copy the settings there
+    scripts/shop_backup_settings.sh --restore <private folder>   # copy them back (OrcaSlicer closed)
+
+`--with-jobs` also copies the failure-check job folders (G-code and photos, hundreds of MB). Keep the
+backup private: it contains the ntfy topic and any printer access codes.
+
 ## Filament profiles
 
     python3 scripts/shop_profiles/regen.py           # regenerate, validate, bump vendor versions
