@@ -1,6 +1,7 @@
 #include "FailureCheck.hpp"
 
 #include <Eigen/Dense>
+#include <boost/filesystem.hpp>
 #include <nlohmann/json.hpp>
 
 #include <algorithm>
@@ -358,6 +359,7 @@ bool write_with_checkpoints(const std::string& in_path, const std::string& out_p
         std::ofstream out(tmp, std::ios::binary | std::ios::trunc);
         if (!out) {
             error = "cannot write " + tmp;
+            std::remove(tmp.c_str());
             return false;
         }
         std::vector<Checkpoint> sorted = checkpoints;
@@ -377,13 +379,18 @@ bool write_with_checkpoints(const std::string& in_path, const std::string& out_p
         }
         if (!out.good()) {
             error = "write failed for " + tmp;
+            out.close();
+            std::remove(tmp.c_str());
             return false;
         }
     }
     in.close();
-    std::remove(out_path.c_str());
-    if (std::rename(tmp.c_str(), out_path.c_str()) != 0) {
+    // Replace in one step: removing out_path first would lose the G-code when in_path == out_path and the rename fails.
+    boost::system::error_code ec;
+    boost::filesystem::rename(tmp, out_path, ec);
+    if (ec) {
         error = "cannot replace " + out_path;
+        std::remove(tmp.c_str());
         return false;
     }
     return true;
@@ -523,8 +530,8 @@ bool CameraModel::from_json(const std::string& text, CameraModel& out)
         c.k1     = j.value("k1", 0.0);
         c.rms_px = j.value("rms_px", 0.0);
         c.points = j.value("points", 0);
-        c.park_x = j.value("park_x", 95.0);
-        c.park_y = j.value("park_y", 324.0);
+        c.park_x = j.value("park_x", kShopParkX);
+        c.park_y = j.value("park_y", kShopParkY);
         c.when   = j.value("when", std::string());
         if (j.contains("frame_lines") && j["frame_lines"].is_array())
             for (const auto& l : j["frame_lines"])
@@ -1595,9 +1602,8 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
             fail = true;
         } else {
             unsure = true;
-            if (!visible)
-                res.reasons.push_back(colour.empty() ? "the job does not say what colour the filament is, so this may be a filament that looks like the plate"
-                                                     : "the filament colour is close to the plate's, so the camera may simply not see it");
+            res.reasons.push_back(colour.empty() ? "the job does not say what colour the filament is, so this may be a filament that looks like the plate"
+                                                 : "the filament colour is close to the plate's, so the camera may simply not see it");
         }
     }
     res.verdict = fail ? Verdict::Fail : unsure ? Verdict::Unsure : Verdict::Pass;

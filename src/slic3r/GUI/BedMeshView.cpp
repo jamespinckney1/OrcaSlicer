@@ -34,6 +34,7 @@ BedMeshCanvas::BedMeshCanvas(wxWindow* parent) : wxPanel(parent, wxID_ANY, wxDef
     Bind(wxEVT_LEFT_DOWN, &BedMeshCanvas::on_mouse, this);
     Bind(wxEVT_LEFT_UP, &BedMeshCanvas::on_mouse, this);
     Bind(wxEVT_MOTION, &BedMeshCanvas::on_mouse, this);
+    Bind(wxEVT_MOUSE_CAPTURE_LOST, [this](wxMouseCaptureLostEvent&) { m_dragging = false; });
     SetToolTip(_L("Drag to rotate the view."));
 }
 
@@ -114,7 +115,9 @@ void BedMeshCanvas::paint()
     // Upsample the grid bilinearly (4 sub-cells per cell) for a smoother surface.
     const size_t R = m_mesh.rows(), C = m_mesh.cols(), sub = 4;
     const size_t NR = (R - 1) * sub + 1, NC = (C - 1) * sub + 1;
-    const auto& src = m_warp_mode ? m_stats.warp : m_mesh.z;
+    // analyze_bed_mesh leaves warp empty when the plane fit fails; show raw heights then.
+    const bool  use_warp = m_warp_mode && m_stats.warp.size() == R && m_stats.warp.front().size() == C;
+    const auto& src = use_warp ? m_stats.warp : m_mesh.z;
     auto sample = [&](double fr, double fc) {
         const size_t r0 = std::min(size_t(fr), R - 2), c0 = std::min(size_t(fc), C - 2);
         const double tr = fr - r0, tc = fc - c0;
@@ -128,7 +131,7 @@ void BedMeshCanvas::paint()
             vmin = std::min(vmin, zz[r][c]);
             vmax = std::max(vmax, zz[r][c]);
         }
-    const double centre = m_warp_mode ? 0.0 : 0.5 * (vmin + vmax);
+    const double centre = use_warp ? 0.0 : 0.5 * (vmin + vmax);
     const double half   = std::max(0.05, std::max(vmax - centre, centre - vmin));
 
     // Projection: bed centred at the origin, rotate about Z, tilt by elevation, exaggerate height.
@@ -232,7 +235,7 @@ void BedMeshCanvas::paint()
     }
     gc->DrawText(wxString::Format("%+.2f", centre + half), lx + lw + 4, ly - 2);
     gc->DrawText(wxString::Format("%+.2f", centre - half), lx + lw + 4, ly + lh - 12);
-    gc->DrawText(m_warp_mode ? _L("warp") : _L("mm"), lx, ly + lh / 2 - 6);
+    gc->DrawText(use_warp ? _L("warp") : _L("mm"), lx, ly + lh / 2 - 6);
 }
 
 // ---- panel ----------------------------------------------------------------------------------
@@ -310,29 +313,40 @@ void BedMeshPanel::refresh_from_printer()
     Layout();
     wxWeakRef<BedMeshPanel> self(this);
     std::thread([self, root]() {
-        auto fetch = [](const std::string& base, std::string& body) {
-            bool ok = false;
-            Http::get(base + "/printer/objects/query?bed_mesh&save_variables")
-                .timeout_connect(4)
-                .timeout_max(20)
-                .on_complete([&](std::string b, unsigned status) { if (status == 200) { body = std::move(b); ok = true; } })
-                .on_error([](std::string, std::string, unsigned) {})
-                .perform_sync();
-            return ok;
-        };
-        std::string body;
-        bool ok = fetch(root, body);
-        if (!ok) {
-            static const std::regex host_re(R"(^(https?://[^/:]+))", std::regex::icase);
-            std::smatch m;
-            if (std::regex_search(root, m, host_re))
-                ok = fetch(m[1].str() + ":7125", body);
-        }
-        BedMesh mesh;
+        // Nothing may escape a detached thread (std::terminate), so failures become an error message.
+        BedMesh     mesh;
         std::string error;
-        const bool parsed = ok && parse_moonraker_bed_mesh(body, "default", mesh, error);
-        if (!ok)
-            error = "could not reach the printer";
+        bool        parsed = false;
+        try {
+            auto fetch = [](const std::string& base, std::string& body) {
+                bool ok = false;
+                Http::get(base + "/printer/objects/query?bed_mesh&save_variables")
+                    .timeout_connect(4)
+                    .timeout_max(20)
+                    .on_complete([&](std::string b, unsigned status) { if (status == 200) { body = std::move(b); ok = true; } })
+                    .on_error([](std::string, std::string, unsigned) {})
+                    .perform_sync();
+                return ok;
+            };
+            std::string body;
+            bool ok = fetch(root, body);
+            if (!ok) {
+                static const std::regex host_re(R"(^(https?://[^/:]+))", std::regex::icase);
+                std::smatch m;
+                if (std::regex_search(root, m, host_re))
+                    ok = fetch(m[1].str() + ":7125", body);
+            }
+            parsed = ok && parse_moonraker_bed_mesh(body, "default", mesh, error);
+            if (!ok)
+                error = "could not reach the printer";
+        } catch (const std::exception& e) {
+            BOOST_LOG_TRIVIAL(error) << "Bed mesh view: fetching the mesh failed: " << e.what();
+            parsed = false;
+            error  = "fetching the mesh failed";
+        } catch (...) {
+            parsed = false;
+            error  = "fetching the mesh failed";
+        }
         wxGetApp().CallAfter([self, parsed, mesh, error]() {
             if (!self)
                 return;

@@ -21,6 +21,9 @@
 
 namespace Slic3r { namespace GUI { namespace FailureCheck {
 
+// Where SHOP_CHECKPOINT parks the toolhead (bed X/Y, mm).
+constexpr double kShopParkX = 95.0, kShopParkY = 324.0;
+
 struct Segment
 {
     float x0, y0, x1, y1;
@@ -86,8 +89,8 @@ struct CameraModel
     double      k1     = 0;   // radial distortion about the image centre, radius normalised by width / 2
     double      rms_px = 0;   // reprojection error of the calibration
     int         points = 0;   // number of calibration points
-    double      park_x = 95;  // toolhead position while parked at a checkpoint
-    double      park_y = 324;
+    double      park_x = kShopParkX; // toolhead position while parked at a checkpoint
+    double      park_y = kShopParkY;
     std::string when;
     // Image segments (u1, v1, u2, v2), top first, of vertical rods fixed in the frame beside the plate. The plate
     // mirrors them, and a vertical rod's reflection continues its own image line, so plate samples near the

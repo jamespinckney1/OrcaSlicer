@@ -3,56 +3,67 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <exception>
 #include <nlohmann/json.hpp>
 
 namespace Slic3r { namespace GUI {
 
 bool parse_moonraker_bed_mesh(const std::string& json, const std::string& profile, BedMesh& out, std::string& error)
 {
-    auto j = nlohmann::json::parse(json, nullptr, false);
-    if (j.is_discarded() || !j.contains("result") || !j["result"].contains("status")) {
-        error = "unexpected response from the printer";
-        return false;
-    }
-    const auto& st = j["result"]["status"];
-    if (!st.contains("bed_mesh") || !st["bed_mesh"].contains("profiles") || !st["bed_mesh"]["profiles"].contains(profile)) {
-        error = "the printer has no \"" + profile + "\" bed mesh saved";
-        return false;
-    }
-    const auto& p  = st["bed_mesh"]["profiles"][profile];
-    const auto& mp = p.value("mesh_params", nlohmann::json::object());
-    out          = BedMesh{};
-    out.profile  = profile;
-    out.min_x    = mp.value("min_x", 0.0);
-    out.max_x    = mp.value("max_x", 0.0);
-    out.min_y    = mp.value("min_y", 0.0);
-    out.max_y    = mp.value("max_y", 0.0);
-    for (const auto& row : p.value("points", nlohmann::json::array())) {
-        std::vector<double> r;
-        for (const auto& v : row)
-            if (v.is_number())
-                r.push_back(v.get<double>());
-        if (!r.empty())
-            out.z.push_back(std::move(r));
-    }
-    const size_t c = out.cols();
-    for (const auto& r : out.z)
-        if (r.size() != c) {
-            error = "the mesh rows have different lengths";
+    // Wrong JSON types throw from nlohmann; report them like any other bad response.
+    try {
+        auto j = nlohmann::json::parse(json, nullptr, false);
+        if (j.is_discarded() || !j.contains("result") || !j["result"].contains("status")) {
+            error = "unexpected response from the printer";
             return false;
         }
-    if (st.contains("save_variables") && st["save_variables"].contains("variables")) {
-        const auto& v = st["save_variables"]["variables"];
-        if (v.contains("shop_full_mesh_ok")) {
-            const auto& ok = v["shop_full_mesh_ok"];
-            out.trusted = ok.is_number() ? ok.get<double>() == 1.0 : (ok.is_string() && ok.get<std::string>() == "1");
+        const auto& st = j["result"]["status"];
+        if (!st.contains("bed_mesh") || !st["bed_mesh"].contains("profiles") || !st["bed_mesh"]["profiles"].contains(profile)) {
+            error = "the printer has no \"" + profile + "\" bed mesh saved";
+            return false;
         }
-    }
-    if (!out.valid()) {
-        error = "the mesh is too small to analyse";
+        const auto& p  = st["bed_mesh"]["profiles"][profile];
+        const auto& mp = p.value("mesh_params", nlohmann::json::object());
+        out          = BedMesh{};
+        out.profile  = profile;
+        out.min_x    = mp.value("min_x", 0.0);
+        out.max_x    = mp.value("max_x", 0.0);
+        out.min_y    = mp.value("min_y", 0.0);
+        out.max_y    = mp.value("max_y", 0.0);
+        for (const auto& row : p.value("points", nlohmann::json::array())) {
+            std::vector<double> r;
+            for (const auto& v : row)
+                if (v.is_number())
+                    r.push_back(v.get<double>());
+            if (!r.empty())
+                out.z.push_back(std::move(r));
+        }
+        const size_t c = out.cols();
+        for (const auto& r : out.z)
+            if (r.size() != c) {
+                error = "the mesh rows have different lengths";
+                return false;
+            }
+        if (st.contains("save_variables") && st["save_variables"].contains("variables")) {
+            const auto& v = st["save_variables"]["variables"];
+            if (v.contains("shop_full_mesh_ok")) {
+                const auto& ok = v["shop_full_mesh_ok"];
+                out.trusted = ok.is_number() ? ok.get<double>() == 1.0 : (ok.is_string() && ok.get<std::string>() == "1");
+            }
+        }
+        if (!out.valid()) {
+            error = "the mesh is too small to analyse";
+            return false;
+        }
+        if (out.max_x <= out.min_x || out.max_y <= out.min_y) {
+            error = "the mesh has invalid bounds";
+            return false;
+        }
+        return true;
+    } catch (const std::exception&) {
+        error = "unexpected bed mesh response";
         return false;
     }
-    return true;
 }
 
 BedMeshStats analyze_bed_mesh(const BedMesh& m)

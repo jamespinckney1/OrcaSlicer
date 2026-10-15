@@ -13,12 +13,14 @@
 #include <boost/nowide/fstream.hpp>
 #include <nlohmann/json.hpp>
 #include <wx/image.h>
+#include <wx/log.h>
 #include <wx/mstream.h>
 
 #include <algorithm>
 #include <cctype>
 #include <chrono>
 #include <ctime>
+#include <exception>
 #include <future>
 #include <regex>
 #include <sstream>
@@ -39,6 +41,9 @@ std::string safe_name(std::string s)
     for (char& c : s)
         if (!(std::isalnum(static_cast<unsigned char>(c)) || c == '-' || c == '_' || c == '.'))
             c = '_';
+    // "." or ".." would name a directory, not a file inside it.
+    if (!s.empty() && s.find_first_not_of('.') == std::string::npos)
+        s = "_";
     return s;
 }
 
@@ -194,9 +199,12 @@ bool shop_decode_image(const std::string& bytes, FailureCheck::Image& out)
 {
     if (bytes.empty())
         return false;
+    wxLogNull           no_log; // runs on the worker thread: a corrupt frame must not queue an error dialog
     wxMemoryInputStream stream(bytes.data(), bytes.size());
     wxImage             img;
     if (!img.LoadFile(stream, wxBITMAP_TYPE_ANY) || !img.IsOk())
+        return false;
+    if (img.GetWidth() > 8192 || img.GetHeight() > 8192)
         return false;
     out.w = img.GetWidth();
     out.h = img.GetHeight();
@@ -384,6 +392,9 @@ bool FailureCheckMonitor::prepare_job(const std::string& print_host, const std::
             fs::remove_all(dirs[i], ec);
     {
         std::lock_guard<std::mutex> lock(m_mutex);
+        for (const Job& j : m_jobs)
+            if (j.host == job.host)
+                m_models.erase(j.id);
         m_jobs.erase(std::remove_if(m_jobs.begin(), m_jobs.end(), [&](const Job& j) { return j.host == job.host; }), m_jobs.end());
         m_jobs.push_back(job);
         save_jobs_locked();
@@ -407,7 +418,15 @@ void FailureCheckMonitor::run()
         for (Job& job : jobs) {
             if (stop->load())
                 return;
-            const bool keep = poll(job);
+            // An exception would end this thread for good, so log it and try the job again next round.
+            bool keep = true;
+            try {
+                keep = poll(job);
+            } catch (const std::exception& e) {
+                BOOST_LOG_TRIVIAL(error) << "Shop failure check: polling " << job.host << " failed: " << e.what();
+            } catch (...) {
+                BOOST_LOG_TRIVIAL(error) << "Shop failure check: polling " << job.host << " failed";
+            }
             std::lock_guard<std::mutex> lock(m_mutex);
             auto it = std::find_if(m_jobs.begin(), m_jobs.end(), [&](const Job& j) { return j.id == job.id; });
             if (it == m_jobs.end())
@@ -497,9 +516,8 @@ static bool still_parked(const std::string& api)
     try {
         const auto& st  = j.at("result").at("status");
         const auto& pos = st.at("toolhead").at("position");
-        const double px = 95, py = 324; // SHOP_CHECKPOINT parks at X95 Y324
         return st.at("gcode_macro SHOP_CHECKPOINT").value("waiting", 0) == 1 &&
-               std::hypot(pos[0].get<double>() - px, pos[1].get<double>() - py) < 5.0;
+               std::hypot(pos.at(0).get<double>() - FailureCheck::kShopParkX, pos.at(1).get<double>() - FailureCheck::kShopParkY) < 5.0;
     } catch (...) {
         return true;
     }

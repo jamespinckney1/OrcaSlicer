@@ -16,7 +16,8 @@ struct FailureCheckEvent
     enum class Mode {
         Hold,   // the check failed and the printer is held: Resume / Cancel print
         Notice, // uncertain: the print continues, the user should look
-        Review  // no camera calibration yet: the user judges; resumes after a countdown
+        Review  // the photo cannot be compared (no camera calibration, photo size differs from the calibration, or no
+                // reference photo of the empty plate): the user judges; resumes after a countdown
     };
     Mode        mode = Mode::Review;
     std::string host, api, job_name, label;

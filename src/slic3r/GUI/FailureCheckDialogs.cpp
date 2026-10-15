@@ -414,8 +414,8 @@ bool camera_printer_ready(wxWindow* parent, const std::string& print_host, const
     bool        has_macro = false;
     if (ok && !j.is_discarded()) {
         try {
-            state     = j["result"]["status"]["print_stats"]["state"].get<std::string>();
-            has_macro = j["result"]["status"].contains("gcode_macro SHOP_CAMERA_POSE");
+            state     = j.at("result").at("status").at("print_stats").at("state").get<std::string>();
+            has_macro = j.at("result").at("status").contains("gcode_macro SHOP_CAMERA_POSE");
         } catch (...) {}
     }
     if (!has_macro) {
@@ -444,7 +444,7 @@ public:
                                           _L("back-left plate corner")};
         const double   cx[4] = {bx0, bx1, bx1, bx0}, cy[4] = {by0, by0, by1, by1};
         for (double z : {10.0, 170.0}) {
-            Pose p{95, 324, z, {}};
+            Pose p{FailureCheck::kShopParkX, FailureCheck::kShopParkY, z, {}};
             for (int c = 0; c < 4; ++c)
                 p.targets.push_back({corner_names[c], c, cx[c], cy[c], false});
             m_poses.push_back(p);
@@ -592,8 +592,8 @@ private:
         const auto j = nlohmann::json::parse(pos_body, nullptr, false);
         if (!j.is_discarded())
             try {
-                const auto& p = j["result"]["status"]["toolhead"]["position"];
-                pos = {p[0].get<double>(), p[1].get<double>(), p[2].get<double>()};
+                const auto& p = j.at("result").at("status").at("toolhead").at("position");
+                pos = {p.at(0).get<double>(), p.at(1).get<double>(), p.at(2).get<double>()};
             } catch (...) {}
         m_actual[i] = pos;
         m_photos[i] = to_wx(img);
@@ -686,8 +686,8 @@ private:
 
     void save()
     {
-        m_result.park_x = 95;
-        m_result.park_y = 324;
+        m_result.park_x = FailureCheck::kShopParkX;
+        m_result.park_y = FailureCheck::kShopParkY;
         const std::time_t t = std::time(nullptr);
         char              buf[32];
         std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M", std::localtime(&t));
@@ -795,6 +795,9 @@ private:
         for (char& c : s)
             if (!(std::isalnum(static_cast<unsigned char>(c)) || c == '-' || c == '.'))
                 c = '_';
+        // "." or ".." would name a directory, not a file inside it.
+        if (!s.empty() && s.find_first_not_of('.') == std::string::npos)
+            s = "_";
         return s;
     }
 
@@ -826,22 +829,27 @@ private:
         std::ifstream f(m_dir + "/" + kind + ".json");
         if (!f)
             return false;
-        const auto j = nlohmann::json::parse(std::string((std::istreambuf_iterator<char>(f)), {}), nullptr, false);
-        if (j.is_discarded() || !j.contains("z") || !j["z"].is_array() || j["z"].size() != kHeights.size())
-            return false;
-        std::vector<Shot> shots;
-        for (size_t i = 0; i < kHeights.size(); ++i) {
-            Shot          sh;
-            std::ifstream img(m_dir + "/" + kind + "_" + std::to_string(i) + ".jpg", std::ios::binary);
-            sh.jpeg = std::string((std::istreambuf_iterator<char>(img)), {});
-            sh.z    = j["z"][i].get<double>();
-            if (!shop_decode_image(sh.jpeg, sh.img))
+        // A damaged file (wrong JSON types) counts as no saved photos.
+        try {
+            const auto j = nlohmann::json::parse(std::string((std::istreambuf_iterator<char>(f)), {}), nullptr, false);
+            if (j.is_discarded() || !j.contains("z") || !j["z"].is_array() || j["z"].size() != kHeights.size())
                 return false;
-            shots.push_back(std::move(sh));
+            std::vector<Shot> shots;
+            for (size_t i = 0; i < kHeights.size(); ++i) {
+                Shot          sh;
+                std::ifstream img(m_dir + "/" + kind + "_" + std::to_string(i) + ".jpg", std::ios::binary);
+                sh.jpeg = std::string((std::istreambuf_iterator<char>(img)), {});
+                sh.z    = j["z"][i].get<double>();
+                if (!shop_decode_image(sh.jpeg, sh.img))
+                    return false;
+                shots.push_back(std::move(sh));
+            }
+            out  = std::move(shots);
+            when = j.value("when", std::string());
+            return true;
+        } catch (const std::exception&) {
+            return false;
         }
-        out  = std::move(shots);
-        when = j.value("when", std::string());
-        return true;
     }
 
     void save_shots(const std::string& kind, const std::vector<Shot>& shots)
@@ -901,7 +909,7 @@ private:
                 bool moved = false;
                 Http::post(api + "/printer/gcode/script")
                     .header("Content-Type", "application/json")
-                    .set_post_body(nlohmann::json{{"script", (boost::format("SHOP_CAMERA_POSE X=95 Y=324 Z=%.1f") % kHeights[i]).str()}}.dump())
+                    .set_post_body(nlohmann::json{{"script", (boost::format("SHOP_CAMERA_POSE X=%.0f Y=%.0f Z=%.1f") % FailureCheck::kShopParkX % FailureCheck::kShopParkY % kHeights[i]).str()}}.dump())
                     .timeout_connect(5).timeout_max(300)
                     .on_complete([&](std::string, unsigned status) { moved = status == 200; })
                     .on_error([&](std::string body, std::string err, unsigned) { error = err + " " + body; })
@@ -915,7 +923,7 @@ private:
                 sh.z = kHeights[i];
                 const auto pj = nlohmann::json::parse(pos, nullptr, false);
                 if (!pj.is_discarded())
-                    try { sh.z = pj["result"]["status"]["toolhead"]["position"][2].get<double>(); } catch (...) {}
+                    try { sh.z = pj.at("result").at("status").at("toolhead").at("position").at(2).get<double>(); } catch (...) {}
                 std::this_thread::sleep_for(std::chrono::milliseconds(800)); // let the bed settle and the camera re-expose
                 Http::get(snap).timeout_connect(4).timeout_max(10)
                     .on_complete([&](std::string b, unsigned status) { if (status == 200) sh.jpeg = std::move(b); })
@@ -939,8 +947,12 @@ private:
         if (!f)
             return 0;
         const auto j = nlohmann::json::parse(std::string((std::istreambuf_iterator<char>(f)), {}), nullptr, false);
-        if (!j.is_discarded() && j.contains("time"))
-            return j["time"].get<long long>();
+        try {
+            if (!j.is_discarded() && j.contains("time"))
+                return j["time"].get<long long>();
+        } catch (const std::exception&) {
+            return 0;
+        }
         boost::system::error_code ec; // files saved before "time" was recorded
         return (long long) boost::filesystem::last_write_time(m_dir + "/" + kind + ".json", ec);
     }
@@ -1140,7 +1152,7 @@ private:
             std::string state;
             const auto  j = nlohmann::json::parse(body, nullptr, false);
             if (!j.is_discarded())
-                try { state = j["result"]["status"]["print_stats"]["state"].get<std::string>(); } catch (...) {}
+                try { state = j.at("result").at("status").at("print_stats").at("state").get<std::string>(); } catch (...) {}
             wxGetApp().CallAfter([self, state, api]() {
                 if (!self)
                     return;
@@ -1162,8 +1174,8 @@ private:
 
     void save()
     {
-        m_result.park_x = 95;
-        m_result.park_y = 324;
+        m_result.park_x = FailureCheck::kShopParkX;
+        m_result.park_y = FailureCheck::kShopParkY;
         const std::time_t t = std::time(nullptr);
         char              buf[32];
         std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M", std::localtime(&t));
