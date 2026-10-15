@@ -12,11 +12,14 @@ Usage:
     python3 scripts/shop_profiles/gen_filaments.py            # write files
     python3 scripts/shop_profiles/gen_filaments.py --dry-run  # report only
 
+    python3 scripts/shop_profiles/gen_filaments.py --prune    # also delete presets it no longer makes
+
 Afterwards run, per touched vendor:
     python3 scripts/orca_profile_tool.py normalize   --vendor <V>
     python3 scripts/orca_profile_tool.py update-index --vendor <V>
     python3 scripts/orca_profile_tool.py generate-id  --vendor <V>
     python3 scripts/orca_profile_tool.py check        --vendor <V>
+    python3 scripts/shop_profiles/check_load_order.py <V>
 
 Then bump the last component of "version" in resources/profiles/<V>.json (shop builds use the
 .90. level, e.g. 02.04.90.17). Without a bump, existing installs keep their old profiles.
@@ -263,7 +266,7 @@ class Bundle:
     def get(self, name):
         if name not in self._cache:
             p = self.paths.get(name)
-            self._cache[name] = json.loads(p.read_text()) if p else None
+            self._cache[name] = json.loads(p.read_text(encoding="utf-8")) if p else None
         return self._cache[name]
 
     def resolve(self, name, key, depth=0):
@@ -279,22 +282,26 @@ class Bundle:
         return self.resolve(parent, key, depth + 1) if parent else None
 
 
-def upstream_triple(product_name, bundles):
+def upstream_triple(product_name, bundles, generated=frozenset()):
     """(filament_vendor, filament_type) upstream already uses for this product, if any.
 
     Looks for "<name> @base" or "<name>" in the target vendor bundle first, then
-    the shared OrcaFilamentLibrary, so our ids converge with upstream's.
+    the shared OrcaFilamentLibrary, so our ids converge with upstream's. Presets this
+    script generated (`generated`) are skipped: reading our own earlier output back
+    would freeze a brand or material change in data/*.json at its first value.
     """
     want = tokens(product_name)
     for b in bundles:
         for cand in (f"{product_name} @base", product_name, f"{product_name} @System"):
-            if cand in b.paths:
+            if cand in b.paths and cand not in generated:
                 vend, typ = b.resolve(cand, "filament_vendor"), b.resolve(cand, "filament_type")
                 if vend and typ:
                     return vend, typ
         # Any preset of the same product (token match on the part before "@"),
         # e.g. upstream "QIDI ASA-Aero@X-Plus 5-Series".
-        for existing in b.paths:
+        for existing in sorted(b.paths):
+            if existing in generated:
+                continue
             prod = existing.split("@")[0].strip()
             if tokens(prod) == want:
                 vend, typ = b.resolve(existing, "filament_vendor"), b.resolve(existing, "filament_type")
@@ -466,6 +473,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--brand", action="append", help="limit to brand file stem(s)")
+    ap.add_argument("--prune", action="store_true",
+                    help="delete presets this script generated earlier but no longer produces")
     args = ap.parse_args()
 
     brand_files = sorted(DATA.glob("*.json"))
@@ -481,9 +490,11 @@ def main():
     # preset that fails to load stops the slicer from loading the rest of the vendor (every Plus 4 printer).
     upstream_names = {v: {n: path for n, path in names.items() if GENERATED_MARK not in path.read_text(encoding="utf-8")}
                       for v, names in vendor_names.items()}
+    generated = {v: frozenset(names) - upstream_names[v].keys() for v, names in vendor_names.items()}
     bundles = {v: Bundle(v) for v in vendor_names}
     ofl = Bundle("OrcaFilamentLibrary")
     written, skipped = [], []
+    unchanged = 0
 
     # Highest max volumetric speed upstream already ships per (printer, filament_type) on the 0.4 nozzle.
     upstream_caps = {}
@@ -508,7 +519,7 @@ def main():
         upstream_caps[pkey] = caps
 
     for bf in brand_files:
-        data = json.loads(bf.read_text())
+        data = json.loads(bf.read_text(encoding="utf-8"))
         brand = data["brand"]
         for product in data["products"]:
             product["brand"] = brand
@@ -553,7 +564,7 @@ def main():
                     own_base = f"{product['name']} @base"
                     if own_base in upstream_names[vendor]:
                         parent = own_base
-                    triple = upstream_triple(product["name"], [bundles[vendor], ofl])
+                    triple = upstream_triple(product["name"], [bundles[vendor], ofl], generated[vendor])
                     raw_mvs = bundles[vendor].resolve(parent, "filament_max_volumetric_speed")
                     try:
                         parent_mvs = float(raw_mvs) if raw_mvs not in (None, "", "nil") else None
@@ -574,13 +585,29 @@ def main():
                         skipped.append((name, pkey, f"already exists: {existing}"))
                         continue
                     written.append(out)
-                    if not args.dry_run:
+                    text = json.dumps(preset, indent=4, ensure_ascii=False) + "\n"
+                    if out.exists() and out.read_text(encoding="utf-8") == text:
+                        unchanged += 1
+                    elif not args.dry_run:
                         out.parent.mkdir(parents=True, exist_ok=True)
-                        out.write_text(json.dumps(preset, indent=4, ensure_ascii=False) + "\n")
+                        out.write_text(text, encoding="utf-8")
                     vendor_names[vendor][name] = out
 
+    # Presets generated by an earlier run that this run no longer produces (product removed from the data,
+    # or a printer rule now skips it). Only meaningful when every brand was processed.
+    if not args.brand:
+        produced = set(written)
+        orphans = sorted(path for v in vendor_names for path in vendor_names[v].values()
+                         if path not in produced and path.exists() and GENERATED_MARK in path.read_text(encoding="utf-8"))
+        for path in orphans:
+            print(("removing " if args.prune and not args.dry_run else "orphan: ") + str(path.relative_to(PROFILES)))
+            if args.prune and not args.dry_run:
+                path.unlink()
+        if orphans and not args.prune:
+            print(f"{len(orphans)} orphaned generated preset(s); re-run with --prune to delete them")
+
     verb = "would write" if args.dry_run else "wrote"
-    print(f"{verb} {len(written)} presets")
+    print(f"{verb} {len(written)} presets ({unchanged} already up to date)")
     by_vendor = {}
     for p in written:
         by_vendor[p.relative_to(PROFILES).parts[0]] = by_vendor.get(p.relative_to(PROFILES).parts[0], 0) + 1
@@ -593,9 +620,10 @@ def main():
         reasons[key] = reasons.get(key, 0) + 1
     for r, n in sorted(reasons.items(), key=lambda kv: -kv[1]):
         print(f"  {n:4d}  {r}")
-    log = DATA.parent / "last_run.log"
-    log.write_text("\n".join(f"{a}\t{b}\t{c}" for a, b, c in skipped) + "\n")
-    print("skip details ->", log)
+    if not args.dry_run:
+        log = DATA.parent / "last_run.log"
+        log.write_text("\n".join(f"{a}\t{b}\t{c}" for a, b, c in skipped) + "\n", encoding="utf-8")
+        print("skip details ->", log)
     return 0
 
 
