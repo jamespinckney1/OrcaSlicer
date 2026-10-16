@@ -52,7 +52,11 @@ struct GCodeModel
     std::vector<double>     layer_z;
     double                  bed_min_x = 0, bed_min_y = 0, bed_max_x = 0, bed_max_y = 0; // printable_area
     std::vector<std::string> filament_colours; // "#RRGGBB" per extruder, from the config block
+    std::vector<double>      filament_used_mm; // per extruder, from the "filament used [mm]" summary
     int                      first_tool = 0;   // tool printing the first layer
+
+    // Whether the job prints with this filament (every filament counts when the summary is missing).
+    bool filament_used(size_t i) const { return filament_used_mm.size() != filament_colours.size() || filament_used_mm[i] > 0; }
     std::vector<Checkpoint> checkpoints;
 
     // Colour of the filament on the first layer, unless it is unset or Orca's default (then empty).

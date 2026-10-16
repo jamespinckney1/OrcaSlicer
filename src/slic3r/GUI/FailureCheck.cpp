@@ -12,6 +12,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <limits>
+#include <sstream>
 
 namespace Slic3r { namespace GUI { namespace FailureCheck {
 
@@ -245,6 +246,12 @@ bool parse_gcode(const std::string& path, GCodeModel& out, std::string& error)
                         break;
                     pos = semi + 1;
                 }
+            } else if (starts_with(c, " filament used [mm] = ")) {
+                out.filament_used_mm.clear();
+                std::istringstream in(c.substr(22));
+                std::string        item;
+                while (std::getline(in, item, ','))
+                    out.filament_used_mm.push_back(std::atof(item.c_str()));
             } else if (starts_with(c, " printable_area = ")) {
                 double minx = 1e9, miny = 1e9, maxx = -1e9, maxy = -1e9;
                 const std::string v = c.substr(18);
@@ -1330,7 +1337,8 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
     // Shadows: as the bed drops, the gantry and the parts throw shadows that move across the plate, and a
     // shadow also hides the plate's glitter, which reads like dark matte filament. When every filament of
     // the job is much lighter than the plate, stray material can only make the plate brighter, so a patch
-    // that got darker is a shadow, not material. Dark or unknown filament keeps counting either way.
+    // that got darker is a shadow, not material. Dark or unknown filament keeps counting either way. Only
+    // the filaments the job uses count: a project often lists every loaded Box spool.
     bool light_filament = !model.first_layer_colour().empty();
     if (light_filament) {
         std::vector<float> plate;
@@ -1338,7 +1346,10 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
             if (background[i])
                 plate.push_back(float((base[i * 3] + base[i * 3 + 1] + base[i * 3 + 2]) / 3.0));
         const double plate_lum = plate.empty() ? 128.0 : median(plate);
-        for (const std::string& c : model.filament_colours) {
+        for (size_t f = 0; f < model.filament_colours.size(); ++f) {
+            const std::string& c = model.filament_colours[f];
+            if (!model.filament_used(f))
+                continue;
             if (c.size() < 7 || c[0] != '#') {
                 light_filament = false;
                 break;

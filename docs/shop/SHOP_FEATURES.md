@@ -266,9 +266,11 @@ purge lines count as expected material.
     samples within 8 px of the rod lines in the calibration (`frame_lines`, image segments top first;
     kept when recalibrating) are ignored within 10 mm + 1.2 x bed height of the plate edge.
   - Shadows: as the bed drops, the gantry's and the parts' shadows move across the plate and hide its
-    glitter, which reads like dark filament. When every filament of the job is much lighter than the
-    plate (60 levels brighter than its median in the reference photo), only patches that got brighter
-    count as unexpected material; a darker patch is a shadow. Dark or unset colours count both ways.
+    glitter, which reads like dark filament, and bright parts make the camera re-expose, which dims the
+    glitter around them. When every filament the job uses (by the G-code's "filament used [mm]"; a
+    project often lists every loaded Box spool) is much lighter than the plate (60 levels brighter than
+    its median in the reference photo), only patches that got brighter count as unexpected material; a
+    darker patch is a shadow. Dark or unset colours count both ways.
   - Missing material: when at least 60% of the latest layer shows no change, the check fails if the
     job's filament colour is set and clearly differs from the plate, and is uncertain otherwise.
   - First layer, part by part (filament the camera can see): a peeled or folded first layer is still
