@@ -2610,6 +2610,20 @@ std::pair<PresetsConfigSubstitutions, std::string> PresetBundle::load_system_pre
             vendors.push_back({ name, dir });
     auto result = this->load_vendors(vendors, compatibility_rule, true);
 
+    // Print shop: the shop's defaults for every system process preset, whatever its vendor sets: no brim,
+    // and supports (when enabled) slim tree supports with manual placement, from the build plate only,
+    // keeping small overhangs. Applied after loading (never written to the vendor caches) so profile
+    // updates cannot undo them; user presets and projects that set these keys keep their own values.
+    // The profile validator checks the vendors' profiles as they are.
+    if (!validation_mode)
+        for (Preset& preset : this->prints)
+            if (preset.is_system)
+                preset.config.set_deserialize_strict({{"brim_type", "no_brim"},
+                                                      {"support_type", "tree(manual)"},
+                                                      {"support_style", "tree_slim"},
+                                                      {"support_on_build_plate_only", "1"},
+                                                      {"support_remove_small_overhang", "0"}});
+
 	this->update_system_maps();
 
     //BBS: add config related logs

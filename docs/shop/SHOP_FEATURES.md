@@ -80,6 +80,16 @@ when saving a project; an earlier suffix is stripped so names do not stack. "Pro
 folder offered for projects that have no file yet. Code: `src/slic3r/GUI/ShopNaming.*`; app config
 keys `shop_project_autoname`, `shop_project_dir`.
 
+## Shop process defaults
+
+Every system process preset, whatever its vendor profile says, starts with no brim and, for when
+supports are enabled, tree supports with manual placement, the Tree Slim style, "On build plate only"
+on and "Ignore small overhangs" off (`PresetBundle::load_system_presets_from_json`). They are applied
+after the vendors load, never written to the profiles or their caches, so profile updates and
+regeneration cannot undo them; whether supports are enabled stays with the preset. User presets and
+projects that set one of these keep their own value, so a project saved with the old defaults opens
+as "modified" against the new ones. The profile validator sees the vendors' profiles unchanged.
+
 ## Saved presets are recognised (no false "unsaved changes")
 
 A project saved against a system preset with changes opens as "system preset (modified)", and Orca asks to
