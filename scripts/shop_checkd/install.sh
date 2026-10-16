@@ -25,6 +25,8 @@ for _ in $(seq 1 10); do
     if curl -fsS http://127.0.0.1:8765/health; then
         echo
         echo "shop-checkd is running (data in /var/lib/shop-checkd)."
+        for _ in $(seq 1 10); do [ -s /var/lib/shop-checkd/token ] && break; sleep 1; done
+        echo "Slicer: Preferences > Failure check service token: $(cat /var/lib/shop-checkd/token)"
         exit 0
     fi
     sleep 1

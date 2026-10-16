@@ -9,7 +9,9 @@ the slicer's own engine (the shop_check tool) and resumes or holds the print, ex
 monitor does (src/slic3r/GUI/FailureCheckMonitor.cpp). A slicer that is open only shows the status and
 the review window; it never answers a checkpoint of a job the service has.
 
-HTTP API (trusted LAN only; the host firewall limits who can reach it):
+HTTP API. Every request but /health needs "Authorization: Bearer <token>", the token in the data folder
+(created at first start; Preferences > "Failure check service token" in the slicer). Allow only the
+slicer's networks to reach the port as well: a job names the printer the service will hold and resume.
     GET  /health                       {"ok": true, "version": ...}
     POST /jobs                         JSON {id, host, api, job_name, camera, ntfy_server, ntfy_topic}
     PUT  /jobs/<id>/gcode              the job's G-code (with checkpoints); starts watching it
@@ -20,11 +22,13 @@ HTTP API (trusted LAN only; the host firewall limits who can reach it):
 Standard library only. Usage: shop_checkd.py --data /var/lib/shop-checkd --check /opt/shop-checkd/shop_check
 """
 import argparse
+import hmac
 import json
 import logging
 import math
 import os
 import re
+import secrets
 import shutil
 import subprocess
 import threading
@@ -460,9 +464,26 @@ class Service:
 
 # ---- HTTP -----------------------------------------------------------------------------------------
 
-def make_handler(svc):
+def load_token(path):
+    """The API token, created (owner-only) on first start."""
+    if not os.path.isfile(path):
+        fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        with os.fdopen(fd, "w") as f:
+            f.write(secrets.token_urlsafe(24) + "\n")
+    with open(path) as f:
+        return f.read().strip()
+
+
+def make_handler(svc, token):
     class Handler(BaseHTTPRequestHandler):
         server_version = "shop_checkd/" + VERSION
+
+        def authorized(self):
+            given = self.headers.get("Authorization", "")
+            if hmac.compare_digest(given.encode(), ("Bearer " + token).encode()):
+                return True
+            self.reply(401, {"error": "missing or wrong token"})
+            return False
 
         def log_message(self, fmt, *args):
             log.debug("%s %s", self.address_string(), fmt % args)
@@ -483,6 +504,8 @@ def make_handler(svc):
             p, q = self.parts()
             if p == ["health"]:
                 return self.reply(200, {"ok": True, "version": VERSION})
+            if not self.authorized():
+                return
             if p == ["status"]:
                 since = int(q.get("since", ["0"])[0] or 0)
                 with svc.lock:
@@ -499,6 +522,8 @@ def make_handler(svc):
 
         def do_POST(self):
             p, _ = self.parts()
+            if not self.authorized():
+                return
             if p != ["jobs"]:
                 return self.reply(404, {"error": "not found"})
             try:
@@ -511,6 +536,8 @@ def make_handler(svc):
 
         def do_PUT(self):
             p, _ = self.parts()
+            if not self.authorized():
+                return
             if len(p) != 3 or p[0] != "jobs" or p[2] != "gcode" or not ID_RE.match(p[1]):
                 return self.reply(404, {"error": "not found"})
             try:
@@ -526,6 +553,8 @@ def make_handler(svc):
 
         def do_DELETE(self):
             p, _ = self.parts()
+            if not self.authorized():
+                return
             if len(p) == 2 and p[0] == "jobs" and ID_RE.match(p[1]) and svc.stop_job(p[1]):
                 return self.reply(200, {"ok": True})
             return self.reply(404, {"error": "not found"})
@@ -544,8 +573,9 @@ def main():
     logging.basicConfig(level=logging.DEBUG if a.verbose else logging.INFO,
                         format="%(asctime)s %(levelname)s %(message)s")
     svc = Service(a.data, a.check)
+    token = load_token(os.path.join(a.data, "token"))
     threading.Thread(target=svc.run, daemon=True).start()
-    httpd = ThreadingHTTPServer((a.bind, a.port), make_handler(svc))
+    httpd = ThreadingHTTPServer((a.bind, a.port), make_handler(svc, token))
     log.info("listening on %s:%d, data in %s", a.bind, a.port, a.data)
     httpd.serve_forever()
 

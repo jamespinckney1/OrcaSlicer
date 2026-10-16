@@ -28,10 +28,12 @@ It copies this folder and the engine, builds `shop_check`, installs into `/opt/s
 the service as the `shop-checkd` system user with its data in `/var/lib/shop-checkd` (job folders:
 G-code, photos and results, the newest 30 kept). Rerun it after changing the engine so the service
 judges like the slicer. In the slicer, set Preferences > "Failure check service" to
-`http://<host>:8765`.
+`http://<host>:8765` and "Failure check service token" to the token the install prints (also in
+`/var/lib/shop-checkd/token`, created at first start).
 
-The API has no authentication: allow only the slicer's network to reach port 8765. Job settings
-include the ntfy topic, so keep the data folder private.
+Every request but `/health` needs that token (`Authorization: Bearer <token>`): a job names the printer
+the service will hold, resume and restart the camera of. Allow only the slicer's networks to reach port
+8765 as well. Job settings include the ntfy topic, so keep the data folder private.
 
 ## Testing without a printer
 

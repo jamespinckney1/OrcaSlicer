@@ -236,7 +236,8 @@ void FailureCheckMonitor::configure()
     std::lock_guard<std::mutex> lock(m_mutex);
     if (service != m_service)
         m_service_seq = -1;
-    m_service     = service;
+    m_service       = service;
+    m_service_token = boost::algorithm::trim_copy(cfg->get(kServiceTokenKey));
     m_ntfy_server = boost::algorithm::trim_copy(cfg->get(ShopNotify::kServerKey));
     m_ntfy_topic  = boost::algorithm::trim_copy(cfg->get(ShopNotify::kTopicKey));
 }
@@ -540,10 +541,11 @@ bool FailureCheckMonitor::poll(Job& job)
 
 bool FailureCheckMonitor::hand_off(const Job& job, std::string& error)
 {
-    std::string service, ntfy_server, ntfy_topic;
+    std::string service, token, ntfy_server, ntfy_topic;
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         service     = m_service;
+        token       = m_service_token;
         ntfy_server = m_ntfy_server;
         ntfy_topic  = m_ntfy_topic;
     }
@@ -568,16 +570,45 @@ bool FailureCheckMonitor::hand_off(const Job& job, std::string& error)
             .perform_sync();
         return ok;
     };
+    const std::string auth = "Bearer " + token;
     const bool ok = request(std::move(Http::post(service + "/jobs")
+                                          .header("Authorization", auth)
                                           .header("Content-Type", "application/json")
                                           .set_post_body(meta.dump())
                                           .timeout_connect(4)
                                           .timeout_max(15))) &&
                     request(std::move(Http::put(service + "/jobs/" + job.id + "/gcode")
+                                          .header("Authorization", auth)
                                           .set_put_body(fs::path(job.gcode))
                                           .timeout_connect(4)
                                           .timeout_max(300)));
     BOOST_LOG_TRIVIAL(info) << "Shop failure check: handing " << job.id << " to " << service << (ok ? ": ok" : ": " + error);
+    return ok;
+}
+
+bool FailureCheckMonitor::service_get(const std::string& path, std::string& body)
+{
+    std::string service, token;
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        service = m_service;
+        token   = m_service_token;
+    }
+    if (service.empty())
+        return false;
+    bool ok = false;
+    Http::get(service + path)
+        .header("Authorization", "Bearer " + token)
+        .timeout_connect(3)
+        .timeout_max(10)
+        .on_complete([&](std::string b, unsigned status) {
+            if (status == 200) {
+                body = std::move(b);
+                ok   = true;
+            }
+        })
+        .on_error([](std::string, std::string, unsigned) {})
+        .perform_sync();
     return ok;
 }
 
@@ -594,11 +625,11 @@ std::set<std::string> FailureCheckMonitor::poll_service(const std::vector<Job>& 
         since   = m_service_seq;
     }
     std::string body;
-    if (service.empty() || !http_get(service + "/status?since=" + std::to_string(std::max(0LL, since)), body, 5)) {
+    if (service.empty() || !service_get("/status?since=" + std::to_string(std::max(0LL, since)), body)) {
         for (const Job& job : jobs)
             if (job.remote)
-                set_status(job.host, (boost::format(_u8L("Failure check: the service at %1% is not answering; it checks %2% when it is back "
-                                                         "(meanwhile the printer resumes on its own at each checkpoint)")) %
+                set_status(job.host, (boost::format(_u8L("Failure check: the service at %1% is not answering (or the token is wrong); it checks "
+                                                         "%2% on its own as long as it runs")) %
                                       (service.empty() ? std::string("(not set)") : service) % job.job_name).str());
         return finished;
     }
@@ -639,25 +670,20 @@ std::set<std::string> FailureCheckMonitor::poll_service(const std::vector<Job>& 
 
 void FailureCheckMonitor::show_service_hold(const Job& job, int index, const std::string& label)
 {
-    std::string service;
-    {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        service = m_service;
-    }
     // Recompute the service's comparison from its photos with the same engine, so the window shows the same
     // overlay as a hold found by the slicer itself.
-    const std::string        url = service + "/jobs/" + job.id + "/cp" + std::to_string(index);
+    const std::string        url = "/jobs/" + job.id + "/cp" + std::to_string(index);
     std::string              result_text, jpeg, base_jpeg;
     auto                     model = model_for(job);
     const FailureCheck::Checkpoint* cp = model ? model->checkpoint(index) : nullptr;
     FailureCheck::CameraModel cam;
     FailureCheck::Image       cur, base;
     nlohmann::json            r;
-    bool ok = cp != nullptr && load_shop_camera(job.host, cam) && http_get(url + ".json", result_text, 10) && http_get(url + ".jpg", jpeg, 10);
+    bool ok = cp != nullptr && load_shop_camera(job.host, cam) && service_get(url + ".json", result_text) && service_get(url + ".jpg", jpeg);
     if (ok) {
         r                     = nlohmann::json::parse(result_text, nullptr, false);
         const std::string base_path = r.is_object() ? r.value("base", std::string()) : std::string();
-        ok = !base_path.empty() && http_get(service + "/jobs/" + base_path, base_jpeg, 10) && shop_decode_image(jpeg, cur) &&
+        ok = !base_path.empty() && service_get("/jobs/" + base_path, base_jpeg) && shop_decode_image(jpeg, cur) &&
              shop_decode_image(base_jpeg, base) && cur.w == base.w && cur.h == base.h;
     }
     if (!ok) {

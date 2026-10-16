@@ -296,7 +296,8 @@ purge lines count as expected material.
   slicer is closed. The slicer then only mirrors it: the Device tab status line ("checked by the
   service") and, for a held checkpoint, the Hold window, recomputed from the service's photos and
   alignment so it looks the same. A service that cannot be reached at upload leaves the job to the
-  slicer (the upload message says so). Install and API: `scripts/shop_checkd/README.md`.
+  slicer (the upload message says so). The service's API needs its token ("Failure check service
+  token", printed at install). Install and API: `scripts/shop_checkd/README.md`.
 - **Phone notifications** (Preferences > General > Phone notifications, `ShopNotify.*`). With an
   [ntfy](https://ntfy.sh) topic set (`shop_notify_topic`; empty = off, nothing is ever sent), a
   failed check also sends a high-priority notification with the job name, the checkpoint, the first

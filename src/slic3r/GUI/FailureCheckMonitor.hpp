@@ -65,7 +65,8 @@ public:
     // Rereads the service address and the ntfy settings from app_config. UI thread only.
     void configure();
 
-    static constexpr const char* kServiceKey = "shop_check_service"; // e.g. http://host:8765; empty = the slicer checks
+    static constexpr const char* kServiceKey      = "shop_check_service";       // e.g. http://host:8765; empty = the slicer checks
+    static constexpr const char* kServiceTokenKey = "shop_check_service_token"; // the service's API token
 
 private:
     struct Job
@@ -87,6 +88,7 @@ private:
     void run();
     bool poll(Job& job); // false: stop watching
     bool hand_off(const Job& job, std::string& error);  // gives the job to the service
+    bool service_get(const std::string& path, std::string& body); // GET <service><path> with the token
     std::set<std::string> poll_service(const std::vector<Job>& jobs); // mirrors the service; returns finished job ids
     void show_service_hold(const Job& job, int index, const std::string& label); // a held checkpoint's window
     void handle_checkpoint(Job& job, int index, double z);
@@ -106,7 +108,7 @@ private:
     std::shared_ptr<std::atomic<bool>> m_stop;
     std::thread                        m_thread;
     bool                               m_started = false;
-    std::string                        m_service, m_ntfy_server, m_ntfy_topic; // copies of app_config (see configure)
+    std::string                        m_service, m_service_token, m_ntfy_server, m_ntfy_topic; // copies of app_config (see configure)
     long long                          m_service_seq = -1; // last service event seen; -1 = not asked yet
 };
 

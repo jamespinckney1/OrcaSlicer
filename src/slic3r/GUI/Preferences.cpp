@@ -1290,6 +1290,9 @@ wxBoxSizer* PreferencesDialog::create_item_shop_notify()
         _L("Address of an always-on failure check service (scripts/shop_checkd), e.g. http://192.168.1.20:8765. Uploaded jobs are "
            "handed to it, so checks and phone notifications go on while the slicer is closed. Leave empty to check from this slicer."),
         FailureCheckMonitor::kServiceKey, _L("empty = this slicer checks"));
+    add_input(_L("Failure check service token"),
+        _L("The service's API token, printed when it is installed (it is in the service's data folder, file \"token\")."),
+        FailureCheckMonitor::kServiceTokenKey, wxEmptyString);
 
     auto* test = new Button(m_parent, _L("Send test notification"));
     test->SetStyle(ButtonStyle::Regular, ButtonType::Parameter);
