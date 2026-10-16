@@ -2,6 +2,9 @@
 # Only the engine is needed: src/slic3r/GUI/FailureCheck.* has no GUI or libslic3r dependencies.
 cmake_minimum_required(VERSION 3.16)
 project(shop_check CXX)
+if(POLICY CMP0167)
+    cmake_policy(SET CMP0167 NEW) # Boost's own CMake config, not CMake's removed FindBoost
+endif()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
