@@ -7,7 +7,8 @@
 set -euo pipefail
 
 SRC="${1:?usage: install.sh <staged source root>}"
-BUILD="$SRC/build"
+BUILD="$(mktemp -d)" # root's own: the staged copy belongs to the deploying user, who replaces it next time
+trap 'rm -rf "$BUILD"' EXIT
 
 cmake -S "$SRC/scripts/shop_checkd" -B "$BUILD" -DCMAKE_BUILD_TYPE=Release >/dev/null
 cmake --build "$BUILD" -j"$(nproc)"
