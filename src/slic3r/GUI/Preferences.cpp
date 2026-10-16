@@ -1,5 +1,6 @@
 #include "Preferences.hpp"
 #include "ShopNaming.hpp"
+#include "FailureCheckMonitor.hpp"
 #include "ShopNotify.hpp"
 #include "CloudProvider.hpp"
 #include "OptionsGroup.hpp"
@@ -1270,6 +1271,7 @@ wxBoxSizer* PreferencesDialog::create_item_shop_notify()
         input->SetToolTip(tip);
         auto save = [this, param, input]() {
             app_config->set(param, boost::algorithm::trim_copy(into_u8(input->GetTextCtrl()->GetValue())));
+            FailureCheckMonitor::get().configure();
         };
         input->GetTextCtrl()->Bind(wxEVT_TEXT_ENTER, [this, save](wxCommandEvent& e) { save(); app_config->save(); e.Skip(); });
         input->GetTextCtrl()->Bind(wxEVT_KILL_FOCUS, [save](wxFocusEvent& e) { save(); e.Skip(); });
@@ -1284,6 +1286,10 @@ wxBoxSizer* PreferencesDialog::create_item_shop_notify()
         ShopNotify::kTopicKey, _L("empty = off"));
     auto server = add_input(_L("ntfy server"), _L("Leave empty for ntfy.sh, or enter your own ntfy server."),
         ShopNotify::kServerKey, ShopNotify::kDefaultServer);
+    add_input(_L("Failure check service"),
+        _L("Address of an always-on failure check service (scripts/shop_checkd), e.g. http://192.168.1.20:8765. Uploaded jobs are "
+           "handed to it, so checks and phone notifications go on while the slicer is closed. Leave empty to check from this slicer."),
+        FailureCheckMonitor::kServiceKey, _L("empty = this slicer checks"));
 
     auto* test = new Button(m_parent, _L("Send test notification"));
     test->SetStyle(ButtonStyle::Regular, ButtonType::Parameter);
@@ -1297,6 +1303,7 @@ wxBoxSizer* PreferencesDialog::create_item_shop_notify()
         app_config->set(ShopNotify::kTopicKey, t);
         app_config->set(ShopNotify::kServerKey, s);
         app_config->save();
+        FailureCheckMonitor::get().configure();
         ShopNotify::Message msg;
         msg.title = _u8L("Test notification");
         msg.body  = _u8L("Phone notifications from the print failure check are working.");

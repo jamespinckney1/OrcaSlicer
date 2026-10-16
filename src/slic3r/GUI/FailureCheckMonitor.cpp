@@ -4,9 +4,11 @@
 #include "GUI_App.hpp"
 #include "I18N.hpp"
 #include "ShopNotify.hpp"
+#include "libslic3r/AppConfig.hpp"
 #include "libslic3r/Utils.hpp"
 #include "slic3r/Utils/Http.hpp"
 
+#include <boost/algorithm/string/trim.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 #include <boost/log/trivial.hpp>
@@ -221,8 +223,27 @@ FailureCheckMonitor& FailureCheckMonitor::get()
     return *instance;
 }
 
+void FailureCheckMonitor::configure()
+{
+    const AppConfig* cfg = wxGetApp().app_config;
+    if (cfg == nullptr)
+        return;
+    std::string service = boost::algorithm::trim_copy(cfg->get(kServiceKey));
+    while (!service.empty() && service.back() == '/')
+        service.pop_back();
+    if (!service.empty() && service.find("://") == std::string::npos)
+        service = "http://" + service;
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if (service != m_service)
+        m_service_seq = -1;
+    m_service     = service;
+    m_ntfy_server = boost::algorithm::trim_copy(cfg->get(ShopNotify::kServerKey));
+    m_ntfy_topic  = boost::algorithm::trim_copy(cfg->get(ShopNotify::kTopicKey));
+}
+
 void FailureCheckMonitor::start()
 {
+    configure();
     std::lock_guard<std::mutex> lock(m_mutex);
     if (m_started)
         return;
@@ -277,7 +298,7 @@ void FailureCheckMonitor::save_jobs_locked() const
     for (const Job& j : m_jobs)
         arr.push_back({{"id", j.id}, {"host", j.host}, {"api", j.api}, {"job_name", j.job_name}, {"dir", j.dir}, {"gcode", j.gcode},
                        {"created", j.created}, {"started", j.started}, {"handled", j.handled}, {"has_baseline", j.has_baseline},
-                       {"baseline_z", j.baseline_z}, {"total", j.total}, {"passed", j.passed}, {"alignment", [&]() {
+                       {"baseline_z", j.baseline_z}, {"total", j.total}, {"passed", j.passed}, {"remote", j.remote}, {"alignment", [&]() {
                            nlohmann::json a = nlohmann::json::array();
                            for (const auto& an : j.alignment.anchors)
                                a.push_back({an.x, an.y, an.dx, an.dy, an.s});
@@ -310,6 +331,7 @@ void FailureCheckMonitor::load_jobs()
             j.baseline_z   = o.value("baseline_z", 0.0);
             j.total        = o.value("total", 0);
             j.passed       = o.value("passed", 0);
+            j.remote       = o.value("remote", false);
             if (o.contains("alignment") && o["alignment"].is_array())
                 for (const auto& a : o["alignment"])
                     if (a.is_array() && (a.size() == 4 || a.size() == 5))
@@ -390,6 +412,13 @@ bool FailureCheckMonitor::prepare_job(const std::string& print_host, const std::
     for (size_t i = 0; i + 15 < dirs.size(); ++i)
         if (dirs[i].filename().string() != job.id)
             fs::remove_all(dirs[i], ec);
+    std::string service, service_error;
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        service = m_service;
+    }
+    if (!service.empty())
+        job.remote = hand_off(job, service_error);
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         for (const Job& j : m_jobs)
@@ -403,6 +432,11 @@ bool FailureCheckMonitor::prepare_job(const std::string& print_host, const std::
     }
     m_cv.notify_all();
     message = (boost::format(_u8L("Failure check: %1% camera checkpoints added.")) % (model.checkpoints.size() - 1)).str();
+    if (job.remote)
+        message += " " + _u8L("The failure check service watches this print, also while the slicer is closed.");
+    else if (!service.empty())
+        message += " " + (boost::format(_u8L("The failure check service did not take the job (%1%), so this slicer watches it: keep it open.")) %
+                          service_error).str();
     return true;
 }
 
@@ -415,13 +449,20 @@ void FailureCheckMonitor::run()
             std::lock_guard<std::mutex> lock(m_mutex);
             jobs = m_jobs;
         }
+        // Jobs the service checks: mirror it, and drop the ones it has finished.
+        std::set<std::string> finished;
+        try {
+            finished = poll_service(jobs);
+        } catch (const std::exception& e) {
+            BOOST_LOG_TRIVIAL(error) << "Shop failure check: asking the service failed: " << e.what();
+        }
         for (Job& job : jobs) {
             if (stop->load())
                 return;
             // An exception would end this thread for good, so log it and try the job again next round.
             bool keep = true;
             try {
-                keep = poll(job);
+                keep = job.remote ? finished.count(job.id) == 0 : poll(job);
             } catch (const std::exception& e) {
                 BOOST_LOG_TRIVIAL(error) << "Shop failure check: polling " << job.host << " failed: " << e.what();
             } catch (...) {
@@ -493,6 +534,161 @@ bool FailureCheckMonitor::poll(Job& job)
     if (active && waiting == 1 && index >= 0 && std::find(job.handled.begin(), job.handled.end(), index) == job.handled.end())
         handle_checkpoint(job, index, z);
     return true;
+}
+
+// ---- failure check service ----------------------------------------------------------------------
+
+bool FailureCheckMonitor::hand_off(const Job& job, std::string& error)
+{
+    std::string service, ntfy_server, ntfy_topic;
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        service     = m_service;
+        ntfy_server = m_ntfy_server;
+        ntfy_topic  = m_ntfy_topic;
+    }
+    nlohmann::json meta = {{"id", job.id},        {"host", job.host}, {"api", job.api}, {"job_name", job.job_name},
+                           {"ntfy_server", ntfy_server}, {"ntfy_topic", ntfy_topic}};
+    std::string cam_text;
+    if (read_file(camera_file(job.host), cam_text)) {
+        const auto cam = nlohmann::json::parse(cam_text, nullptr, false);
+        if (cam.is_object())
+            meta["camera"] = cam;
+    }
+    auto request = [&error](Http&& http) {
+        bool ok = false;
+        http.on_complete([&](std::string body, unsigned status) {
+                ok = status == 200;
+                if (!ok)
+                    error = "HTTP " + std::to_string(status) + " " + body;
+            })
+            .on_error([&](std::string body, std::string err, unsigned status) {
+                error = err + (status ? " (HTTP " + std::to_string(status) + " " + body + ")" : std::string());
+            })
+            .perform_sync();
+        return ok;
+    };
+    const bool ok = request(std::move(Http::post(service + "/jobs")
+                                          .header("Content-Type", "application/json")
+                                          .set_post_body(meta.dump())
+                                          .timeout_connect(4)
+                                          .timeout_max(15))) &&
+                    request(std::move(Http::put(service + "/jobs/" + job.id + "/gcode")
+                                          .set_put_body(fs::path(job.gcode))
+                                          .timeout_connect(4)
+                                          .timeout_max(300)));
+    BOOST_LOG_TRIVIAL(info) << "Shop failure check: handing " << job.id << " to " << service << (ok ? ": ok" : ": " + error);
+    return ok;
+}
+
+std::set<std::string> FailureCheckMonitor::poll_service(const std::vector<Job>& jobs)
+{
+    std::set<std::string> finished;
+    if (std::none_of(jobs.begin(), jobs.end(), [](const Job& j) { return j.remote; }))
+        return finished;
+    std::string service;
+    long long   since;
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        service = m_service;
+        since   = m_service_seq;
+    }
+    std::string body;
+    if (service.empty() || !http_get(service + "/status?since=" + std::to_string(std::max(0LL, since)), body, 5)) {
+        for (const Job& job : jobs)
+            if (job.remote)
+                set_status(job.host, (boost::format(_u8L("Failure check: the service at %1% is not answering; it checks %2% when it is back "
+                                                         "(meanwhile the printer resumes on its own at each checkpoint)")) %
+                                      (service.empty() ? std::string("(not set)") : service) % job.job_name).str());
+        return finished;
+    }
+    const auto j = nlohmann::json::parse(body, nullptr, false);
+    if (!j.is_object())
+        return finished;
+    const long long now = (long long) std::time(nullptr);
+    for (const Job& job : jobs) {
+        if (!job.remote)
+            continue;
+        const auto hosts = j.value("hosts", nlohmann::json::object());
+        if (!hosts.contains(job.host) || !hosts[job.host].is_object() || hosts[job.host].value("job_id", std::string()) != job.id) {
+            // The service no longer has this job (a newer one on the printer, or the service lost it).
+            if (now - job.created > 12 * 3600)
+                finished.insert(job.id);
+            continue;
+        }
+        const auto& h = hosts[job.host];
+        set_status(job.host, h.value("text", std::string()) + " " + _u8L("(checked by the service)"));
+        if (!h.value("active", true))
+            finished.insert(job.id);
+    }
+    // Hold windows for checkpoints the service held. Right after the slicer starts, only recent holds: an older
+    // one has long been answered or has turned the hotend off.
+    for (const auto& ev : j.value("events", nlohmann::json::array())) {
+        if (!ev.is_object() || ev.value("mode", std::string()) != "hold")
+            continue;
+        if (since < 0 && now - ev.value("time", 0LL) > 30 * 60)
+            continue;
+        auto job = std::find_if(jobs.begin(), jobs.end(), [&](const Job& jb) { return jb.remote && jb.id == ev.value("job_id", std::string()); });
+        if (job != jobs.end())
+            show_service_hold(*job, ev.value("index", -1), ev.value("label", std::string()));
+    }
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_service_seq = j.value("seq", 0LL);
+    return finished;
+}
+
+void FailureCheckMonitor::show_service_hold(const Job& job, int index, const std::string& label)
+{
+    std::string service;
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        service = m_service;
+    }
+    // Recompute the service's comparison from its photos with the same engine, so the window shows the same
+    // overlay as a hold found by the slicer itself.
+    const std::string        url = service + "/jobs/" + job.id + "/cp" + std::to_string(index);
+    std::string              result_text, jpeg, base_jpeg;
+    auto                     model = model_for(job);
+    const FailureCheck::Checkpoint* cp = model ? model->checkpoint(index) : nullptr;
+    FailureCheck::CameraModel cam;
+    FailureCheck::Image       cur, base;
+    nlohmann::json            r;
+    bool ok = cp != nullptr && load_shop_camera(job.host, cam) && http_get(url + ".json", result_text, 10) && http_get(url + ".jpg", jpeg, 10);
+    if (ok) {
+        r                     = nlohmann::json::parse(result_text, nullptr, false);
+        const std::string base_path = r.is_object() ? r.value("base", std::string()) : std::string();
+        ok = !base_path.empty() && http_get(service + "/jobs/" + base_path, base_jpeg, 10) && shop_decode_image(jpeg, cur) &&
+             shop_decode_image(base_jpeg, base) && cur.w == base.w && cur.h == base.h;
+    }
+    if (!ok) {
+        set_status(job.host, (boost::format(_u8L("Failure check: \"%1%\" FAILED, printer paused (the service sent the photo to your phone)")) %
+                              label).str());
+        return;
+    }
+    FailureCheck::Alignment prior;
+    for (const auto& a : r.value("prior_alignment", nlohmann::json::array()))
+        if (a.is_array() && a.size() >= 4)
+            prior.anchors.push_back({a[0].get<double>(), a[1].get<double>(), a[2].get<double>(), a[3].get<double>(),
+                                     a.size() >= 5 ? a[4].get<double>() : 1.0});
+    const double z     = r.value("z", 0.0);
+    const std::string photo = job.dir + "/cp" + std::to_string(index) + ".jpg";
+    write_file(photo, jpeg);
+    FailureCheckEvent ev;
+    ev.mode          = FailureCheckEvent::Mode::Hold;
+    ev.host          = job.host;
+    ev.api           = job.api;
+    ev.job_name      = job.job_name;
+    ev.label         = label;
+    ev.index         = index;
+    ev.total         = job.total - 1;
+    ev.photo_path    = photo;
+    ev.z             = z;
+    ev.model         = model;
+    ev.segments_done = cp->segments_done;
+    ev.camera        = cam;
+    ev.has_result    = true;
+    ev.result        = FailureCheck::compare(*model, *cp, cam, base, r.value("base_z", 0.0), cur, z, prior);
+    post_event(ev);
 }
 
 void FailureCheckMonitor::post_event(const FailureCheckEvent& ev)

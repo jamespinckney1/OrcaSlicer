@@ -6,6 +6,11 @@
 // of the final G-code and starts watching the printer. A background thread polls Moonraker; when the
 // printer is parked at a checkpoint it photographs the bed, compares the photo with the G-code and answers
 // SHOP_CHECK_OK or SHOP_CHECK_HOLD. Watched jobs are saved, so a restarted slicer picks them up again.
+//
+// With a failure check service set (Preferences, scripts/shop_checkd), the job is handed to the service
+// instead, which keeps checking while the slicer is closed. The slicer then only mirrors the service: its
+// status line, and the Hold window (recomputed here from the service's photos, so it looks the same).
+// A service that cannot be reached at upload leaves the job to the slicer, as before.
 
 #include "FailureCheck.hpp"
 #include "ShopNotify.hpp"
@@ -15,6 +20,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <set>
 #include <string>
 #include <thread>
 #include <vector>
@@ -56,6 +62,11 @@ public:
     // One line for the Device tab, or empty when nothing is being watched on that printer.
     std::string status(const std::string& printer_host) const;
 
+    // Rereads the service address and the ntfy settings from app_config. UI thread only.
+    void configure();
+
+    static constexpr const char* kServiceKey = "shop_check_service"; // e.g. http://host:8765; empty = the slicer checks
+
 private:
     struct Job
     {
@@ -68,12 +79,16 @@ private:
         int              total        = 0;
         int              passed       = 0;
         bool             camera_warned = false; // phone told the camera is not answering (once per job)
+        bool             remote        = false; // checked by the service; this slicer only mirrors it
         FailureCheck::Alignment alignment; // per-part offsets measured on the first layer
     };
 
     FailureCheckMonitor() = default;
     void run();
     bool poll(Job& job); // false: stop watching
+    bool hand_off(const Job& job, std::string& error);  // gives the job to the service
+    std::set<std::string> poll_service(const std::vector<Job>& jobs); // mirrors the service; returns finished job ids
+    void show_service_hold(const Job& job, int index, const std::string& label); // a held checkpoint's window
     void handle_checkpoint(Job& job, int index, double z);
     void set_status(const std::string& host, const std::string& text);
     void save_jobs_locked() const;
@@ -91,6 +106,8 @@ private:
     std::shared_ptr<std::atomic<bool>> m_stop;
     std::thread                        m_thread;
     bool                               m_started = false;
+    std::string                        m_service, m_ntfy_server, m_ntfy_topic; // copies of app_config (see configure)
+    long long                          m_service_seq = -1; // last service event seen; -1 = not asked yet
 };
 
 }} // namespace Slic3r::GUI

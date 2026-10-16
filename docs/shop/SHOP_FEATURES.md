@@ -289,6 +289,14 @@ purge lines count as expected material.
   resumes with no popup; the Device tab status line and the job folder record it. Without a camera
   calibration every checkpoint photo is shown for review and the print resumes after 25 s unless you
   press Keep paused.
+- **Failure check service** (Preferences > General > "Failure check service", `scripts/shop_checkd/`).
+  With an address set, the slicer still adds the checkpoints at upload, then hands the job (G-code,
+  the printer's camera calibration, the ntfy settings) to an always-on service, which watches the
+  printer, compares with the same engine and sends the phone notifications, so checks go on while the
+  slicer is closed. The slicer then only mirrors it: the Device tab status line ("checked by the
+  service") and, for a held checkpoint, the Hold window, recomputed from the service's photos and
+  alignment so it looks the same. A service that cannot be reached at upload leaves the job to the
+  slicer (the upload message says so). Install and API: `scripts/shop_checkd/README.md`.
 - **Phone notifications** (Preferences > General > Phone notifications, `ShopNotify.*`). With an
   [ntfy](https://ntfy.sh) topic set (`shop_notify_topic`; empty = off, nothing is ever sent), a
   failed check also sends a high-priority notification with the job name, the checkpoint, the first

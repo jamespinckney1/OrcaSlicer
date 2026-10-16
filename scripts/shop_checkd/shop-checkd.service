@@ -1,0 +1,16 @@
+[Unit]
+Description=Print-shop failure check service (watches printers while the slicer is closed)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=shop-checkd
+Group=shop-checkd
+ExecStart=/usr/bin/python3 /opt/shop-checkd/shop_checkd.py --data /var/lib/shop-checkd --check /opt/shop-checkd/shop_check --port 8765
+Restart=always
+RestartSec=5
+StateDirectory=shop-checkd
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
