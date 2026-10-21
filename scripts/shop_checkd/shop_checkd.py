@@ -400,8 +400,11 @@ class Service:
                 self.set_status(job, "Failure check: reference photo taken for %s" % job["job_name"])
             return
 
-        base, base_z, stand_in = os.path.join(d, "cp0.jpg"), job["baseline_z"], False
-        if not (job["has_baseline"] and os.path.isfile(base)):
+        base, base_z, stand_in, base_index = os.path.join(d, "cp0.jpg"), job["baseline_z"], False, 0
+        ref = job.get("reference")  # a first-layer photo that replaced a reference which no longer matched
+        if ref and os.path.isfile(os.path.join(d, ref["photo"])):
+            base, base_z, base_index = os.path.join(d, ref["photo"]), ref["z"], ref["index"]
+        elif not (job["has_baseline"] and os.path.isfile(base)):
             base, base_z = self.previous_reference(job)
             stand_in = base is not None
         first_layer = cp["kind"] in ("early", "first_layer")
@@ -414,6 +417,8 @@ class Service:
                 al = os.path.join(d, "alignment.json")
                 write_atomic(al, json.dumps(prior))
                 args.append(al)
+            if base_index:
+                args += ["--base-checkpoint", str(base_index)]
             res = self.run_check(args)
         review_reason = ""
         if base is None:
@@ -434,12 +439,20 @@ class Service:
 
         if stand_in:
             res["reasons"].append("compared with the previous job's empty-plate photo (this job has no reference photo)")
+        # The view around the bed changed (a hand in the reference, say): the verdict is unsure. During the first
+        # layer, when the plate holds little material, this photo becomes the reference for the rest of the job.
+        replaced = res.get("reference_mismatch") and first_layer
+        if replaced:
+            job["reference"] = {"photo": os.path.basename(photo), "z": z, "index": index}
+            res["reasons"].append("later checkpoints compare with this photo instead")
         if first_layer and res.get("alignment"):
             job["alignment"] = res["alignment"]
         write_atomic(os.path.join(d, "cp%d.json" % index), json.dumps(
             {"checkpoint": index, "label": label, "z": z, "unexpected_mm2": res["unexpected_mm2"],
              "missing_fraction": res["missing_fraction"], "reasons": res["reasons"], "verdict": res["verdict"],
-             "base": os.path.relpath(base, self.jobs_dir), "base_z": base_z, "prior_alignment": prior}, indent=2))
+             "base": os.path.relpath(base, self.jobs_dir), "base_z": base_z, "base_checkpoint": base_index,
+             "prior_alignment": prior, "scene_change": res.get("scene_change", 0.0),
+             "reference_mismatch": bool(res.get("reference_mismatch"))}, indent=2))
         if res["verdict"] == "fail":
             send_script(job["api"], "SHOP_CHECK_HOLD")
             with self.lock:
@@ -453,6 +466,11 @@ class Service:
             return
         job["passed"] += 1
         send_script(job["api"], "SHOP_CHECK_OK")
+        if replaced:
+            notify(job, "Reference photo replaced: %s" % job["job_name"],
+                   'At "%s" the view around the bed no longer matched the reference photo (a hand or something else was in '
+                   "view when it was taken, or the light changed), so that checkpoint was not judged. The print continues, "
+                   "and later checkpoints compare with this photo." % label, tags="camera", attachment=photo)
         with self.lock:
             if res["verdict"] == "pass":
                 self.set_status(job, 'Failure check: "%s" passed (%d of %d)%s' % (

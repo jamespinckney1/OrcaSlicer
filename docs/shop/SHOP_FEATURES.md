@@ -285,15 +285,27 @@ purge lines count as expected material.
     off white parts, and its low noise would otherwise let that through. Dark or unset colours count
     both ways.
   - Missing material: when at least 60% of the latest layer shows no change, the check fails if the
-    job's filament colour is set and clearly differs from the plate, and is uncertain otherwise.
+    job's filament colour is set and clearly differs from the plate, and is uncertain otherwise. A cell
+    on a part's edge with change one cell (2 mm) away counts as seen (leftover calibration error; a
+    ring a few millimetres wide is all edge).
   - First layer, part by part (filament the camera can see): a peeled or folded first layer is still
     mostly "there", so plate-wide coverage misses it. Each part's solid first-layer cells (the G-code
     fills at least 60% of the cell; sparse support base and outlines are left out) are compared with the
     part itself: with light filament a cell darker than half the part's median brightness is a hole
     (bare plate, or plate in the shadow of a lifted flap; comparing with the part, not the reference,
-    ignores a spot that glinted in the reference). The check fails when 25% of a part's solid cells are
-    holes, or when holes form a patch of 60 mm2 at least 4 mm inside the part. On the saved jobs good
+    ignores a spot that glinted in the reference). As for missing material, an edge cell next to a cell
+    showing material is not a hole. The check fails when 25% of a part's solid cells are holes, or when holes form a patch of 60 mm2 at least 4 mm inside the part. On the saved jobs good
     first layers reached 10% and 8 mm2; a peeled, folded one 392 mm2. Holes are drawn orange.
+  - Reference mismatch: a hand in the reference photo blocks and bounces the chamber light, so patches of
+    plate change brightness once it is gone (on the gold plate, a patch read as 21 cm2 of black filament).
+    The frame around the plate (walls, gantry, rods; the plate with a 20 mm margin and the parked toolhead
+    left out) cannot change during a print, so it is compared too, after the same tone-curve exposure
+    match, in 8 x 8 pixel blocks. When its largest solid changed patch (blocks whose eight neighbours also
+    changed) covers 4% of it, the reference no longer shows the scene and the verdict is uncertain. On the
+    saved jobs a hand gave 6%; good jobs 0 to 0.5%, and 2.2% when white parts made the camera re-expose a
+    lot (scattered reflections, not a solid patch). At a first-layer checkpoint that photo then becomes the
+    job's reference (`cpN.json` records `base_checkpoint`); the material it already shows is left out of
+    the missing and hole counts.
 - **Replaying a checkpoint.** `scripts/shop_tests/failure_check_replay.cpp` reruns one comparison from
   a job folder and draws what the check saw.
 - **Verdicts.** Pass: the print resumes silently. Fail: the printer holds and beeps, and a window shows

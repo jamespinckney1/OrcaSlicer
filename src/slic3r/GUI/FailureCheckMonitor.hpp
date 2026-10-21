@@ -77,6 +77,11 @@ private:
         std::vector<int> handled;
         bool             has_baseline = false;
         double           baseline_z   = 0;
+        // A first-layer photo that replaced a reference which no longer matched the scene (a hand in view):
+        // file name in dir, toolhead Z and checkpoint index. Empty: the reference is cp0.
+        std::string      reference_photo;
+        double           reference_z     = 0;
+        int              reference_index = 0;
         int              total        = 0;
         int              passed       = 0;
         bool             camera_warned = false; // phone told the camera is not answering (once per job)

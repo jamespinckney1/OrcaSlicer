@@ -186,6 +186,12 @@ struct CheckResult
     bool                     light_filament   = false; // darkened patches were taken as shadows
     double                   first_layer_holes = 0;    // worst part's share of first-layer cells with no material
     double                   first_layer_patch_mm2 = 0; // largest patch of them well inside a part (mm2)
+    // Largest solid patch of the frame around the plate that differs between the photos (share of it). From
+    // kSceneChange (4%) on the reference no longer shows the scene: a hand or an object was in view in one of
+    // them, and the light it blocked or bounced changes the plate as well. The verdict is then unsure, and
+    // during the first layers the caller takes this photo as the job's new reference.
+    double                   scene_change       = 0;
+    bool                     reference_mismatch = false;
     std::vector<std::string> reasons; // English, one per finding
     // Per-part offsets that line the G-code up with the photo (absorbing calibration error).
     Alignment                alignment;
@@ -199,9 +205,11 @@ struct CheckResult
 };
 
 // Compares the photo at a checkpoint with the reference photo taken before the first layer.
-// baseline_z / current_z are the toolhead Z positions when each photo was taken.
+// baseline_z / current_z are the toolhead Z positions when each photo was taken. A reference taken at a later
+// checkpoint (after the first one turned out not to match the scene) already shows the material of its first
+// `baseline_segments` extrusions; those cells cannot change any more and do not count as missing.
 CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraModel& camera, const Image& baseline, double baseline_z,
-                    const Image& current, double current_z, const Alignment& prior = Alignment());
+                    const Image& current, double current_z, const Alignment& prior = Alignment(), size_t baseline_segments = 0);
 
 // Top-down picture of what the G-code has printed by `segments_done` (1 pixel per `mm_per_px`, back at
 // the top); the most recent layer is highlighted. Used when the camera is not calibrated.

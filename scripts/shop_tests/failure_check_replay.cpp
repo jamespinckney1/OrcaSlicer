@@ -5,7 +5,9 @@
 //   clang++ -std=c++17 -O2 -Isrc -I$D/eigen3 -I$D -Ideps_src scripts/shop_tests/failure_check_replay.cpp \
 //       src/slic3r/GUI/FailureCheck.cpp -o /tmp/fc_replay
 // Convert the photos first (macOS): sips -s format bmp cpN.jpg --out cpN.bmp
-// Run: fc_replay job.gcode camera.json cp0.bmp <z0> cpN.bmp <zN> <N> out.ppm [prior dx dy ...]
+// Run: fc_replay job.gcode camera.json cp0.bmp <z0> cpN.bmp <zN> <N> out.ppm [-b <M>] [x y dx dy s ...]
+//   -b M: the reference is checkpoint M's photo instead of the empty plate (after a reference mismatch);
+//   x y dx dy s: the first layer's alignment (the "prior_alignment" groups of a saved cpN.json).
 // Overlay: red = unexpected, orange = missing, blue = changed and expected, green = expected outline.
 #include "slic3r/GUI/FailureCheck.hpp"
 
@@ -15,6 +17,8 @@
 #include <fstream>
 #include <iterator>
 #include <sstream>
+#include <string>
+#include <vector>
 
 using namespace Slic3r::GUI::FailureCheck;
 
@@ -71,10 +75,22 @@ int main(int argc, char** argv)
         std::puts("no such checkpoint");
         return 1;
     }
-    const CheckResult r = compare(m, *cp, cam, base, z0, cur, zc);
-    std::printf("cp%d %s: %s unexpected=%.0f mm2 missing=%.2f footprint=%d valid=%d/%d threshold=%.1f holes=%.2f colour=%s%s\n", cp->index,
-                checkpoint_label(*cp).c_str(), r.verdict == Verdict::Pass ? "PASS" : r.verdict == Verdict::Fail ? "FAIL" : "UNSURE",
-                r.unexpected_mm2, r.missing_fraction, r.footprint_cells, r.valid_cells, r.bed_cells, r.threshold, r.first_layer_holes,
+    Alignment prior;
+    size_t    base_segments = 0;
+    std::vector<double> nums;
+    for (int a = 9; a < argc; ++a) {
+        if (std::string(argv[a]) == "-b" && a + 1 < argc) {
+            if (const Checkpoint* b = m.checkpoint(atoi(argv[++a])))
+                base_segments = b->segments_done;
+        } else
+            nums.push_back(atof(argv[a]));
+    }
+    for (size_t k = 0; k + 5 <= nums.size(); k += 5)
+        prior.anchors.push_back({nums[k], nums[k + 1], nums[k + 2], nums[k + 3], nums[k + 4]});
+    const CheckResult r = compare(m, *cp, cam, base, z0, cur, zc, prior, base_segments);
+    std::printf("cp%d %s: %s unexpected=%.0f mm2 missing=%.2f footprint=%d valid=%d/%d threshold=%.1f holes=%.2f scene=%.3f colour=%s%s\n",
+                cp->index, checkpoint_label(*cp).c_str(), r.verdict == Verdict::Pass ? "PASS" : r.verdict == Verdict::Fail ? "FAIL" : "UNSURE",
+                r.unexpected_mm2, r.missing_fraction, r.footprint_cells, r.valid_cells, r.bed_cells, r.threshold, r.first_layer_holes, r.scene_change,
                 m.first_layer_colour().c_str(), r.light_filament ? " (light: darker patches are shadows)" : "");
     for (const auto& a : r.alignment.anchors)
         std::printf("   part at (%.0f,%.0f) offset (%.0f,%.0f) scale %.2f\n", a.x, a.y, a.dx, a.dy, a.s);

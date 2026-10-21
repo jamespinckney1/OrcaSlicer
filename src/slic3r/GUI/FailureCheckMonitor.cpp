@@ -299,7 +299,8 @@ void FailureCheckMonitor::save_jobs_locked() const
     for (const Job& j : m_jobs)
         arr.push_back({{"id", j.id}, {"host", j.host}, {"api", j.api}, {"job_name", j.job_name}, {"dir", j.dir}, {"gcode", j.gcode},
                        {"created", j.created}, {"started", j.started}, {"handled", j.handled}, {"has_baseline", j.has_baseline},
-                       {"baseline_z", j.baseline_z}, {"total", j.total}, {"passed", j.passed}, {"remote", j.remote}, {"alignment", [&]() {
+                       {"baseline_z", j.baseline_z}, {"reference_photo", j.reference_photo}, {"reference_z", j.reference_z},
+                       {"reference_index", j.reference_index}, {"total", j.total}, {"passed", j.passed}, {"remote", j.remote}, {"alignment", [&]() {
                            nlohmann::json a = nlohmann::json::array();
                            for (const auto& an : j.alignment.anchors)
                                a.push_back({an.x, an.y, an.dx, an.dy, an.s});
@@ -330,6 +331,9 @@ void FailureCheckMonitor::load_jobs()
             j.handled      = o.value("handled", std::vector<int>());
             j.has_baseline = o.value("has_baseline", false);
             j.baseline_z   = o.value("baseline_z", 0.0);
+            j.reference_photo = o.value("reference_photo", std::string());
+            j.reference_z     = o.value("reference_z", 0.0);
+            j.reference_index = o.value("reference_index", 0);
             j.total        = o.value("total", 0);
             j.passed       = o.value("passed", 0);
             j.remote       = o.value("remote", false);
@@ -713,7 +717,8 @@ void FailureCheckMonitor::show_service_hold(const Job& job, int index, const std
     ev.segments_done = cp->segments_done;
     ev.camera        = cam;
     ev.has_result    = true;
-    ev.result        = FailureCheck::compare(*model, *cp, cam, base, r.value("base_z", 0.0), cur, z, prior);
+    const FailureCheck::Checkpoint* base_cp = r.value("base_checkpoint", 0) > 0 ? model->checkpoint(r.value("base_checkpoint", 0)) : nullptr;
+    ev.result = FailureCheck::compare(*model, *cp, cam, base, r.value("base_z", 0.0), cur, z, prior, base_cp ? base_cp->segments_done : 0);
     post_event(ev);
 }
 
@@ -860,11 +865,18 @@ void FailureCheckMonitor::handle_checkpoint(Job& job, int index, double z)
     std::string               base_bytes, review_reason;
     double                    base_z         = job.baseline_z;
     bool                      stand_in_reference = false;
+    size_t                    base_segments  = 0;
     if (!load_shop_camera(job.host, cam))
         review_reason = _u8L("the camera is not calibrated yet");
     else if (!shop_decode_image(jpeg, cur) || cur.w != cam.width || cur.h != cam.height)
         review_reason = _u8L("the camera photo does not match the calibration's size");
-    else if (job.has_baseline && read_file(job.dir + "/cp0.jpg", base_bytes) && shop_decode_image(base_bytes, base) && base.w == cur.w &&
+    else if (!job.reference_photo.empty() && read_file(job.dir + "/" + job.reference_photo, base_bytes) &&
+             shop_decode_image(base_bytes, base) && base.w == cur.w && base.h == cur.h) {
+        // a first-layer photo that replaced a reference which no longer matched
+        base_z = job.reference_z;
+        if (const FailureCheck::Checkpoint* b = model->checkpoint(job.reference_index))
+            base_segments = b->segments_done;
+    } else if (job.has_baseline && read_file(job.dir + "/cp0.jpg", base_bytes) && shop_decode_image(base_bytes, base) && base.w == cur.w &&
              base.h == cur.h) {
         // the job's own reference photo
     } else if (previous_reference(job.dir, base, base_z) && base.w == cur.w && base.h == cur.h) {
@@ -884,14 +896,23 @@ void FailureCheckMonitor::handle_checkpoint(Job& job, int index, double z)
     // First-layer checks measure each part's offset (calibration error); later checks start from it.
     const bool first_layer = cp->kind == FailureCheck::CheckpointKind::Early || cp->kind == FailureCheck::CheckpointKind::FirstLayer;
     FailureCheck::CheckResult res = FailureCheck::compare(*model, *cp, cam, base, base_z, cur, z,
-                                                          first_layer ? FailureCheck::Alignment() : job.alignment);
+                                                          first_layer ? FailureCheck::Alignment() : job.alignment, base_segments);
     if (stand_in_reference)
         res.reasons.push_back("compared with the previous job's empty-plate photo (this job has no reference photo)");
+    // The view around the bed changed (a hand in the reference, say): the verdict is unsure. During the first layer,
+    // when the plate holds little material, this photo becomes the reference for the rest of the job.
+    if (res.reference_mismatch && first_layer) {
+        job.reference_photo = "cp" + std::to_string(index) + ".jpg";
+        job.reference_z     = z;
+        job.reference_index = index;
+        res.reasons.push_back("later checkpoints compare with this photo instead");
+    }
     if (first_layer && res.alignment.valid())
         job.alignment = res.alignment;
     {
         nlohmann::json rj = {{"checkpoint", index}, {"label", label}, {"z", z}, {"unexpected_mm2", res.unexpected_mm2},
                              {"missing_fraction", res.missing_fraction}, {"reasons", res.reasons},
+                             {"scene_change", res.scene_change}, {"reference_mismatch", res.reference_mismatch},
                              {"verdict", res.verdict == FailureCheck::Verdict::Pass ? "pass" : res.verdict == FailureCheck::Verdict::Fail ? "fail" : "unsure"}};
         write_file(job.dir + "/cp" + std::to_string(index) + ".json", rj.dump(2));
     }

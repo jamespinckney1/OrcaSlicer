@@ -389,6 +389,51 @@ int main(int argc, char** argv)
         CHECK(r.verdict == Verdict::Fail, "H2 fails (a blob in a shadow is still brighter than the plate)");
     }
 
+    {
+        // A hand in the reference photo: it covers part of the frame around the plate, and the light it bounces
+        // brightens a patch of plate, which reads as dark material once the hand is gone. The frame shows the
+        // reference no longer matches, so the check stays unsure instead of failing.
+        const uint8_t black[3] = {22, 22, 24};
+        Box part{130, 170, 130, 170, 12, {}}; std::memcpy(part.col, black, 3);
+        GCodeModel sm = make_model({part}, 12);
+        sm.filament_colours = {"#161616"};
+        Checkpoint cp; cp.kind = CheckpointKind::Progress; cp.percent = 60; cp.layer = sm.layer_first_segment.size() - 1;
+        cp.segments_done = sm.segments.size();
+        const double Zc = 12 + 5;
+        Image lit = base; // the bounced light: plate x 20..70, y 40..110 brighter
+        for (int v = 0; v < lit.h; ++v)
+            for (int u = 0; u < lit.w; ++u) {
+                const Eigen::Vector3d d = truth.ray(u + 0.5, v + 0.5);
+                if (d.z() >= -1e-9)
+                    continue;
+                const Eigen::Vector3d q = truth.C + ((-Z0 - truth.C.z()) / d.z()) * d;
+                if (q.x() >= 20 && q.x() <= 70 && q.y() >= 40 && q.y() <= 110)
+                    for (int c = 0; c < 3; ++c) {
+                        uint8_t& px = lit.rgb[(size_t(v) * lit.w + u) * 3 + c];
+                        px = uint8_t(std::min(255L, std::lround(px * 1.6)));
+                    }
+            }
+        const Image cur = render(truth, Zc, {part});
+        auto r = compare(sm, cp, cal, lit, Z0, cur, Zc); report("K0 bounced light in the reference, no hand in view", r);
+        CHECK(r.verdict == Verdict::Fail && !r.reference_mismatch, "K0 the brightened patch reads as dark material");
+        Image hand = lit; // the hand itself: a skin-coloured patch on the frame, top left
+        int   off_plate = 0;
+        for (int v = 0; v < 120; ++v)
+            for (int u = 20; u < 200; ++u) {
+                if (truth.ray(u + 0.5, v + 0.5).z() < -1e-9)
+                    continue; // only where the plate is not
+                ++off_plate;
+                uint8_t* px = &hand.rgb[(size_t(v) * hand.w + u) * 3];
+                px[0] = 190; px[1] = 150; px[2] = 130;
+            }
+        r = compare(sm, cp, cal, hand, Z0, cur, Zc); report("K hand in the reference photo", r);
+        CHECK(off_plate > 5000 && r.verdict == Verdict::Unsure && r.reference_mismatch,
+              "K is unsure (the reference no longer matches the frame around the plate)");
+        Box blob{50, 80, 60, 85, 3, {}}; std::memcpy(blob.col, black, 3);
+        r = compare(sm, cp, cal, base, Z0, render(truth, Zc, {part, blob}), Zc); report("K2 dark blob, clean reference", r);
+        CHECK(r.verdict == Verdict::Fail && !r.reference_mismatch, "K2 fails (dark material where the G-code has none)");
+    }
+
     // ---------- 5. calibration from a test print ----------
     std::printf("5. Camera calibration from a test print of dots\n");
     {

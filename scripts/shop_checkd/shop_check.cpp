@@ -5,8 +5,10 @@
 //   shop_check info <job.gcode>
 //       {"checkpoints": [{"index", "kind", "label"}...]}
 //   shop_check compare <job.gcode> <camera.json> <index> <base.jpg> <base_z> <cur.jpg> <z> [alignment.json]
+//                      [--base-checkpoint <n>]
 //       {"verdict": "pass"|"fail"|"unsure", "unexpected_mm2", "missing_fraction", "reasons": [...],
-//        "first_layer": bool, "alignment": [[x, y, dx, dy, s]...]}
+//        "first_layer": bool, "alignment": [[x, y, dx, dy, s]...], "scene_change", "reference_mismatch": bool}
+//       --base-checkpoint: base.jpg is checkpoint n's photo (the job's reference was replaced), not the empty plate.
 //       or {"review_reason": "..."} when the photos cannot be compared.
 //
 // Prints one JSON object on stdout; exit status 0 unless the arguments or the G-code are unusable.
@@ -76,7 +78,7 @@ static int fail(const std::string& msg)
 int main(int argc, char** argv)
 {
     if (argc < 3)
-        return fail("usage: shop_check info <gcode> | compare <gcode> <camera.json> <index> <base.jpg> <base_z> <cur.jpg> <z> [alignment.json]");
+        return fail("usage: shop_check info <gcode> | compare <gcode> <camera.json> <index> <base.jpg> <base_z> <cur.jpg> <z> [alignment.json] [--base-checkpoint <n>]");
     const std::string cmd = argv[1];
     GCodeModel        model;
     std::string       err;
@@ -114,10 +116,21 @@ int main(int argc, char** argv)
         std::printf("%s\n", json{{"review_reason", "this job has no reference photo of the empty plate"}}.dump().c_str());
         return 0;
     }
+    std::string alignment_path;
+    size_t      base_segments = 0;
+    for (int a = 9; a < argc; ++a) {
+        if (std::string(argv[a]) == "--base-checkpoint" && a + 1 < argc) {
+            const Checkpoint* b = model.checkpoint(std::atoi(argv[++a]));
+            if (b == nullptr)
+                return fail(std::string("the G-code has no checkpoint ") + argv[a]);
+            base_segments = b->segments_done;
+        } else
+            alignment_path = argv[a];
+    }
     Alignment prior;
-    if (!first_layer && argc > 9) {
+    if (!first_layer && !alignment_path.empty()) {
         std::string text;
-        if (read_file(argv[9], text)) {
+        if (read_file(alignment_path, text)) {
             const json a = json::parse(text, nullptr, false);
             if (a.is_array())
                 for (const json& an : a)
@@ -126,7 +139,7 @@ int main(int argc, char** argv)
                                                  an.size() >= 5 ? an[4].get<double>() : 1.0});
         }
     }
-    const CheckResult res = compare(model, *cp, cam, base, std::atof(argv[6]), cur, std::atof(argv[8]), prior);
+    const CheckResult res = compare(model, *cp, cam, base, std::atof(argv[6]), cur, std::atof(argv[8]), prior, base_segments);
     json              anchors = json::array();
     for (const auto& an : res.alignment.anchors)
         anchors.push_back({an.x, an.y, an.dx, an.dy, an.s});
@@ -137,7 +150,9 @@ int main(int argc, char** argv)
                              {"missing_fraction", res.missing_fraction},
                              {"reasons", res.reasons},
                              {"first_layer", first_layer},
-                             {"alignment", anchors}}
+                             {"alignment", anchors},
+                             {"scene_change", res.scene_change},
+                             {"reference_mismatch", res.reference_mismatch}}
                             .dump()
                             .c_str());
     return 0;

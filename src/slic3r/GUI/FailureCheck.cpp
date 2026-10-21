@@ -845,10 +845,159 @@ double median(std::vector<float> v)
     return v[v.size() / 2];
 }
 
+// The reference no longer shows the scene when the frame around the plate changed in one solid patch of at
+// least this share of it (a hand or an object in view; the light it blocked or bounced changes the plate too).
+// On the shop's saved jobs a hand in the reference gave 6%; good jobs stayed at 0.5%, and 2.2% when white parts
+// made the camera re-expose a lot.
+constexpr double kSceneChange = 0.04;
+
+// Share of the frame around the plate (walls, gantry, frame: nothing printed can reach it) that changed between
+// the photos, as the largest solid patch of 8 x 8 pixel blocks. The plate with a margin and the parked toolhead
+// are left out; the exposure is matched with a tone curve, as on the plate.
+double scene_change(const GCodeModel& model, const CameraModel& camera, const Image& a, double za, const Image& b, double zb)
+{
+    const int W = a.w, H = a.h;
+    std::vector<uint8_t> keep(size_t(W) * H, 1);
+    {
+        // The plate's outline 20 mm out, traced along each edge (the lens bends straight edges), at both bed heights.
+        std::vector<std::array<double, 2>> pts;
+        const double x0 = model.bed_min_x - 20, y0 = model.bed_min_y - 20, x1 = model.bed_max_x + 20, y1 = model.bed_max_y + 20;
+        for (double z : {za, zb})
+            for (int k = 0; k <= 20; ++k) {
+                const double t = k / 20.0;
+                for (const auto& p : {std::array<double, 2>{x0 + (x1 - x0) * t, y0}, std::array<double, 2>{x1, y0 + (y1 - y0) * t},
+                                      std::array<double, 2>{x0 + (x1 - x0) * t, y1}, std::array<double, 2>{x0, y0 + (y1 - y0) * t}}) {
+                    double u, v;
+                    if (camera.project(p[0], p[1], -z, u, v))
+                        pts.push_back({u, v});
+                }
+            }
+        const auto plate = convex_hull(pts);
+        double     hu0 = 1e9, hu1 = -1e9, hv0 = 1e9, hv1 = -1e9;
+        for (double dx : {-40.0, 40.0})
+            for (double dy : {-46.0, 22.0})
+                for (double hh : {-2.0, 90.0}) {
+                    double u, v;
+                    if (camera.project(camera.park_x + dx, camera.park_y + dy, hh, u, v)) {
+                        hu0 = std::min(hu0, u - 10); hu1 = std::max(hu1, u + 10);
+                        hv0 = std::min(hv0, v - 10); hv1 = std::max(hv1, v + 10);
+                    }
+                }
+        for (int y = 0; y < H; ++y)
+            for (int x = 0; x < W; ++x)
+                if ((x >= hu0 && x <= hu1 && y >= hv0 && y <= hv1) || inside_convex(plate, x, y))
+                    keep[size_t(y) * W + x] = 0;
+    }
+    constexpr int B = 8;
+    const int     BW = W / B, BH = H / B;
+    std::vector<float> la(size_t(BW) * BH, -1), lb(size_t(BW) * BH, -1);
+    for (int by = 0; by < BH; ++by)
+        for (int bx = 0; bx < BW; ++bx) {
+            double sa = 0, sb = 0;
+            bool   full = true;
+            for (int y = by * B; y < by * B + B && full; ++y)
+                for (int x = bx * B; x < bx * B + B; ++x) {
+                    const size_t i = size_t(y) * W + x;
+                    if (!keep[i]) {
+                        full = false;
+                        break;
+                    }
+                    sa += (a.rgb[i * 3] + a.rgb[i * 3 + 1] + a.rgb[i * 3 + 2]) / 3.0;
+                    sb += (b.rgb[i * 3] + b.rgb[i * 3 + 1] + b.rgb[i * 3 + 2]) / 3.0;
+                }
+            if (full) {
+                la[size_t(by) * BW + bx] = float(sa / (B * B));
+                lb[size_t(by) * BW + bx] = float(sb / (B * B));
+            }
+        }
+    // Tone curve: for each brightness band of the second photo, the median brightness the same blocks had in the first.
+    std::array<std::vector<float>, 16> bands;
+    int                                n = 0;
+    for (size_t i = 0; i < la.size(); ++i)
+        if (la[i] >= 0) {
+            bands[std::min(15, int(lb[i] / 16))].push_back(la[i]);
+            ++n;
+        }
+    if (n < 200)
+        return 0.0;
+    std::array<double, 16> curve{};
+    std::array<bool, 16>   have{};
+    for (int k = 0; k < 16; ++k)
+        if (bands[k].size() >= 10) {
+            curve[k] = median(bands[k]);
+            have[k]  = true;
+        }
+    for (int k = 0; k < 16; ++k)
+        if (!have[k]) {
+            int lo = k - 1, hi = k + 1;
+            while (lo >= 0 && !have[lo]) --lo;
+            while (hi < 16 && !have[hi]) ++hi;
+            curve[k] = lo >= 0 && hi < 16 ? curve[lo] + (curve[hi] - curve[lo]) * (k - lo) / double(hi - lo)
+                     : lo >= 0            ? curve[lo]
+                     : hi < 16            ? curve[hi]
+                                          : k * 16.0 + 8.0;
+        }
+    for (int k = 1; k < 16; ++k)
+        curve[k] = std::max(curve[k], curve[k - 1]);
+    auto matched = [&](double l) {
+        const double f = std::clamp(l / 16.0 - 0.5, 0.0, 15.0);
+        const int    k = int(f);
+        return k < 15 ? curve[k] * (1 - (f - k)) + curve[k + 1] * (f - k) : curve[15];
+    };
+    std::vector<uint8_t> changed(la.size(), 0);
+    for (size_t i = 0; i < la.size(); ++i)
+        if (la[i] >= 0) {
+            const double m = matched(lb[i]), d = std::abs(m - la[i]);
+            changed[i]     = d > 25 && d > 0.25 * std::max<double>(la[i], m);
+        }
+    // Solid change only: a block whose eight neighbours changed too. Reflections that move when the exposure
+    // changes give scattered blocks; a hand gives a solid patch.
+    std::vector<uint8_t> solid(changed.size(), 0);
+    for (int y = 1; y + 1 < BH; ++y)
+        for (int x = 1; x + 1 < BW; ++x) {
+            bool all = true;
+            for (int dy = -1; dy <= 1 && all; ++dy)
+                for (int dx = -1; dx <= 1; ++dx)
+                    if (!changed[size_t(y + dy) * BW + x + dx]) {
+                        all = false;
+                        break;
+                    }
+            solid[size_t(y) * BW + x] = all;
+        }
+    std::vector<uint8_t> seen(solid.size(), 0);
+    int                  best = 0;
+    for (size_t s = 0; s < solid.size(); ++s) {
+        if (!solid[s] || seen[s])
+            continue;
+        std::vector<size_t> stack{s};
+        seen[s] = 1;
+        int k   = 0;
+        while (!stack.empty()) {
+            const size_t i = stack.back();
+            stack.pop_back();
+            ++k;
+            const int x = int(i % BW), y = int(i / BW);
+            for (int dy = -1; dy <= 1; ++dy)
+                for (int dx = -1; dx <= 1; ++dx) {
+                    const int xx = x + dx, yy = y + dy;
+                    if (xx < 0 || yy < 0 || xx >= BW || yy >= BH)
+                        continue;
+                    const size_t j = size_t(yy) * BW + xx;
+                    if (solid[j] && !seen[j]) {
+                        seen[j] = 1;
+                        stack.push_back(j);
+                    }
+                }
+        }
+        best = std::max(best, k);
+    }
+    return double(best) / n;
+}
+
 } // namespace
 
 CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraModel& camera, const Image& baseline, double baseline_z,
-                    const Image& current, double current_z, const Alignment& prior)
+                    const Image& current, double current_z, const Alignment& prior, size_t baseline_segments)
 {
     CheckResult res;
     if (!camera.valid || baseline.empty() || current.empty() || !model.has_bed()) {
@@ -972,6 +1121,8 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
         res.reasons.push_back("the camera sees too little of the bed for a reliable check");
         return res;
     }
+    res.scene_change       = scene_change(model, camera, baseline, baseline_z, current, current_z);
+    res.reference_mismatch = res.scene_change >= kSceneChange;
     // Where the G-code says material is, as the camera sees it now.
     PlaneMapper pm(camera, current_z);
     if (!pm.ok) {
@@ -1007,11 +1158,16 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
                 accumulate_coverage(coverage, footprint, pm, model.segments[i], -current_z);
             }
     }
+    // Material the reference already shows (a reference taken at a later checkpoint): it cannot change any more.
+    Grid in_base = allowed;
+    std::fill(in_base.v.begin(), in_base.v.end(), 0);
+    for (size_t i = 0; i < std::min(baseline_segments, done); ++i)
+        rasterize(in_base, pm, model.segments[i], -current_z);
     // Cells the latest layer fills (not sparse support base or an outline only): where a first-layer hole means
     // something.
     Grid solid = footprint;
     for (size_t i = 0; i < solid.v.size(); ++i)
-        solid.v[i] = solid.v[i] && coverage[i] >= 0.6f * float(cell * cell);
+        solid.v[i] = solid.v[i] && coverage[i] >= 0.6f * float(cell * cell) && !in_base.v[i];
     // Exposure drift: the camera re-exposes when bright parts fill the view, which shifts the whole
     // plate. Measure it only on plate well away (16 mm) from anything the G-code prints, as the median
     // brightness ratio, so neither the parts nor a failure can skew it.
@@ -1333,7 +1489,9 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
     const int    margin_cells   = 4 + int(std::ceil(printed_height / cell));
     const Grid allowed_wide = dilate(allowed, margin_cells);
     const Grid allowed_far  = dilate(allowed_wide, 4); // a further 16 mm
-    const Grid core         = erode4(footprint);
+    Grid core = erode4(footprint);
+    for (size_t i = 0; i < core.v.size(); ++i)
+        core.v[i] = core.v[i] && !in_base.v[i];
     // Shadows: as the bed drops, the gantry and the parts throw shadows that move across the plate, and a
     // shadow also hides the plate's glitter, which reads like dark matte filament. When every filament of
     // the job is much lighter than the plate, stray material can only make the plate brighter, so a patch
@@ -1459,7 +1617,18 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
             }
             if (core.get(gx, gy)) {
                 ++fp_cells;
-                if (!changed[i]) {
+                bool missing = !changed[i];
+                // As for first-layer holes: on the edge, change one cell away is leftover calibration error.
+                if (missing && !(core.get(gx - 1, gy) && core.get(gx + 1, gy) && core.get(gx, gy - 1) && core.get(gx, gy + 1)))
+                    for (int dy = -1; dy <= 1 && missing; ++dy)
+                        for (int dx = -1; dx <= 1; ++dx) {
+                            const int xx = gx + dx, yy = gy + dy;
+                            if (xx >= 0 && yy >= 0 && xx < W && yy < H && footprint.get(xx, yy) && changed[size_t(yy) * W + xx]) {
+                                missing = false;
+                                break;
+                            }
+                        }
+                if (missing) {
                     ++fp_missing;
                     state = CellMissing;
                 }
@@ -1556,12 +1725,29 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
             int n = 0;
             for (size_t i : part)
                 n += solid.v[i] ? 1 : 0;
+            auto bare = [&](size_t i) {
+                return first_light ? lum_now(i) < 0.5f * part_lum : diff[i] <= std::max(res.threshold, texture_k * ref_texture[i]);
+            };
             int holes = 0;
             for (size_t i : part) {
                 if (!solid.v[i])
                     continue; // sparse support base or outline: not a solid first layer
-                const bool hole = first_light ? lum_now(i) < 0.5f * part_lum
-                                              : diff[i] <= std::max(res.threshold, texture_k * ref_texture[i]);
+                // On the part's edge, material seen one cell (2 mm) away is leftover calibration error rather than a
+                // hole; a thin part (a ring a few millimetres wide) is all edge.
+                const int cx = int(i % W), cy = int(i / W);
+                bool      hole = bare(i);
+                if (hole && !(core.get(cx - 1, cy) && core.get(cx + 1, cy) && core.get(cx, cy - 1) && core.get(cx, cy + 1)))
+                    for (int dy = -1; dy <= 1 && hole; ++dy)
+                        for (int dx = -1; dx <= 1; ++dx) {
+                            const int xx = cx + dx, yy = cy + dy;
+                            if (xx < 0 || yy < 0 || xx >= W || yy >= H)
+                                continue;
+                            const size_t j = size_t(yy) * W + xx;
+                            if (j != i && footprint.v[j] && valid[j] && !bare(j)) {
+                                hole = false;
+                                break;
+                            }
+                        }
                 if (hole) {
                     ++holes;
                     hole_cell[i] = 1;
@@ -1633,6 +1819,16 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
             res.reasons.push_back(colour.empty() ? "the job does not say what colour the filament is, so this may be a filament that looks like the plate"
                                                  : "the filament colour is close to the plate's, so the camera may simply not see it");
         }
+    }
+    if (res.reference_mismatch) {
+        char buf[240];
+        std::snprintf(buf, sizeof(buf),
+                      "the reference photo no longer matches the printer (%.0f%% of the view around the bed changed: a hand or "
+                      "something else was in view, or the light changed), so this checkpoint could not be judged",
+                      res.scene_change * 100.0);
+        res.reasons.insert(res.reasons.begin(), buf);
+        fail   = false;
+        unsure = true;
     }
     res.verdict = fail ? Verdict::Fail : unsure ? Verdict::Unsure : Verdict::Pass;
     if (res.verdict == Verdict::Pass)
