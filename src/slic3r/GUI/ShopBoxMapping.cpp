@@ -5,8 +5,11 @@
 #include "GUI_App.hpp"
 #include "I18N.hpp"
 #include "MsgDialog.hpp"
+#include "Plater.hpp"
+#include "PresetComboBoxes.hpp"
 #include "format.hpp"
 #include "libslic3r/AppConfig.hpp"
+#include "libslic3r/Config.hpp"
 #include "libslic3r/PresetBundle.hpp"
 #include "slic3r/Utils/Http.hpp"
 
@@ -30,6 +33,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
+#include <iterator>
 #include <sstream>
 
 namespace Slic3r { namespace GUI { namespace ShopBox {
@@ -127,6 +131,13 @@ void save_remembered(const std::map<int, int>& m)
     for (const auto& [f, s] : m)
         j[std::to_string(f)] = s;
     wxGetApp().app_config->set(kSyncKey, j.dump());
+}
+
+// The sidebar's filament badges read "EXT" for the external spool, so they follow the remembered choices.
+void refresh_filament_badges()
+{
+    for (PlaterPresetComboBox* combo : wxGetApp().plater()->sidebar().combos_filament())
+        combo->update();
 }
 
 int to_int(const nlohmann::json& v, int fallback = 0)
@@ -305,6 +316,34 @@ void remember_sync(const std::map<int, AMSMapInfo>& maps, bool overwrite)
     }
 }
 
+bool is_box_printer()
+{
+    // The QIDI Box printers (Plus 4, Q2, Max 4) all come from the Qidi profile bundle.
+    const auto* model = wxGetApp().preset_bundle->printers.get_edited_preset().config.opt<ConfigOptionString>("printer_model");
+    return model != nullptr && boost::algorithm::istarts_with(model->value, "Qidi");
+}
+
+bool is_external(int filament_index)
+{
+    if (!is_box_printer())
+        return false;
+    const std::map<int, int> m  = load_remembered();
+    const auto               it = m.find(filament_index);
+    return it != m.end() && it->second == kExternalSlot;
+}
+
+void set_external(int filament_index, bool external)
+{
+    // One spool fits the inlet, so choosing it for a filament takes it from any other.
+    std::map<int, int> m = load_remembered();
+    for (auto it = m.begin(); it != m.end();)
+        it = it->second == kExternalSlot ? m.erase(it) : std::next(it);
+    if (external)
+        m[filament_index] = kExternalSlot;
+    save_remembered(m);
+    refresh_filament_badges();
+}
+
 std::string tool_map_gcode(int tool, int slot)
 {
     return "SAVE_VARIABLE VARIABLE=value_t" + std::to_string(tool) + " VALUE=\"'slot" + std::to_string(slot) + "'\"";
@@ -439,6 +478,7 @@ bool confirm_slots(wxWindow* parent, const std::string& print_host, const std::v
     for (size_t i = 0; i < used.size(); ++i)
         chosen[used[i].index] = loaded[size_t(std::max(0, combos[i]->GetSelection()))].index;
     save_remembered(chosen);
+    refresh_filament_badges();
     if (busy)
         return true;
 

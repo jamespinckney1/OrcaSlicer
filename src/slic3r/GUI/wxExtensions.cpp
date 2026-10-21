@@ -821,6 +821,11 @@ wxBitmap *get_extruder_color_icon(std::string color, std::string label, int icon
             dc.SetPen(*wxGREY_PEN);
             dc.DrawRectangle(0, 0, icon_width, icon_height);
         }
+        // A label wider than the icon (such as the print shop's "EXT" on a thin icon) steps the font down to fit.
+        for (wxFont font = dc.GetFont(); dc.GetTextExtent(wxString(label)).x > icon_width - 2 && font.GetPointSize() > 5;) {
+            font.SetPointSize(font.GetPointSize() - 1);
+            dc.SetFont(font);
+        }
         auto size = dc.GetTextExtent(wxString(label));
         dc.SetTextForeground(clr.GetLuminance() < 0.51 ? *wxWHITE : *wxBLACK);
         dc.DrawText(label, (icon_width - size.x) / 2, (icon_height - size.y) / 2);

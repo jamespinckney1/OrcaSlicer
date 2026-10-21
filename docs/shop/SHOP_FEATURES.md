@@ -148,7 +148,9 @@ applies all three (and the physical printer/host if one was saved). Stored in
   and cannot share a print with Box slots: the window refuses such a mix. With the plate's one filament
   on the external spool, OK writes `enable_box = 0` instead of a tool map and reminds you to feed the
   spool; a later upload that uses Box slots writes `enable_box = 1` again. With no loaded Box slots the
-  external spool is the default.
+  external spool is the default. On a Qidi printer the sidebar shows that remembered choice: the
+  filament's number badge reads "EXT", and the filament's menu has an "External spool (QIDI Box off)"
+  check item that sets it ahead of the upload (one filament at a time).
   "Also update the Box's slot labels" (on by default, remembered as `shop_box_relabel`) syncs back:
   the Box cannot see colours, and each slot's label is three saved variables the touchscreen edits,
   `color_slot<n>` (index into `[colordict]` of the printer's `officiall_filas_list.cfg`, 24 colours),

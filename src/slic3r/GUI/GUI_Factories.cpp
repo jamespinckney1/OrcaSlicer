@@ -9,6 +9,7 @@
 #include "Shortcuts.hpp"
 #include "I18N.hpp"
 #include "Plater.hpp"
+#include "ShopBoxMapping.hpp"
 #include "ObjectDataViewModel.hpp"
 
 #include "OptionsGroup.hpp"
@@ -1882,6 +1883,18 @@ void MenuFactory::create_filament_action_menu(bool init, int active_filament_men
         menu, wxID_ANY, _L("Decompose Color"), "", [](wxCommandEvent&) {
             plater()->sidebar().decompose_filament_color(kSidebarContextMenuFilamentId); }, "", nullptr,
         []() { return plater()->sidebar().combos_filament().size() >= 2; }, m_parent);
+
+    // Print shop: the external spool feeds one filament with the QIDI Box off; the filament's badge then reads "EXT"
+    // and the send dialog starts from it. The menu is rebuilt on every open, so the check is set here.
+    if (active_filament_menu_id >= 0 && ShopBox::is_box_printer()) {
+        const int   idx  = active_filament_menu_id;
+        wxMenuItem* item = append_menu_check_item(
+            menu, wxID_ANY, _L("External spool (QIDI Box off)"),
+            _L("Feed this filament from a spool on the printer's filament inlet instead of the QIDI Box"),
+            [idx](wxCommandEvent&) { ShopBox::set_external(idx, !ShopBox::is_external(idx)); }, menu,
+            []() { return true; }, []() { return true; }, nullptr);
+        item->Check(ShopBox::is_external(idx));
+    }
 
     menu->AppendSeparator(); // ORCA use seperator for reducing accidental clicks to delete
 

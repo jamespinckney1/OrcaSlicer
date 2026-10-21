@@ -18,6 +18,7 @@
 #include "slic3r/GUI/Widgets/StateColor.hpp"
 #include "slic3r/GUI/GUI_Utils.hpp"
 #include "slic3r/GUI/EncodedFilament.hpp"
+#include "slic3r/GUI/ShopBoxMapping.hpp"
 #include <unordered_set>
 #include "libslic3r/Utils.hpp"
 #include "slic3r/GUI/CalibrationWizardPage.hpp"
@@ -1178,7 +1179,17 @@ void PlaterPresetComboBox::update()
     {
         std::vector<wxBitmap *> bitmaps = get_extruder_color_icons(true);
         if (m_filament_idx < bitmaps.size()) {
-            clr_picker->SetBitmap(*bitmaps[m_filament_idx]);
+            wxBitmap* badge = bitmaps[m_filament_idx];
+            // Print shop: a filament fed from the external spool (QIDI Box off) reads "EXT" instead of its number.
+            // Same size as get_extruder_color_icons(true).
+            if (ShopBox::is_external(m_filament_idx)) {
+                const auto* colors = m_preset_bundle->project_config.option<ConfigOptionStrings>("filament_colour");
+                if (colors != nullptr && size_t(m_filament_idx) < colors->values.size()) {
+                    const double em = wxGetApp().em_unit();
+                    badge = get_extruder_color_icon(colors->values[m_filament_idx], "EXT", lround(2 * em), lround(2 * em));
+                }
+            }
+            clr_picker->SetBitmap(*badge);
         } else {
             return;
         }

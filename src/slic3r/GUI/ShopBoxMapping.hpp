@@ -36,6 +36,14 @@ struct UsedFilament
 // the print. Returns false when the user cancels the upload; true otherwise (also without a Box).
 bool confirm_slots(wxWindow* parent, const std::string& print_host, const std::vector<UsedFilament>& used);
 
+// Whether the selected printer is a QIDI one (the printers a Box can feed).
+bool is_box_printer();
+// Whether filament <filament_index> (0-based) feeds from the external spool with the Box off: the remembered
+// upload choice, which the sidebar shows as "EXT" on the filament's badge. Always false on other printers.
+bool is_external(int filament_index);
+// Sets or clears that choice from the sidebar; the external spool goes to one filament at a time.
+void set_external(int filament_index, bool external);
+
 // SAVE_VARIABLE line for value_t<tool> = 'slot<slot>' in the quoting QIDI's Klipper accepts
 // (VALUE='slot2' is rejected: Klipper strips the outer quotes and the bare word is not a literal).
 std::string tool_map_gcode(int tool, int slot);
