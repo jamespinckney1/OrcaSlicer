@@ -270,7 +270,10 @@ purge lines count as expected material.
     glitter around them. When every filament the job uses (by the G-code's "filament used [mm]"; a
     project often lists every loaded Box spool) is much lighter than the plate (60 levels brighter than
     its median in the reference photo), only patches that got brighter count as unexpected material; a
-    darker patch is a shadow. Dark or unset colours count both ways.
+    darker patch is a shadow. A patch must also brighten the plate by at least a quarter of what the
+    job's printed parts show over it: a smooth, glossy plate picks up a faint sheen from light bounced
+    off white parts, and its low noise would otherwise let that through. Dark or unset colours count
+    both ways.
   - Missing material: when at least 60% of the latest layer shows no change, the check fails if the
     job's filament colour is set and clearly differs from the plate, and is uncertain otherwise.
   - First layer, part by part (filament the camera can see): a peeled or folded first layer is still

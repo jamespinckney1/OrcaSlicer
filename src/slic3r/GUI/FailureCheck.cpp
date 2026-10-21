@@ -1362,13 +1362,30 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
         }
     }
     res.light_filament = light_filament;
+    // With light filament, stray material brightens the plate about as much as the job's own parts do. A
+    // smooth, glossy plate also brightens a little where it picks up light bounced off the white parts, or
+    // where the exposure correction is slightly off, and its low noise lets that pass the threshold. So a
+    // brightening only counts once it reaches a quarter of what the printed parts show over the plate (the
+    // sheen stays under a tenth; a white blob, even in a shadow, is well above).
+    double min_brightening = 0.0;
+    if (light_filament) {
+        std::vector<float> parts;
+        for (int gy = 0; gy < H; ++gy)
+            for (int gx = 0; gx < W; ++gx) {
+                const size_t i = size_t(gy) * W + gx;
+                if (valid[i] && core.get(gx, gy))
+                    parts.push_back(sm_dlum[i]);
+            }
+        if (parts.size() >= 20)
+            min_brightening = 0.25 * median(parts);
+    }
     // Candidate cells: changed where the G-code has nothing. Only connected patches of 8+ cells (32 mm2)
     // count; spaghetti and blobs form patches, while the plate's glitter gives isolated specks.
     std::vector<uint8_t> candidate(size_t(W) * H, 0);
     for (int gy = 0; gy < H; ++gy)
         for (int gx = 0; gx < W; ++gx) {
             const size_t i = size_t(gy) * W + gx;
-            candidate[i]   = changed[i] && !allowed_wide.get(gx, gy) && (!light_filament || sm_dlum[i] > 0);
+            candidate[i]   = changed[i] && !allowed_wide.get(gx, gy) && (!light_filament || sm_dlum[i] > min_brightening);
         }
     // Keep only solid change: a cell needs at least 5 changed cells in its 3 x 3 neighbourhood. Glitter
     // that sparkles differently gives loose specks; spaghetti, blobs and parts give solid patches.
