@@ -141,6 +141,14 @@ applies all three (and the physical printer/host if one was saved). Stored in
   dropdown of loaded slots, pre-filled with the one slot labelled in exactly the filament's colour, else the
   last sync or upload choice (remembered as `shop_box_sync`, which goes stale when slots are relabelled),
   else the n-th loaded slot; OK writes `value_t<n>` (not while the printer is busy).
+  Each dropdown also offers the external spool (the printer's `slot16`, labelled by `color_slot16` /
+  `filament_slot16`), remembered per filament like a slot. QIDI prints from the external spool with the
+  Box turned off (touchscreen: "Do not enable QIDI BOX"; the `T<n>` macros load nothing while the saved
+  variable `enable_box` is 0) and the spool fed straight into the toolhead inlet, so it feeds one filament
+  and cannot share a print with Box slots: the window refuses such a mix. With the plate's one filament
+  on the external spool, OK writes `enable_box = 0` instead of a tool map and reminds you to feed the
+  spool; a later upload that uses Box slots writes `enable_box = 1` again. With no loaded Box slots the
+  external spool is the default.
   "Also update the Box's slot labels" (on by default, remembered as `shop_box_relabel`) syncs back:
   the Box cannot see colours, and each slot's label is three saved variables the touchscreen edits,
   `color_slot<n>` (index into `[colordict]` of the printer's `officiall_filas_list.cfg`, 24 colours),

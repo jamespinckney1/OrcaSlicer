@@ -32,7 +32,8 @@ struct UsedFilament
 };
 
 // For a Moonraker printer with a QIDI Box: asks which slot each used filament loads from and writes the
-// printer's tool map. Returns false when the user cancels the upload; true otherwise (also without a Box).
+// printer's tool map, or, when the plate's one filament is set to the external spool, turns the Box off for
+// the print. Returns false when the user cancels the upload; true otherwise (also without a Box).
 bool confirm_slots(wxWindow* parent, const std::string& print_host, const std::vector<UsedFilament>& used);
 
 // SAVE_VARIABLE line for value_t<tool> = 'slot<slot>' in the quoting QIDI's Klipper accepts

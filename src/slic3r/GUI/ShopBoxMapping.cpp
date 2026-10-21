@@ -38,6 +38,10 @@ namespace {
 
 constexpr const char* kSyncKey     = "shop_box_sync"; // app_config: {"<filament index>": <slot>, ...}
 constexpr const char* kClearSwatch = "#D9E3ED";       // QIDI's swatch for a clear filament
+// The printer's name for the external spool holder (its label is color_slot16 / filament_slot16). Feeding
+// from it means a print with the Box turned off (enable_box = 0): the T<n> macros then load nothing, and
+// the spool goes straight into the toolhead inlet, so it feeds one filament and cannot mix with Box slots.
+constexpr int kExternalSlot = 16;
 
 struct Slot
 {
@@ -160,8 +164,9 @@ std::string script_error(const std::string& body, const std::string& error, unsi
     return reason;
 }
 
-// The Box's slots and the printer state, or false when the printer has no Box (or does not answer).
-bool fetch_box(const std::string& api, std::vector<Slot>& slots, std::string& state)
+// The Box's slots, the external spool's label, whether the Box is enabled and the printer state, or false
+// when the printer has no Box (or does not answer).
+bool fetch_box(const std::string& api, std::vector<Slot>& slots, Slot& external, int& enable_box, std::string& state)
 {
     std::string body;
     Http::get(api + "/printer/objects/query?multi_color_controller&print_stats=state&save_variables")
@@ -187,7 +192,15 @@ bool fetch_box(const std::string& api, std::vector<Slot>& slots, std::string& st
         const auto& sl     = mcc["slots"];
         const auto  states = sl.value("states", nlohmann::json::object());
         const auto  mats   = sl.value("materials", nlohmann::json::object());
-        for (int i = 0; i < std::min(boxes * 4, 16); ++i) {
+        enable_box         = 1;
+        if (st.contains("save_variables") && st["save_variables"].contains("variables") &&
+            st["save_variables"]["variables"].contains("enable_box"))
+            enable_box = to_int(st["save_variables"]["variables"]["enable_box"], 1);
+        std::vector<int> indexes;
+        for (int i = 0; i < std::min(boxes * 4, 16); ++i)
+            indexes.push_back(i);
+        indexes.push_back(kExternalSlot);
+        for (int i : indexes) {
             const std::string key = "slot" + std::to_string(i);
             Slot s;
             s.index = i;
@@ -207,7 +220,10 @@ bool fetch_box(const std::string& api, std::vector<Slot>& slots, std::string& st
                 if (vars.contains("filament_slot" + std::to_string(i)))
                     s.filament_index = to_int(vars["filament_slot" + std::to_string(i)], -1);
             }
-            slots.push_back(s);
+            if (i == kExternalSlot)
+                external = s;
+            else
+                slots.push_back(s);
         }
     } catch (...) {
         return false;
@@ -250,6 +266,8 @@ wxBitmap swatch(wxWindow* w, const std::string& colour, bool clear)
 
 wxString slot_label(const Slot& s)
 {
+    if (s.index == kExternalSlot)
+        return s.name.empty() ? _L("External spool (QIDI Box off)") : format_wxstr(_L("External spool (QIDI Box off) - %1%"), from_u8(s.name));
     wxString text = format_wxstr(_L("Slot %1%"), s.index + 1); // the touchscreen counts from 1
     if (!s.name.empty())
         text += " - " + from_u8(s.name);
@@ -300,33 +318,41 @@ bool confirm_slots(wxWindow* parent, const std::string& print_host, const std::v
     }
     std::string       api, state;
     std::vector<Slot> slots;
+    Slot              external;
+    external.index = kExternalSlot;
+    int enable_box = 1;
     {
         wxBusyCursor wait;
         api = shop_resolve_api(print_host);
-        if (api.empty() || !fetch_box(api, slots, state)) {
+        if (api.empty() || !fetch_box(api, slots, external, enable_box, state)) {
             BOOST_LOG_TRIVIAL(info) << "Shop Box: no Box at " << print_host << " (or no answer); tool map left as it is";
             return true; // not a Box printer, or not reachable: upload as before
         }
     }
+    // The choices: every loaded Box slot, then the external spool (always offered, so a filament can be marked
+    // as externally fed, including one added to the project by hand).
     std::vector<Slot> loaded;
     for (const Slot& s : slots)
         if (s.state != 0)
             loaded.push_back(s);
-    const wxString title = _L("QIDI Box slots");
-    if (loaded.empty()) {
-        MessageDialog dlg(parent, _L("The Box reports no loaded slots. Upload anyway? The printer will use its current tool map."), title,
-                          wxICON_WARNING | wxYES_NO);
-        return dlg.ShowModal() == wxID_YES;
-    }
+    const size_t box_choices = loaded.size();
+    loaded.push_back(external);
+    const int      external_choice = int(box_choices);
+    const wxString title           = _L("QIDI Box slots");
 
     // Defaults: the one slot labelled with exactly this filament's colour (a clear filament: QIDI's clear),
     // else the slot it was last synced or sent from, else the n-th loaded slot (the order Box sync fills the
     // filament list in). The colour comes first because a remembered choice outlives relabelled slots.
     const std::map<int, int> remembered = load_remembered();
     auto default_slot = [&](const UsedFilament& f) -> int {
+        if (box_choices == 0)
+            return external_choice;
+        const auto ext = remembered.find(f.index);
+        if (ext != remembered.end() && ext->second == kExternalSlot)
+            return external_choice;
         const std::string want = boost::algorithm::to_lower_copy(is_clear(f.colour) ? std::string(kClearSwatch) : f.colour.substr(0, 7));
         int match = -1, matches = 0;
-        for (size_t k = 0; k < loaded.size(); ++k)
+        for (size_t k = 0; k < box_choices; ++k)
             if (boost::algorithm::to_lower_copy(loaded[k].colour) == want) {
                 match = int(k);
                 ++matches;
@@ -335,17 +361,18 @@ bool confirm_slots(wxWindow* parent, const std::string& print_host, const std::v
             return match;
         auto it = remembered.find(f.index);
         if (it != remembered.end())
-            for (size_t k = 0; k < loaded.size(); ++k)
+            for (size_t k = 0; k < box_choices; ++k)
                 if (loaded[k].index == it->second)
                     return int(k);
-        return match >= 0 ? match : std::min(f.index, int(loaded.size()) - 1);
+        return match >= 0 ? match : std::min(f.index, int(box_choices) - 1);
     };
 
     wxDialog dlg(parent, wxID_ANY, title, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE);
     auto*    top  = new wxBoxSizer(wxVERTICAL);
     auto*    help = new wxStaticText(&dlg, wxID_ANY,
                                      _L("Which Box slot should each filament load from? Box sync copies colours and types only, "
-                                        "so the printer is told here."));
+                                        "so the printer is told here. Choose the external spool to print one filament with the "
+                                        "QIDI Box turned off."));
     help->Wrap(dlg.FromDIP(460));
     top->Add(help, 0, wxALL, dlg.FromDIP(12));
     const bool busy = state == "printing" || state == "paused";
@@ -389,20 +416,42 @@ bool confirm_slots(wxWindow* parent, const std::string& print_host, const std::v
     top->Add(buttons, 0, wxEXPAND | wxALL, dlg.FromDIP(12));
     dlg.SetSizerAndFit(top);
     dlg.CentreOnParent();
-    if (dlg.ShowModal() != wxID_OK)
-        return false;
-
+    // The external spool feeds one filament with the Box off: it cannot share a print with Box slots.
     std::map<int, int> chosen = remembered;
+    bool               all_external = false;
+    for (;;) {
+        if (dlg.ShowModal() != wxID_OK)
+            return false;
+        size_t external_count = 0;
+        for (wxBitmapComboBox* c : combos)
+            if (c->GetSelection() == external_choice)
+                ++external_count;
+        if (external_count == 0 || (external_count == 1 && used.size() == 1)) {
+            all_external = external_count == 1;
+            break;
+        }
+        MessageDialog(&dlg,
+                      _L("The external spool feeds a single filament with the QIDI Box turned off, so it cannot be combined with "
+                         "Box slots or used for more than one filament. Choose Box slots, or print one filament from the external spool."),
+                      title, wxICON_WARNING | wxOK)
+            .ShowModal();
+    }
     for (size_t i = 0; i < used.size(); ++i)
         chosen[used[i].index] = loaded[size_t(std::max(0, combos[i]->GetSelection()))].index;
     save_remembered(chosen);
     if (busy)
         return true;
 
-    // Write the tool map before the upload starts the print, and the slot labels when asked.
+    // Write the tool map (or turn the Box off) before the upload starts the print, and the labels when asked.
     std::vector<std::string> scripts;
-    for (const UsedFilament& f : used)
-        scripts.push_back(tool_map_gcode(f.index, chosen[f.index]));
+    if (all_external) {
+        scripts.push_back("SAVE_VARIABLE VARIABLE=enable_box VALUE=0");
+    } else {
+        if (enable_box != 1)
+            scripts.push_back("SAVE_VARIABLE VARIABLE=enable_box VALUE=1");
+        for (const UsedFilament& f : used)
+            scripts.push_back(tool_map_gcode(f.index, chosen[f.index]));
+    }
     if (relabel != nullptr) {
         wxGetApp().app_config->set("shop_box_relabel", relabel->GetValue() ? "1" : "0");
         if (relabel->GetValue())
@@ -443,6 +492,13 @@ bool confirm_slots(wxWindow* parent, const std::string& print_host, const std::v
                           wxICON_WARNING | wxYES_NO);
         return err.ShowModal() == wxID_YES;
     }
+    if (all_external)
+        MessageDialog(parent,
+                      _L("The QIDI Box is off for this print. Feed the spool straight into the printer's filament inlet: unplug "
+                         "the Box's tube there and insert the filament until it reaches the nozzle. The Box turns back on the next "
+                         "time a print uses Box slots."),
+                      title, wxICON_INFORMATION | wxOK)
+            .ShowModal();
     return true;
 }
 
