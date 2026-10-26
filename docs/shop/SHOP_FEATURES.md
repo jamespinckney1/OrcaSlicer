@@ -266,6 +266,10 @@ purge lines count as expected material.
     error also varies across a big part, which can then look up to ~10% larger or smaller than
     projected, so on the first layer a part of 40 mm or more may also be scaled (88-112%) about its
     centre, when it is clearly visible and the scale clearly fits better; later checkpoints keep it.
+    With a first-layer filament much lighter than the plate, parts are lined up only with cells that
+    are clearly bright (at least halfway from the plate's brightness to the brightest changed cells):
+    on a dark plate the camera's glow spreads a white part onto the plate around it, which also
+    "changed", and fitting that glow chose a 12% larger outline whose edge then read as holes.
   - Unexpected material: solid patches (most of each cell's neighbours changed) beyond a margin of
     8 mm plus the printed height (tall parts cast shadows and reflect light), counted only where at
     least 32 mm2 lies a further 16 mm out; 3 cm2 or more fails the check.

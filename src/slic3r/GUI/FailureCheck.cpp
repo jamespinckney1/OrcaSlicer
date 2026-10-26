@@ -1310,6 +1310,33 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
             changed[i]      = valid[i] && sm[i] > std::max(res.threshold, texture_k * ref_texture[i]);
         }
 
+    // Light first-layer filament on a darker plate: the camera's glow spreads the bright part onto the plate
+    // around it, which "changed" too, and a bigger outline then fits better. Line parts up with what is
+    // clearly bright: at least halfway from the plate's brightness to the brightest changed cells'.
+    std::vector<uint8_t> align_changed = changed;
+    {
+        const std::string fl_colour = model.first_layer_colour();
+        if (fl_colour.size() >= 7 && fl_colour[0] == '#') {
+            const long   rgb = std::strtol(fl_colour.c_str() + 1, nullptr, 16);
+            const double fl  = 0.299 * ((rgb >> 16) & 0xFF) + 0.587 * ((rgb >> 8) & 0xFF) + 0.114 * (rgb & 0xFF);
+            std::vector<float> plate, bright;
+            for (size_t i = 0; i < background.size(); ++i)
+                if (background[i])
+                    plate.push_back(float((cur[i * 3] + cur[i * 3 + 1] + cur[i * 3 + 2]) * cell_gain[i] / 3.0));
+            for (size_t i = 0; i < changed.size(); ++i)
+                if (changed[i])
+                    bright.push_back(float((cur[i * 3] + cur[i * 3 + 1] + cur[i * 3 + 2]) * cell_gain[i] / 3.0));
+            const double plate_lum = plate.empty() ? 128.0 : median(plate);
+            if (fl >= plate_lum + 60.0 && bright.size() >= 20) {
+                std::sort(bright.begin(), bright.end());
+                const double top = bright[bright.size() * 9 / 10];
+                const double thr = plate_lum + 0.5 * (top - plate_lum);
+                for (size_t i = 0; i < changed.size(); ++i)
+                    align_changed[i] = changed[i] && (cur[i * 3] + cur[i * 3 + 1] + cur[i * 3 + 2]) * cell_gain[i] / 3.0 >= thr;
+            }
+        }
+    }
+
     // Line each part up with what changed. Parts are the connected groups of G-code material (a part and
     // its supports and brim count as one); each gets the whole-cell offset with the most overlap,
     // preferring small moves, within 8 cells (16 mm), or 3 cells of the nearest first-layer offset,
@@ -1410,7 +1437,7 @@ CheckResult compare(const GCodeModel& model, const Checkpoint& cp, const CameraM
                     int n = 0;
                     for (size_t i : cells_s) {
                         const int xx = int(i % W) + sx, yy = int(i / W) + sy;
-                        if (xx >= 0 && yy >= 0 && xx < W && yy < H && changed[size_t(yy) * W + xx])
+                        if (xx >= 0 && yy >= 0 && xx < W && yy < H && align_changed[size_t(yy) * W + xx])
                             ++n;
                     }
                     return n;
