@@ -51,7 +51,8 @@ in [SHOP_FEATURES.md](SHOP_FEATURES.md#filament-profiles).
     ctest --test-dir build/arm64/tests/fff_print -C Release -R shop   # hot-unload G-code rewrite
 
 The failure-check image tests are standalone programs; the build command is in the header of
-`scripts/shop_tests/failure_check_test.cpp`.
+`scripts/shop_tests/failure_check_test.cpp`. The quick restart marker tests (`quick_restart_test.cpp`)
+run on the saved failure-check jobs the same way.
 
 ## Plus 4 printer macros
 
@@ -62,6 +63,9 @@ firmware updates overwrite `gcode_macro.cfg`, so these are re-applied by hand:
   mesh reuse). Preferred over replacing the whole file with `gcode_macro.cfg.quickstart`, which
   is based on the stock "QIDI Plus4 V1.0.0" file.
 - `failure_check.cfg`: the checkpoint macros the print failure check needs.
+- `quick_restart.cfg` + `quick_restart.patch`: Quick restart (print again from layer 1 after clearing the
+  plate). Append the `.cfg` after `failure_check.cfg`; the patch adds two small checks to Qidi's `RESUME` and
+  `CANCEL_PRINT` (against `gcode_macro.cfg.quickstart`).
 - `retired/`: kept for reference only. Do not install.
 
 Back up `gcode_macro.cfg` on the printer before changing it, and restart Klipper only while the

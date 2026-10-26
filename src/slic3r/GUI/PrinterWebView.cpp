@@ -27,6 +27,7 @@
 #include "slic3r/GUI/BedMeshView.hpp"
 #include "slic3r/GUI/FailureCheckDialogs.hpp"
 #include "slic3r/GUI/FailureCheckMonitor.hpp"
+#include "slic3r/GUI/ShopQuickRestartDialog.hpp"
 #include <wx/timer.h>
 #include <regex>
 #include "slic3r/Utils/Http.hpp"
@@ -403,11 +404,28 @@ void PrinterWebView::build_shop_bar(wxBoxSizer* sizer)
         }
         show_camera_test_print_calibration(this, root);
     });
+    m_btn_quick_restart = new wxButton(m_shop_bar, wxID_ANY, _L("Quick restart..."));
+    m_btn_quick_restart->SetToolTip(_L("While a print is paused in its first 3 layers: clear the plate while it stays on the bed, then print "
+                                       "again from layer 1 with a quick purge and no re-leveling. Needs the shop quick restart macros."));
+    m_btn_quick_restart->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
+        const std::string root = moonraker_base_url();
+        if (root.empty()) {
+            MessageDialog(this, _L("No printer page is loaded."), _L("Quick restart"), wxICON_INFORMATION | wxOK).ShowModal();
+            return;
+        }
+        std::string api;
+        {
+            wxBusyCursor wait;
+            api = shop_resolve_api(root);
+        }
+        show_quick_restart(this, api, "");
+    });
     m_fc_status = new wxStaticText(m_shop_bar, wxID_ANY, "");
     bar->Add(title, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, FromDIP(8));
     bar->Add(m_btn_full_mesh, 0, wxALIGN_CENTER_VERTICAL | wxTOP | wxBOTTOM, FromDIP(4));
     bar->Add(m_btn_camera_cal, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxTOP | wxBOTTOM, FromDIP(4));
     bar->Add(m_btn_camera_print, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxTOP | wxBOTTOM, FromDIP(4));
+    bar->Add(m_btn_quick_restart, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxTOP | wxBOTTOM, FromDIP(4));
     bar->Add(m_shop_status, 1, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(10));
     bar->Add(m_fc_status, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, FromDIP(10));
     // Failure-check status for this printer, refreshed every few seconds.

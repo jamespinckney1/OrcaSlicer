@@ -8,6 +8,8 @@
 #include "MsgDialog.hpp"
 #include "Plater.hpp"
 #include "ShopNotify.hpp"
+#include "ShopQuickRestart.hpp"
+#include "ShopQuickRestartDialog.hpp"
 #include "format.hpp"
 #include "libslic3r/Format/STL.hpp"
 #include "libslic3r/Model.hpp"
@@ -191,6 +193,17 @@ public:
             notify_outcome(_u8L("Print cancelled: %1%"), _u8L("Cancelled from the slicer after checkpoint \"%1%\"."), "x");
             send_and_close("CANCEL_PRINT");
         });
+        m_restart    = add(_L("Quick restart..."), [this]() {
+            // Offered during the first layers: clear the plate and print again from layer 1 without re-leveling.
+            if (!show_quick_restart(this, m_ev.api, m_ev.job_name))
+                return;
+            notify_outcome(_u8L("Quick restart: %1%"), _u8L("Printing again from layer 1 after checkpoint \"%1%\" (plate being cleared)."),
+                           "repeat");
+            m_mode = FailureCheckEvent::Mode::Hold; // nothing more to send on close
+            Destroy();
+        });
+        m_restart->SetToolTip(_L("During the first 3 layers: clear the plate while it stays on the bed, then print again from layer 1 "
+                                 "with a quick purge and no re-leveling."));
         m_pause      = add(_L("Pause the print"), [this]() { send_and_close("PAUSE"); });
         m_close      = add(_L("Close"), [this]() { Destroy(); });
         top->Add(buttons, 0, wxEXPAND | wxALL, FromDIP(10));
@@ -244,9 +257,17 @@ private:
         m_keep->Show(mode == FailureCheckEvent::Mode::Review);
         m_resume->Show(mode == FailureCheckEvent::Mode::Hold);
         m_cancel->Show(mode == FailureCheckEvent::Mode::Hold);
+        m_restart->Show(mode == FailureCheckEvent::Mode::Hold && quick_restart_layer());
         m_pause->Show(mode == FailureCheckEvent::Mode::Notice);
         m_close->Show(mode != FailureCheckEvent::Mode::Review);
         Layout();
+    }
+
+    // Whether the checkpoint is within the layers a quick restart covers (the printer has the final say).
+    bool quick_restart_layer() const
+    {
+        const FailureCheck::Checkpoint* cp = m_ev.model ? m_ev.model->checkpoint(m_ev.index) : nullptr;
+        return cp != nullptr && cp->layer < size_t(QuickRestart::kMaxLayers);
     }
 
     void update_countdown() { m_countdown_label->SetLabel(format_wxstr(_L("The print resumes in %1% s."), m_seconds)); }
@@ -276,7 +297,8 @@ private:
     wxStaticText*           m_title{nullptr};
     wxStaticText*           m_text{nullptr};
     wxStaticText*           m_countdown_label{nullptr};
-    wxButton *m_resume_now{nullptr}, *m_keep{nullptr}, *m_resume{nullptr}, *m_cancel{nullptr}, *m_pause{nullptr}, *m_close{nullptr};
+    wxButton *m_resume_now{nullptr}, *m_keep{nullptr}, *m_resume{nullptr}, *m_cancel{nullptr}, *m_restart{nullptr}, *m_pause{nullptr},
+        *m_close{nullptr};
     wxTimer                 m_timer;
     int                     m_seconds{25};
 };

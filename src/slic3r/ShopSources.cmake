@@ -30,6 +30,10 @@ set(SHOP_GUI_SOURCES
     GUI/FailureCheckDialogs.hpp
     GUI/FailureCheckMonitor.cpp
     GUI/FailureCheckMonitor.hpp
+    GUI/ShopQuickRestart.cpp
+    GUI/ShopQuickRestart.hpp
+    GUI/ShopQuickRestartDialog.cpp
+    GUI/ShopQuickRestartDialog.hpp
     GUI/ShopCalibration.cpp
     GUI/ShopCalibration.hpp
     GUI/CalibrationLogDialog.cpp

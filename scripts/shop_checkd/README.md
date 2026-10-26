@@ -8,6 +8,10 @@ go on while the slicer is closed. A slicer that is open shows the service's stat
 window; it never answers a checkpoint of a job the service has. A service that cannot be reached at
 upload leaves the job to the slicer, as before.
 
+A quick restart (the printer rewinds the paused job to layer 1, `docs/shop/plus4/quick_restart.cfg`) raises the
+printer's `SHOP_RESTART_POINT.restarts` count; the service then moves the job's photos to `attemptN/` and checks
+it again from a new reference photo, like the slicer does.
+
 - `shop_check.cpp`: the comparison (`src/slic3r/GUI/FailureCheck.*`) as a command-line tool.
 - `shop_checkd.py`: the service (Python standard library only): Moonraker polling, checkpoint
   handling, ntfy notifications and the HTTP API the slicer uses (documented at the top of the file).

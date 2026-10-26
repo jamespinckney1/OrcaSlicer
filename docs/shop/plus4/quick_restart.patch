@@ -1,0 +1,26 @@
+--- gcode_macro.cfg.quickstart
++++ gcode_macro.cfg.quickrestart
+@@ -505,6 +505,10 @@
+ [gcode_macro CANCEL_PRINT]
+ rename_existing: BASE_CANCEL_PRINT
+ gcode:
++    {% if printer["gcode_macro SHOP_QUICK_RESTART"] is defined %}
++        SET_GCODE_VARIABLE MACRO=SHOP_QUICK_RESTART VARIABLE=armed VALUE=0
++        UPDATE_DELAYED_GCODE ID=_SHOP_RESTART_COOL DURATION=0
++    {% endif %}
+     TOOL_CHANGE_END
+     {% if (printer.gcode_move.position.z) < 200 %}
+         G1 Z200 F600                                      
+@@ -662,7 +666,11 @@
+ [gcode_macro RESUME]
+ rename_existing: BASE_RESUME
+ gcode:    
+-    {% if printer['pause_resume'].is_paused|int == 1 %}
++    {% set qr = printer["gcode_macro SHOP_QUICK_RESTART"] %}
++    {% if qr is defined and qr.armed|int == 1 and printer['pause_resume'].is_paused|int == 1 %}
++        # Shop quick restart prepared for this pause: print again from layer 1 (quick_restart.cfg)
++        SHOP_QUICK_RESTART_RESUME
++    {% elif printer['pause_resume'].is_paused|int == 1 %}
+         {% if printer.save_variables.variables.box_count >= 1 %} 
+             {% if printer.save_variables.variables.enable_box == 1 %}
+                 TRY_RESUME_PRINT

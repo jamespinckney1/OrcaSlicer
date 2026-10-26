@@ -4,6 +4,7 @@
 #include "GUI_App.hpp"
 #include "I18N.hpp"
 #include "ShopNotify.hpp"
+#include "ShopQuickRestart.hpp"
 #include "libslic3r/AppConfig.hpp"
 #include "libslic3r/Utils.hpp"
 #include "slic3r/Utils/Http.hpp"
@@ -214,6 +215,29 @@ bool shop_decode_image(const std::string& bytes, FailureCheck::Image& out)
     return true;
 }
 
+// Adds the quick restart markers when the printer has the macros; the message says what happened (empty: not a
+// quick-restart printer, nothing to say).
+static std::string add_restart_markers(const std::string& objects, const std::string& gcode_path)
+{
+    if (objects.find("gcode_macro SHOP_RESTART_POINT") == std::string::npos)
+        return {};
+    QuickRestart::Plan plan;
+    std::string        err;
+    if (!QuickRestart::write_with_markers(gcode_path, gcode_path, plan, err))
+        return _u8L("Quick restart is not available for this print: ") + err;
+    return plan.limit_is_tool_change ? _u8L("Quick restart is available until the first filament change.") :
+                                       _u8L("Quick restart is available during the first 3 layers.");
+}
+
+std::string shop_prepare_quick_restart(const std::string& print_host, const std::string& gcode_path)
+{
+    const std::string api = shop_resolve_api(print_host);
+    std::string       objects;
+    if (api.empty() || !http_get(api + "/printer/objects/list", objects, 5))
+        return {};
+    return add_restart_markers(objects, gcode_path);
+}
+
 // ---- monitor ------------------------------------------------------------------------------------
 
 FailureCheckMonitor& FailureCheckMonitor::get()
@@ -300,7 +324,7 @@ void FailureCheckMonitor::save_jobs_locked() const
         arr.push_back({{"id", j.id}, {"host", j.host}, {"api", j.api}, {"job_name", j.job_name}, {"dir", j.dir}, {"gcode", j.gcode},
                        {"created", j.created}, {"started", j.started}, {"handled", j.handled}, {"has_baseline", j.has_baseline},
                        {"baseline_z", j.baseline_z}, {"reference_photo", j.reference_photo}, {"reference_z", j.reference_z},
-                       {"reference_index", j.reference_index}, {"total", j.total}, {"passed", j.passed}, {"remote", j.remote}, {"alignment", [&]() {
+                       {"reference_index", j.reference_index}, {"total", j.total}, {"passed", j.passed}, {"remote", j.remote}, {"restarts", j.restarts}, {"alignment", [&]() {
                            nlohmann::json a = nlohmann::json::array();
                            for (const auto& an : j.alignment.anchors)
                                a.push_back({an.x, an.y, an.dx, an.dy, an.s});
@@ -337,6 +361,7 @@ void FailureCheckMonitor::load_jobs()
             j.total        = o.value("total", 0);
             j.passed       = o.value("passed", 0);
             j.remote       = o.value("remote", false);
+            j.restarts     = o.value("restarts", -1);
             if (o.contains("alignment") && o["alignment"].is_array())
                 for (const auto& a : o["alignment"])
                     if (a.is_array() && (a.size() == 4 || a.size() == 5))
@@ -392,6 +417,8 @@ bool FailureCheckMonitor::prepare_job(const std::string& print_host, const std::
         message = _u8L("Failure check skipped: ") + err;
         return false;
     }
+    // After the checkpoints (the markers carry byte offsets) and before the job copy (which must be the uploaded file).
+    const std::string restart_message = add_restart_markers(objects, gcode_path);
     Job job;
     job.host     = shop_printer_host(print_host);
     job.api      = api;
@@ -442,6 +469,8 @@ bool FailureCheckMonitor::prepare_job(const std::string& print_host, const std::
     else if (!service.empty())
         message += " " + (boost::format(_u8L("The failure check service did not take the job (%1%), so this slicer watches it: keep it open.")) %
                           service_error).str();
+    if (!restart_message.empty())
+        message += " " + restart_message;
     return true;
 }
 
@@ -503,14 +532,15 @@ bool FailureCheckMonitor::poll(Job& job)
         return true;
     std::string body;
     if (!http_get(job.api + "/printer/objects/query?print_stats=state,filename&toolhead=position&" +
-                      Http::url_encode("gcode_macro SHOP_CHECKPOINT") + "=waiting,index,held",
+                      Http::url_encode("gcode_macro SHOP_CHECKPOINT") + "=waiting,index,held&" +
+                      Http::url_encode("gcode_macro SHOP_RESTART_POINT") + "=restarts",
                   body, 5))
         return true; // printer unreachable: try again
     const auto j = nlohmann::json::parse(body, nullptr, false);
     if (j.is_discarded())
         return true;
     std::string state, filename;
-    int         waiting = 0, index = -1;
+    int         waiting = 0, index = -1, restarts = -1;
     double      z       = 0;
     try {
         const auto& st = j.at("result").at("status");
@@ -520,6 +550,8 @@ bool FailureCheckMonitor::poll(Job& job)
             waiting = st["gcode_macro SHOP_CHECKPOINT"].value("waiting", 0);
             index   = st["gcode_macro SHOP_CHECKPOINT"].value("index", -1);
         }
+        if (st.contains("gcode_macro SHOP_RESTART_POINT"))
+            restarts = st["gcode_macro SHOP_RESTART_POINT"].value("restarts", -1);
         if (st.contains("toolhead") && st["toolhead"].contains("position") && st["toolhead"]["position"].size() >= 3)
             z = st["toolhead"]["position"][2].get<double>();
     } catch (...) {
@@ -536,9 +568,45 @@ bool FailureCheckMonitor::poll(Job& job)
                               std::max(0, job.total - 1)).str());
         return false;
     }
+    // The printer counts quick restarts; one since the last poll means the job runs again from layer 1, with
+    // every checkpoint (the reference photo first) still to come.
+    if (active && restarts >= 0) {
+        if (job.restarts >= 0 && restarts > job.restarts)
+            restart_job(job);
+        job.restarts = restarts;
+    }
     if (active && waiting == 1 && index >= 0 && std::find(job.handled.begin(), job.handled.end(), index) == job.handled.end())
         handle_checkpoint(job, index, z);
     return true;
+}
+
+void FailureCheckMonitor::restart_job(Job& job)
+{
+    // The first attempt's photos and results move to attemptN/, so cpN.* are always the current attempt's.
+    boost::system::error_code ec;
+    int                       attempt = 1;
+    while (fs::exists(job.dir + "/attempt" + std::to_string(attempt), ec))
+        ++attempt;
+    const fs::path archive = job.dir + "/attempt" + std::to_string(attempt);
+    for (fs::directory_iterator it(job.dir, ec), end; !ec && it != end; it.increment(ec)) {
+        const std::string name = it->path().filename().string();
+        if (name.rfind("cp", 0) == 0 && (it->path().extension() == ".jpg" || it->path().extension() == ".json")) {
+            boost::system::error_code ec2;
+            fs::create_directories(archive, ec2);
+            fs::rename(it->path(), archive / name, ec2);
+        }
+    }
+    job.handled.clear();
+    job.has_baseline    = false;
+    job.baseline_z      = 0;
+    job.reference_photo.clear();
+    job.reference_z     = 0;
+    job.reference_index = 0;
+    job.passed          = 0;
+    job.camera_warned   = false;
+    job.alignment       = FailureCheck::Alignment();
+    set_status(job.host, (boost::format(_u8L("Failure check: quick restart of %1%, checking again from layer 1")) % job.job_name).str());
+    BOOST_LOG_TRIVIAL(info) << "Shop failure check: quick restart of " << job.id << ", earlier photos in " << archive.string();
 }
 
 // ---- failure check service ----------------------------------------------------------------------

@@ -39,6 +39,10 @@ std::string shop_resolve_api(const std::string& print_host);
 bool load_shop_camera(const std::string& printer_host, FailureCheck::CameraModel& out);
 bool save_shop_camera(const std::string& printer_host, const FailureCheck::CameraModel& cam);
 
+// Quick restart (ShopQuickRestart.hpp): marks an upload that has no failure check (prepare_job marks the others)
+// when the printer has the quick restart macros. Returns a line for the upload message, or empty.
+std::string shop_prepare_quick_restart(const std::string& print_host, const std::string& gcode_path);
+
 // Runs a G-code script on the printer without waiting (Moonraker answers when the script has finished).
 void shop_send_script(const std::string& api_root, const std::string& script);
 
@@ -86,12 +90,14 @@ private:
         int              passed       = 0;
         bool             camera_warned = false; // phone told the camera is not answering (once per job)
         bool             remote        = false; // checked by the service; this slicer only mirrors it
+        int              restarts      = -1;    // the printer's quick restart count when last polled (-1: not seen yet)
         FailureCheck::Alignment alignment; // per-part offsets measured on the first layer
     };
 
     FailureCheckMonitor() = default;
     void run();
     bool poll(Job& job); // false: stop watching
+    void restart_job(Job& job); // a quick restart: archive the photos and check again from the reference photo
     bool hand_off(const Job& job, std::string& error);  // gives the job to the service
     bool service_get(const std::string& path, std::string& body); // GET <service><path> with the token
     std::set<std::string> poll_service(const std::vector<Job>& jobs); // mirrors the service; returns finished job ids

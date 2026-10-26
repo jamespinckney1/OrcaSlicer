@@ -227,6 +227,7 @@ preset (unsaved; save the preset to keep it). Stored in `shop/calibration_result
   Front / Back / Left / Right labels as seen standing at the door (left is the viewer's left, X
   minimum). It separates tilt (a plane fit) from warp and lists maintenance suggestions. Drag to
   rotate. Code: `BedMeshAnalysis.*` (no GUI), `BedMeshView.*`.
+- **Quick restart...**: see "Quick restart" below.
 - **Camera calibration...** and the failure-check status line: see below.
 
 ## Print failure check (Print dialog > "Failure check")
@@ -365,7 +366,8 @@ purge lines count as expected material.
   photo taken after the toolhead has left the park position (X95 Y324) is discarded as missed.
 - **Files.** Watched jobs: `shop/failure_check/jobs.json` (a restarted slicer resumes watching).
   Per job: `shop/failure_check/jobs/<time>_<name>/` with the G-code copy, every checkpoint photo
-  (`cpN.jpg`) and its result (`cpN.json`); the last 15 jobs are kept.
+  (`cpN.jpg`) and its result (`cpN.json`); the last 15 jobs are kept. After a quick restart the earlier attempt's photos and
+  results move to `attemptN/` in the job folder.
 - **Tests.** `scripts/shop_tests/failure_check_test.cpp` (build line at the top) checks the G-code
   planner on a real job, the calibration on a simulated wide-angle camera, and the comparison on
   rendered scenes (good first layer, missing first layer, support tower, spaghetti, a part knocked
@@ -374,9 +376,66 @@ purge lines count as expected material.
   Print dialog, not `.gcode.3mf`. The bed strip under the park position (back, around X 95) is not
   checked. Material the same colour as the plate cannot be seen.
 
+## Quick restart (Hold window or Device tab, "Quick restart...")
+
+A print that goes wrong in its first layers (it fails the failure check, or you pause it) is printed again from
+layer 1 on the same plate, without the start sequence: you clear the plate while it stays on the bed, press
+Resume, the nozzle gets a quick purge at the chute and layer 1 starts again. Homing, Z tilt, the bed mesh and the
+measured nozzle height are kept, so it takes a minute instead of the full start.
+
+- **How it restarts.** The paused print is rewound in place. Klipper's `M26 S<byte>` sets a virtual-SD print's
+  file position whenever the print is paused (checked in Qidi's Plus 4 Klipper source), and resuming reads on
+  from there. Nothing else changes: the same file keeps playing, so the bed mesh stays loaded, the Z offset that
+  the start G-code's nozzle measurement set stays, the Box tool map (`value_t<n>`) is untouched, and the end
+  G-code still unloads the filament at the end. The other way, cancelling and uploading a trimmed job that skips
+  the start G-code, was ruled out: Qidi's `CANCEL_PRINT` and `PRINT_END` clear the mesh (`BED_MESH_CLEAR`),
+  disable the steppers (losing homing) and turn the heaters off, so the trimmed job would have to home and
+  measure the nozzle again, which is the re-leveling a quick restart avoids. It would also be a new job for
+  Moonraker's history and for the failure check, and would need a second upload of the whole G-code.
+- **Markers** (`ShopQuickRestart.*`, no GUI). Every job uploaded through the Print dialog to a printer that has
+  the macros gets two lines, after the failure-check checkpoints when there are any: `SHOP_RESTART_POINT
+  POS=<byte offset>` just before layer 1, above the failure check's reference-photo checkpoint so a restart takes
+  a new photo of the empty plate, and `SHOP_RESTART_LIMIT` at the start of layer 4, or just before the first
+  filament change (`TOOL_CHANGE_START`, `CUT_FILAMENT`, `UNLOAD_T`, a `T<n>` naming another tool, `M600`)
+  when that comes earlier: a restart prints layer 1 with the filament now in the nozzle, so it is only offered
+  while that is still layer 1's filament. POS is zero-padded to a fixed width, so the marker's own length never
+  depends on it. A job that starts layer 1 in absolute extrusion (M82), has no layer markers or has CR line
+  endings gets no markers (the upload message says so). Exported files never carry them.
+- **Printer side** (`docs/shop/plus4/quick_restart.cfg`, `quick_restart.patch`). `SHOP_RESTART_POINT` checks
+  that POS equals its own `virtual_sdcard.file_position` (a macro on a line sees that line's start) and records
+  it with the file size and the layer-1 hotend and bed targets, part-cooling fan and pressure advance;
+  `SHOP_RESTART_LIMIT` turns the offer off. `SHOP_QUICK_RESTART` runs only on a paused print of the marked file
+  past the point and before the limit, still homed. It cancels the failure check's timeout and 15-minute
+  cool-down, sets the hotend and bed to their layer-1 targets, lowers the bed to at least Z 60 for room to
+  scrape and turns the hotend off after 30 minutes of waiting. `SHOP_QUICK_RESTART_RESUME` (or Resume on the
+  touchscreen or in Fluidd: the patch makes Qidi's `RESUME` hand over while a restart is armed for this very
+  pause) reheats, restores the print's coordinate modes, purges 35 mm at the chute and wipes as Qidi's resume
+  does, raises the bed back to Z 10, sets the layer-1 fan and pressure advance, saves `PAUSE_STATE` where the toolhead is (so
+  `BASE_RESUME`'s return move does not go back to the abandoned layer), sets the file position with `M26` and
+  resumes; the job's own moves then take the nozzle down to layer 1. The patch also makes `CANCEL_PRINT`
+  disarm. `SHOP_QUICK_RESTART_CANCEL` backs out with the print still paused.
+- **Slicer side** (`ShopQuickRestartDialog.*`). The failure check's Hold window shows "Quick restart..." when
+  the held checkpoint is within the first 3 layers; the Device tab's shop toolbar has it for any pause. Both
+  ask the printer first (paused, marked job, past the point, before the limit, `print_stats.info.current_layer`
+  at most 3, homed; the same rules as the macro) and say why when it is not possible, then confirm, run
+  `SHOP_QUICK_RESTART` and show the banner "Clear the plate without removing it" with Resume and Don't
+  restart. Closing the banner leaves the printer waiting; the touchscreen's Resume still restarts.
+- **Failure check.** `SHOP_RESTART_POINT` counts restarts (`restarts`). The slicer's monitor and the failure
+  check service both read it with the checkpoint state; when it goes up they move the earlier photos to
+  `attemptN/` and forget the reference photo, the first-layer alignment and the handled checkpoints, so the
+  restarted print is checked from a new empty-plate photo like a new job (same G-code and job folder).
+- **Power-loss recovery.** Qidi's virtual_sdcard counts executed lines for it, and `M26` does not reset that
+  count, so a power-loss recovery after a quick restart would resume too late in the file. Reprint instead.
+- **Tests.** `scripts/shop_tests/quick_restart_test.cpp` (build line at the top) marks real saved jobs and
+  synthetic ones, reads them back the way Klipper's virtual_sdcard does (POS equals the marker's own file
+  position), checks where the point and limit land, that only the markers were added and that marking twice
+  changes nothing, and checks when the restart is offered.
+
 ## Not yet verified on hardware
 
 Box sync in the UI, the mapping push, and the slot-state semantics were built from the live
 Moonraker queries of one Plus 4 but have not been exercised end to end with a print. The failure
 check's printer macros, camera calibration and live checkpoints have not run on the printer yet;
-the comparison has only been tested on simulated photos and two real snapshots.
+the comparison has only been tested on simulated photos and two real snapshots. Quick restart has not run on
+the printer yet: its macros are not installed, and the marker arithmetic is tested against Qidi's
+virtual_sdcard code, not a live rewind.

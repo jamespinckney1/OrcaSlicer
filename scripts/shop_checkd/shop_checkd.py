@@ -195,7 +195,8 @@ class Service:
         job = {"id": job_id, "host": meta["host"], "api": meta["api"].rstrip("/"), "job_name": meta["job_name"],
                "ntfy_server": meta.get("ntfy_server", ""), "ntfy_topic": meta.get("ntfy_topic", ""),
                "created": int(time.time()), "active": False, "started": False, "handled": [], "has_baseline": False,
-               "baseline_z": 0.0, "total": 0, "passed": 0, "alignment": [], "camera_warned": False, "checkpoints": {}}
+               "baseline_z": 0.0, "total": 0, "passed": 0, "alignment": [], "camera_warned": False, "checkpoints": {},
+               "restarts": -1}
         with self.lock:
             self.save(job)
         return job
@@ -283,8 +284,9 @@ class Service:
                 self.status.pop(job["host"], None)
             return False
         q = urllib.parse.quote("gcode_macro SHOP_CHECKPOINT")
+        r = urllib.parse.quote("gcode_macro SHOP_RESTART_POINT")
         body = http_get(job["api"] + "/printer/objects/query?print_stats=state,filename&toolhead=position&"
-                        + q + "=waiting,index,held", 5)
+                        + q + "=waiting,index,held&" + r + "=restarts", 5)
         if body is None:
             return True  # printer unreachable: try again
         try:
@@ -293,6 +295,7 @@ class Service:
             filename = st["print_stats"].get("filename", "")
             macro = st.get("gcode_macro SHOP_CHECKPOINT", {})
             waiting, index = int(macro.get("waiting", 0)), int(macro.get("index", -1))
+            restarts = int(st.get("gcode_macro SHOP_RESTART_POINT", {}).get("restarts", -1))
             z = float(st.get("toolhead", {}).get("position", [0, 0, 0])[2])
         except (ValueError, KeyError, TypeError, IndexError):
             return True
@@ -307,9 +310,32 @@ class Service:
                 self.set_status(job, "Failure check: %s finished (%d of %d checks passed)"
                                 % (job["job_name"], job["passed"], max(0, job["total"] - 1)))
             return False
+        # The printer counts quick restarts (docs/shop/plus4/quick_restart.cfg); one since the last poll means the
+        # job runs again from layer 1, with every checkpoint (the reference photo first) still to come.
+        if active and restarts >= 0:
+            if job.get("restarts", -1) >= 0 and restarts > job["restarts"]:
+                self.restart_job(job)
+            job["restarts"] = restarts
         if active and waiting == 1 and index >= 0 and index not in job["handled"]:
             self.handle_checkpoint(job, index, z)
         return True
+
+    def restart_job(self, job):
+        # The earlier attempt's photos and results move to attemptN/, so cpN.* are always the current attempt's.
+        d = self.job_dir(job["id"])
+        n = 1
+        while os.path.exists(os.path.join(d, "attempt%d" % n)):
+            n += 1
+        archive = os.path.join(d, "attempt%d" % n)
+        for name in os.listdir(d):
+            if FILE_RE.match(name):
+                os.makedirs(archive, exist_ok=True)
+                os.replace(os.path.join(d, name), os.path.join(archive, name))
+        job.update({"handled": [], "has_baseline": False, "baseline_z": 0.0, "passed": 0, "alignment": [],
+                    "camera_warned": False})
+        job.pop("reference", None)
+        with self.lock:
+            self.set_status(job, "Failure check: quick restart of %s, checking again from layer 1" % job["job_name"])
 
     def camera(self, job):
         try:
