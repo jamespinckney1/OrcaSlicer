@@ -11,8 +11,10 @@
 #include <cctype>
 #include <cstdlib>
 #include <fstream>
+#include <iterator>
 #include <limits>
 #include <sstream>
+#include <utility>
 
 namespace Slic3r { namespace GUI { namespace FailureCheck {
 
@@ -110,12 +112,35 @@ void plan_checkpoints(GCodeModel& m)
                 break;
             }
     }
-    for (int percent : {20, 40, 60, 80}) {
+    for (int percent : {10, 20, 30, 40, 50, 60, 70, 80, 90}) {
         const size_t idx = size_t(std::lround(percent / 100.0 * double(layers)));
         if (idx < 2 || idx >= layers || idx <= last_layer)
             continue;
         add(CheckpointKind::Progress, percent, m.layer_line[idx], m.layer_first_segment[idx], idx);
         last_layer = idx;
+    }
+}
+
+// Klipper drops every move inside the EXCLUDE_OBJECT_START/END block of an excluded object, a checkpoint's
+// park moves included, so the printer would pause over the print. A layer-change checkpoint inside a block
+// moves to just after the block's end (Orca ends it after the layer's retract and wipe, where the timelapse
+// frame goes) unless something is printed first. `blocks` are [start line, end line], in file order.
+void leave_object_blocks(GCodeModel& m, const std::vector<std::pair<size_t, size_t>>& blocks, size_t lines)
+{
+    for (Checkpoint& cp : m.checkpoints) {
+        if (cp.kind == CheckpointKind::Early)
+            continue; // mid-layer by design
+        // The checkpoint runs after line cp.line - 1: inside the last block that starts before it, if that one ends later.
+        auto it = std::lower_bound(blocks.begin(), blocks.end(), cp.line,
+                                   [](const std::pair<size_t, size_t>& b, size_t line) { return b.first < line; });
+        if (it == blocks.begin())
+            continue;
+        const size_t end = std::prev(it)->second;
+        if (end < cp.line || end + 1 >= lines)
+            continue;
+        if (cp.segments_done < m.segment_line.size() && m.segment_line[cp.segments_done] < end)
+            continue;
+        cp.line = end + 1;
     }
 }
 
@@ -182,6 +207,8 @@ bool parse_gcode(const std::string& path, GCodeModel& out, std::string& error)
     double fallback_layer_z = -1;
     std::string line;
     std::vector<Checkpoint> written;
+    std::vector<std::pair<size_t, size_t>> object_blocks;
+    size_t object_start = std::string::npos;
 
     auto new_layer = [&](size_t at_line) {
         out.layer_first_segment.push_back(out.segments.size());
@@ -214,7 +241,10 @@ bool parse_gcode(const std::string& path, GCodeModel& out, std::string& error)
             cp.index         = npos == std::string::npos ? -1 : std::atoi(t.c_str() + npos + 3);
             cp.line          = line_no;
             cp.segments_done = out.segments.size();
-            cp.layer         = out.layer_first_segment.size();
+            // Layers begun before the checkpoint: a layer-change checkpoint moved past its marker (see
+            // leave_object_blocks) has not printed anything of that layer yet.
+            cp.layer = size_t(std::lower_bound(out.layer_first_segment.begin(), out.layer_first_segment.end(), out.segments.size()) -
+                              out.layer_first_segment.begin());
             const size_t lab = t.find("shop failure check: ");
             const std::string label = lab == std::string::npos ? std::string() : t.substr(lab + 20);
             if (label == "reference photo") cp.kind = CheckpointKind::Baseline;
@@ -333,6 +363,11 @@ bool parse_gcode(const std::string& path, GCodeModel& out, std::string& error)
             const int mcode = std::atoi(cmd.c_str() + 1);
             if (mcode == 82) abs_e = true;
             else if (mcode == 83) abs_e = false;
+        } else if (starts_with(cmd, "EXCLUDE_OBJECT_START")) {
+            object_start = line_no;
+        } else if (starts_with(cmd, "EXCLUDE_OBJECT_END") && object_start != std::string::npos) {
+            object_blocks.emplace_back(object_start, line_no);
+            object_start = std::string::npos;
         }
         ++line_no;
     }
@@ -346,9 +381,10 @@ bool parse_gcode(const std::string& path, GCodeModel& out, std::string& error)
         error = "no printed layers found in the G-code";
         return false;
     }
-    if (written.empty())
+    if (written.empty()) {
         plan_checkpoints(out);
-    else
+        leave_object_blocks(out, object_blocks, line_no);
+    } else
         out.checkpoints = written;
     return true;
 }

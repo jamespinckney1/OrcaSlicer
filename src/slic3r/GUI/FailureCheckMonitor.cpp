@@ -801,20 +801,27 @@ void FailureCheckMonitor::post_event(const FailureCheckEvent& ev)
     });
 }
 
-// True while the checkpoint still holds the printer at the park position (from the camera calibration).
-static bool still_parked(const std::string& api)
+enum class ParkState { Parked, Resumed, Elsewhere };
+
+// Parked while the checkpoint holds the printer at the park position (from the camera calibration); Elsewhere
+// when it waits but the toolhead never parked (Klipper drops the park moves of a checkpoint inside an excluded
+// object's G-code).
+static ParkState park_state(const std::string& api)
 {
     std::string body;
     if (!http_get(api + "/printer/objects/query?toolhead=position&" + Http::url_encode("gcode_macro SHOP_CHECKPOINT") + "=waiting", body, 5))
-        return true; // cannot tell: keep today's behaviour
+        return ParkState::Parked; // cannot tell: keep today's behaviour
     const auto j = nlohmann::json::parse(body, nullptr, false);
     try {
         const auto& st  = j.at("result").at("status");
         const auto& pos = st.at("toolhead").at("position");
-        return st.at("gcode_macro SHOP_CHECKPOINT").value("waiting", 0) == 1 &&
-               std::hypot(pos.at(0).get<double>() - FailureCheck::kShopParkX, pos.at(1).get<double>() - FailureCheck::kShopParkY) < 5.0;
+        if (st.at("gcode_macro SHOP_CHECKPOINT").value("waiting", 0) != 1)
+            return ParkState::Resumed;
+        return std::hypot(pos.at(0).get<double>() - FailureCheck::kShopParkX, pos.at(1).get<double>() - FailureCheck::kShopParkY) < 5.0 ?
+                   ParkState::Parked :
+                   ParkState::Elsewhere;
     } catch (...) {
-        return true;
+        return ParkState::Parked;
     }
 }
 
@@ -901,8 +908,21 @@ void FailureCheckMonitor::handle_checkpoint(Job& job, int index, double z)
         }
         return;
     }
-    if (!still_parked(job.api)) {
+    const ParkState parked = park_state(job.api);
+    if (parked == ParkState::Resumed) {
         set_status(job.host, (boost::format(_u8L("Failure check: \"%1%\" missed (the print had already resumed)")) % label).str());
+        return;
+    }
+    if (parked == ParkState::Elsewhere) {
+        shop_send_script(job.api, "SHOP_CHECK_OK"); // the toolhead hides the print: fail open
+        set_status(job.host, (boost::format(_u8L("Failure check: \"%1%\" skipped (the toolhead did not park); print continues")) % label).str());
+        ShopNotify::Message msg;
+        msg.title = (boost::format(_u8L("Check skipped: %1%")) % job.job_name).str();
+        msg.body  = (boost::format(_u8L("The printer paused for \"%1%\" but the toolhead did not park, so the plate could not be "
+                                        "photographed. This happens when the checkpoint falls inside an object excluded during the "
+                                        "print. The print continues.")) % label).str();
+        msg.tags = "warning";
+        notify(msg);
         return;
     }
     const std::string photo = job.dir + "/cp" + std::to_string(index) + ".jpg";

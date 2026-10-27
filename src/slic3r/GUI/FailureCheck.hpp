@@ -5,7 +5,7 @@
 //
 // The slicer inserts `SHOP_CHECKPOINT N=<n>` lines into an uploaded job: one before the first layer
 // (the reference photo of the bed), one a few moves into the first layer, one at the end of the first
-// layer and one every 20% after that. At each checkpoint the printer parks the toolhead and waits; the
+// layer and one every 10% after that. At each checkpoint the printer parks the toolhead and waits; the
 // slicer photographs the bed and compares the photo with what the G-code says has been printed so far,
 // so supports, brims and purge lines count as expected material instead of looking like spaghetti.
 //

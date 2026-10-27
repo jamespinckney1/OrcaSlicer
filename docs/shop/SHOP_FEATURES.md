@@ -239,8 +239,13 @@ purge lines count as expected material.
 - **Checkpoints.** On upload the slicer adds `SHOP_CHECKPOINT N=<n>` lines to the upload's own copy
   of the G-code (an exported file never carries them): a reference photo just before the first
   layer, one a fifth of the way into the first layer, one after it, one about 1 mm up (catches a
-  body that starts above the bed), then at 20 / 40 / 60 / 80 % of the layers. A job that already
+  body that starts above the bed), then every 10 % of the layers (10 % to 90 %). A job that already
   has checkpoint lines keeps them, so a slicer restarted mid-print reads the same numbering.
+  Klipper drops every move inside the `EXCLUDE_OBJECT_START/END` block of an object excluded during
+  the print, so a checkpoint there would pause over the print without parking. The layer-change
+  checkpoints therefore go just after the object block that is open at the layer change (Orca ends it
+  after the layer's retract and wipe, where the timelapse frame goes). The early-first-layer checkpoint
+  stays mid-layer.
 - **Printer side** (`docs/shop/plus4/failure_check.cfg`): at a checkpoint the printer retracts,
   lifts 5 mm, parks at the purge chute with Qidi's own pause moves, and waits. `SHOP_CHECK_OK`
   resumes, `SHOP_CHECK_HOLD` stays paused and beeps (hotend off after 15 minutes; Resume reheats).
@@ -336,7 +341,7 @@ purge lines count as expected material.
   follow-up. The server is `https://ntfy.sh` unless `shop_notify_server` names another one. Install
   the ntfy app on the phone and subscribe to the same topic; anyone who knows the topic can read
   it, so pick one that is hard to guess. "Send test notification" saves what is typed and sends one
-  message to it, with the latest checkpoint photo attached when there is one. Pass, uncertain and review checkpoints never notify; a camera that stays dead does, once per job.
+  message to it, with the latest checkpoint photo attached when there is one. Pass, uncertain and review checkpoints never notify; a camera that stays dead does, once per job, and so does each checkpoint skipped because the toolhead did not park.
 - **Camera calibration** (Device tab, printer idle, empty plate): the printer moves to 11 poses
   (`SHOP_CAMERA_POSE`); you click the plate corners at bed heights 10 and 170 mm and the nozzle tip
   at a 3 x 3 grid. The plate's exact size is solved for, so the printable area is only a first
@@ -363,7 +368,10 @@ purge lines count as expected material.
   calibrated".
 - **Late slicer.** A slicer that starts while the printer is parked can see a checkpoint just before
   its 45 s timeout resumes the print. Handling a checkpoint first resets the timeout to 60 s, and a
-  photo taken after the toolhead has left the park position (X95 Y324) is discarded as missed.
+  photo taken after the toolhead has left the park position (X95 Y324) is discarded as missed. A
+  printer that waits at a checkpoint without having parked (a checkpoint inside an excluded object,
+  in a job uploaded before checkpoints left object blocks) gets `SHOP_CHECK_OK` at once and a warning
+  notification: the toolhead hides the print, so that checkpoint is skipped.
 - **Files.** Watched jobs: `shop/failure_check/jobs.json` (a restarted slicer resumes watching).
   Per job: `shop/failure_check/jobs/<time>_<name>/` with the G-code copy, every checkpoint photo
   (`cpN.jpg`) and its result (`cpN.json`); the last 15 jobs are kept. After a quick restart the earlier attempt's photos and

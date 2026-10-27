@@ -344,20 +344,24 @@ class Service:
         except (OSError, ValueError):
             return None
 
-    def still_parked(self, job):
+    def park_state(self, job):
+        """"parked" while the checkpoint holds the printer at the park position (from the camera calibration),
+        "resumed" once it no longer waits, "elsewhere" when it waits but the toolhead never parked (Klipper drops
+        the park moves of a checkpoint inside an excluded object's G-code)."""
         cam = self.camera(job) or {}
         px, py = float(cam.get("park_x", 95.0)), float(cam.get("park_y", 324.0))
         q = urllib.parse.quote("gcode_macro SHOP_CHECKPOINT")
         body = http_get(job["api"] + "/printer/objects/query?toolhead=position&" + q + "=waiting", 5)
         if body is None:
-            return True  # cannot tell: keep the slicer's behaviour
+            return "parked"  # cannot tell: keep the slicer's behaviour
         try:
             st = json.loads(body)["result"]["status"]
             pos = st["toolhead"]["position"]
-            return int(st["gcode_macro SHOP_CHECKPOINT"].get("waiting", 0)) == 1 and \
-                math.hypot(pos[0] - px, pos[1] - py) < PARK_TOLERANCE_MM
+            if int(st["gcode_macro SHOP_CHECKPOINT"].get("waiting", 0)) != 1:
+                return "resumed"
+            return "parked" if math.hypot(pos[0] - px, pos[1] - py) < PARK_TOLERANCE_MM else "elsewhere"
         except (ValueError, KeyError, TypeError, IndexError):
-            return True
+            return "parked"
 
     def snapshot(self, job):
         """A snapshot, restarting the printer's camera service once when it does not answer (its
@@ -412,9 +416,19 @@ class Service:
                        "failure checks; power-cycling the printer usually brings the camera back." % (job["host"], label),
                        tags="warning")
             return
-        if not self.still_parked(job):
+        parked = self.park_state(job)
+        if parked == "resumed":
             with self.lock:
                 self.set_status(job, 'Failure check: "%s" missed (the print had already resumed)' % label)
+            return
+        if parked == "elsewhere":
+            send_script(job["api"], "SHOP_CHECK_OK")  # the toolhead hides the print: fail open
+            with self.lock:
+                self.set_status(job, 'Failure check: "%s" skipped (the toolhead did not park); print continues' % label)
+            notify(job, "Check skipped: %s" % job["job_name"],
+                   'The printer paused for "%s" but the toolhead did not park, so the plate could not be photographed. '
+                   "This happens when the checkpoint falls inside an object excluded during the print. The print "
+                   "continues." % label, tags="warning")
             return
         photo = os.path.join(d, "cp%d.jpg" % index)
         write_atomic(photo, jpeg)
